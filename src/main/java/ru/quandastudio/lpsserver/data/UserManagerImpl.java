@@ -9,6 +9,7 @@ import ru.quandastudio.lpsserver.Result;
 import ru.quandastudio.lpsserver.SnManager;
 import ru.quandastudio.lpsserver.data.dao.UserDAO;
 import ru.quandastudio.lpsserver.data.entities.User;
+import ru.quandastudio.lpsserver.data.entities.User.State;
 import ru.quandastudio.lpsserver.netty.models.LPSClientMessage.LPSLogIn;
 import ru.quandastudio.lpsserver.util.StringUtil;
 
@@ -42,12 +43,12 @@ public class UserManagerImpl implements UserManager {
 
 	private Result<User> processUnauthorizedUser(LPSLogIn login) {
 		final Optional<User> user = userDAO.getUserBySnUID(login.getSnUID(), login.getAuthType());
-		user.ifPresentOrElse((u) -> userDAO.update(u), () -> {
+		user.ifPresent((u) -> userDAO.update(u));
+		return user.or(() -> {
 			final User newUser = createUser(login);
 			userDAO.addUser(newUser);
-			Result.success(newUser);
-		});
-		return Result.success(user.get());
+			return Optional.of(newUser);
+		}).map((u) -> Result.success(u)).get();
 	}
 
 	private User createUser(LPSLogIn login) {
@@ -58,6 +59,7 @@ public class UserManagerImpl implements UserManager {
 		user.setName(login.getLogin());
 		user.setUserId(login.getUid());
 		user.setAccessId(StringUtil.getAccIdHash());
+		user.setState(State.unk);
 		return user;
 	}
 

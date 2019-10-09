@@ -31,21 +31,11 @@ public class ServerProperties {
 	}
 
 	private void loadConfig() {
-		InputStream is = null;
-		try {
-			is = new FileInputStream(new File(CONFIG_FILE));
+		try (InputStream is = new FileInputStream(new File(CONFIG_FILE))) {
 			props.load(is);
 		} catch (IOException e) {
 			log.warn("Error loading config file");
 			log.warn(e.toString());
-		} finally {
-			if (is != null) {
-				try {
-					is.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
 		}
 	}
 

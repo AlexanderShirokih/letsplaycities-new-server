@@ -2,6 +2,7 @@ package ru.quandastudio.lpsserver.actions;
 
 import java.util.Iterator;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -38,7 +39,8 @@ public class LoginAction {
 		ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
 		Validator validator = factory.getValidator();
 
-		Iterator<ConstraintViolation<LPSLogIn>> validates = validator.validate(login).iterator();
+		Set<ConstraintViolation<LPSLogIn>> v = validator.validate(login);
+		Iterator<ConstraintViolation<LPSLogIn>> validates = v.iterator();
 
 		if (validates.hasNext()) {
 			loginError(player, validates.next().getMessage());

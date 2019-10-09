@@ -20,7 +20,7 @@ public class JsonEncoder extends MessageToByteEncoder<LPSMessage> {
 
 		out.writeCharSequence("size:", CharsetUtil.UTF_8);
 		out.writeCharSequence(String.valueOf(json.length()), CharsetUtil.UTF_8);
-		out.writeChar('\n');
+		out.writeByte('\n');
 		out.writeCharSequence(json, CharsetUtil.UTF_8);
 	}
 

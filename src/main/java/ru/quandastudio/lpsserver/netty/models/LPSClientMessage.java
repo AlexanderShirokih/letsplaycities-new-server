@@ -12,6 +12,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import ru.quandastudio.lpsserver.validation.CheckInBanlist;
 
 public class LPSClientMessage {
@@ -25,6 +26,7 @@ public class LPSClientMessage {
 	@Builder
 	@AllArgsConstructor(access = AccessLevel.PRIVATE)
 	@Getter
+	@ToString
 	public static final class LPSLogIn extends LPSClientMessage {
 		@NotNull
 		@Min(value = 3, message = "Unsupported protocol version")
@@ -43,28 +45,28 @@ public class LPSClientMessage {
 		@NotNull
 		private final Integer clientBuild;
 		@NotNull
-		@Max(value = 14, message = "Client version value is too long!")
+		@Size(max = 20, message = "Client version value is too long!")
 		private final String clientVersion;
 		@NotNull
 		private final Boolean canReceiveMessages;
 
-		@Max(200)
+		@Size(max = 200)
 		private final String firebaseToken;
 
 		@Builder.Default
 		private final int uid = 0;
 		@Builder.Default
-		@Max(value = 8, message = "Access hash value is too long!")
+		@Size(max = 11, message = "Access hash value is too long!")
 		private final String hash = null;
 		@Builder.Default
-		@Max(64 * 1024)
+		@Size(max = 64 * 1024)
 		private final String avatar = null;
 		@Builder.Default
 		private final String accToken = null;
 		@Builder.Default
 		private final Boolean allowSendUID = false;
 		@Builder.Default
-		@Max(value = 32, message = "Social network UID is too long!")
+		@Size(max = 32, message = "Social network UID is too long!")
 		@Setter
 		private String snUID = null;
 	}

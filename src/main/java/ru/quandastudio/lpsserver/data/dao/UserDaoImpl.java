@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import javax.persistence.Query;
 
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -19,14 +20,18 @@ public class UserDaoImpl implements UserDAO {
 
 	@Override
 	public void addUser(User user) {
-		sessionFactory.getCurrentSession().save(user);
+		Session session = sessionFactory.getCurrentSession();
+		user.setUserId((Integer) session.save(user));
+		session.getTransaction().commit();
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public Optional<User> getUserById(Integer userId, String accessHash) {
+		Session session = sessionFactory.getCurrentSession();
+		session.beginTransaction();
 		Query query = sessionFactory.getCurrentSession()
-				.createQuery("from User where userId = :userId, accessId = :accessId");
+				.createQuery("from User where userId = :userId and accessId = :accessId");
 		query.setParameter("userId", userId);
 		query.setParameter("accessId", accessHash);
 
@@ -36,8 +41,10 @@ public class UserDaoImpl implements UserDAO {
 	@SuppressWarnings("unchecked")
 	@Override
 	public Optional<User> getUserBySnUID(String snUID, AuthType authType) {
+		Session session = sessionFactory.getCurrentSession();
+		session.beginTransaction();
 		Query query = sessionFactory.getCurrentSession()
-				.createQuery("from User where snUid = :snUid, authType = :authType");
+				.createQuery("from User where snUid = :snUid and authType = :authType");
 		query.setParameter("snUid", snUID);
 		query.setParameter("authType", authType.getName());
 
