@@ -47,7 +47,7 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
 	}
 
 	private void processLoginAction(Channel channel, LPSLogIn msg) {
-		LoginAction loginAction = new LoginAction(userManager, channel);
+		LoginAction loginAction = new LoginAction(channel, userManager);
 
 		loginAction.logIn(msg).ifPresent((p) -> players.put(channel, p));
 	}

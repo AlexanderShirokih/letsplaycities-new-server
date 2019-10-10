@@ -27,11 +27,11 @@ import ru.quandastudio.lpsserver.util.StringUtil;
 @Slf4j
 @RequiredArgsConstructor
 public class LoginAction {
-
-	private final UserManager userManager;
+	
 	private static final String BAN_MSG = "Доступ к онлайн режиму ограничен. Вы заблокированы решением администрации.";
 
 	private final Channel channel;
+	private final UserManager userManager;
 
 	public Optional<Player> logIn(LPSLogIn login) {
 		Player player = new Player(channel);

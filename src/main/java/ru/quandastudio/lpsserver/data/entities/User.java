@@ -12,6 +12,9 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -43,9 +46,11 @@ public class User implements Serializable {
 	@Column(name = "auth_type")
 	private String authType;
 
+	@CreationTimestamp
 	@Column(name = "reg_date")
 	private Timestamp regDate;
-
+	
+	@UpdateTimestamp
 	@Column(name = "last_visit")
 	private Timestamp lastVisitDate;
 
