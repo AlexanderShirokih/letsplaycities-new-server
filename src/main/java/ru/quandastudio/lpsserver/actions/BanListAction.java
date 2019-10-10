@@ -1,32 +1,35 @@
 package ru.quandastudio.lpsserver.actions;
 
-import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
+import lombok.RequiredArgsConstructor;
+import ru.quandastudio.lpsserver.data.BanlistManager;
+import ru.quandastudio.lpsserver.data.entities.BannedUser;
+import ru.quandastudio.lpsserver.data.entities.User;
 import ru.quandastudio.lpsserver.netty.core.Player;
+import ru.quandastudio.lpsserver.netty.models.BlackListItem;
+import ru.quandastudio.lpsserver.netty.models.LPSMessage;
 
+@RequiredArgsConstructor
 public class BanListAction {
 
-	public static class BannedUser {
-		public String login;
-		public int userId;
-	}
-
-	private MySQLConnection db;
-	private Player p;
-
-	public BanListAction(Player p) {
-		this.p = p;
-		db = MySQLConnection.getInstance();
-	}
+	private final BanlistManager banlistManager;
+	private final Player p;
 
 	public void onQuery() {
-		int bannerId = p.uid.getUserID();
-		ArrayList<BannedUser> list = db.getBannedUsersList(bannerId);
-		p.protocol.onBannedList(p, list);
-		list.clear();
+		final List<BannedUser> bannedList = banlistManager.getBannedUsers(p.getUser());
+		final List<BlackListItem> blacklistItems = bannedList.stream()
+				.map(this::transform)
+				.collect(Collectors.toList());
+		p.sendMessage(new LPSMessage.LPSBannedListMessage(blacklistItems));
 	}
 
-	public void onRemoveFromBanlist(int bannerId, int bannedId) {
-		db.removeFromBanList(bannerId, bannedId);
+	private BlackListItem transform(BannedUser user) {
+		return new BlackListItem(user.getBannedName(), user.getBannedId());
+	}
+
+	public void onRemoveFromBanlist(User banner, User banned) {
+		banlistManager.removeFromBanlist(banner, banned);
 	}
 }

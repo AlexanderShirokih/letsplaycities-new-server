@@ -33,4 +33,10 @@ public abstract class BaseDAO {
 		return result;
 	}
 
+	protected void save(Object object) {
+		transactional((Session session) -> {
+			session.save(object);
+			return null;
+		});
+	}
 }

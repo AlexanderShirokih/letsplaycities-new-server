@@ -15,10 +15,7 @@ public class UserDaoImpl extends BaseDAO implements UserDAO {
 
 	@Override
 	public void addUser(User user) {
-		transactional((Session session) -> {
-			session.save(user);
-			return null;
-		});
+		save(user);
 	}
 
 	@SuppressWarnings("unchecked")
