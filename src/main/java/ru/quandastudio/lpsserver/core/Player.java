@@ -1,6 +1,5 @@
-package ru.quandastudio.lpsserver.netty.core;
+package ru.quandastudio.lpsserver.core;
 
-import io.netty.channel.Channel;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +16,7 @@ public class Player {
 	public static boolean USR_MSG_LOG = false;
 
 	@NonNull
-	private final Channel channel;
+	private final MessageChannel channel;
 
 	private User user;
 
@@ -32,9 +31,7 @@ public class Player {
 	private Integer clientBuild;
 
 	public void sendMessage(LPSMessage msg) {
-		if (channel.isWritable()) {
-			channel.writeAndFlush(msg);
-		}
+		channel.send(msg);
 	}
 
 	public void onMessage(LPSClientMessage msg) {

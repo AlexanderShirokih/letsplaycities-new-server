@@ -11,15 +11,15 @@ import javax.validation.ValidatorFactory;
 
 import org.apache.commons.text.StringEscapeUtils;
 
-import io.netty.channel.Channel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import ru.quandastudio.lpsserver.Result;
 import ru.quandastudio.lpsserver.config.ServerProperties;
+import ru.quandastudio.lpsserver.core.MessageChannel;
+import ru.quandastudio.lpsserver.core.Player;
 import ru.quandastudio.lpsserver.data.UserManager;
 import ru.quandastudio.lpsserver.data.entities.User;
 import ru.quandastudio.lpsserver.data.entities.User.State;
-import ru.quandastudio.lpsserver.netty.core.Player;
 import ru.quandastudio.lpsserver.netty.models.LPSClientMessage.LPSLogIn;
 import ru.quandastudio.lpsserver.netty.models.LPSMessage;
 import ru.quandastudio.lpsserver.util.StringUtil;
@@ -30,7 +30,7 @@ public class LoginAction {
 	
 	private static final String BAN_MSG = "Доступ к онлайн режиму ограничен. Вы заблокированы решением администрации.";
 
-	private final Channel channel;
+	private final MessageChannel channel;
 	private final UserManager userManager;
 
 	public Optional<Player> logIn(LPSLogIn login) {
