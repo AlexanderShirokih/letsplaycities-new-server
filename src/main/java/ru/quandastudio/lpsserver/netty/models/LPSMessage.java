@@ -5,6 +5,7 @@ import java.util.List;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 public class LPSMessage {
 	private LPSMessage() {
@@ -40,16 +41,17 @@ public class LPSMessage {
 	@Action("join")
 	@RequiredArgsConstructor
 	@Getter
+	@Setter
 	public static final class LPSPlayMessage extends LPSMessage {
-		@NonNull
 		private final AuthType authType;
 		@NonNull
 		private final String login;
-		private final String avatar = null;
-		private final String clientVersion = null;
-		private final String snUID = null;
+		private String avatar = null;
+		private String snUID = null;
 		@NonNull
 		private final Integer oppUid;
+		@NonNull
+		private final String clientVersion;
 		@NonNull
 		private final Integer clientBuild;
 		@NonNull
@@ -58,7 +60,7 @@ public class LPSMessage {
 		@NonNull
 		private final Boolean youStarter;
 		private final boolean banned;
-		
+
 		transient final boolean allowSendSnUid;
 	}
 

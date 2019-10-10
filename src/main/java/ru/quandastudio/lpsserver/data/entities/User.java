@@ -2,6 +2,7 @@ package ru.quandastudio.lpsserver.data.entities;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -49,7 +50,7 @@ public class User implements Serializable {
 	@CreationTimestamp
 	@Column(name = "reg_date")
 	private Timestamp regDate;
-	
+
 	@UpdateTimestamp
 	@Column(name = "last_visit")
 	private Timestamp lastVisitDate;
@@ -66,5 +67,24 @@ public class User implements Serializable {
 
 	@Column(name = "firebase_token", length = 200)
 	private String firebaseToken;
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(accessId, authType, firebaseToken, lastVisitDate, name, regDate, snUid, state, userId);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		User other = (User) obj;
+		return Objects.equals(accessId, other.accessId) && Objects.equals(authType, other.authType)
+				&& Objects.equals(name, other.name) && Objects.equals(snUid, other.snUid)
+				&& Objects.equals(userId, other.userId);
+	}
 
 }

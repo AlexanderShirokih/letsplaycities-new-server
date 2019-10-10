@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import ru.quandastudio.lpsserver.Result;
 import ru.quandastudio.lpsserver.config.ServerProperties;
 import ru.quandastudio.lpsserver.core.MessageChannel;
+import ru.quandastudio.lpsserver.core.MessageRouter;
 import ru.quandastudio.lpsserver.core.Player;
 import ru.quandastudio.lpsserver.data.UserManager;
 import ru.quandastudio.lpsserver.data.entities.User;
@@ -31,10 +32,11 @@ public class LoginAction {
 	private static final String BAN_MSG = "Доступ к онлайн режиму ограничен. Вы заблокированы решением администрации.";
 
 	private final MessageChannel channel;
+	private final MessageRouter handler;
 	private final UserManager userManager;
 
 	public Optional<Player> logIn(LPSLogIn login) {
-		Player player = new Player(channel);
+		Player player = new Player(channel, handler);
 
 		ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
 		Validator validator = factory.getValidator();
