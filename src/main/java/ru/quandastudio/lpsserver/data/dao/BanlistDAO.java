@@ -12,4 +12,6 @@ public interface BanlistDAO {
 
 	public List<BannedUser> getBannedUsers(Integer banerId);
 
+	public boolean isBanned(Integer firstUserId, Integer secondUserId);
+
 }

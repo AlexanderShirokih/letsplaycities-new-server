@@ -13,4 +13,6 @@ public interface BanlistManager {
 
 	public List<BannedUser> getBannedUsers(User banerId);
 
+	public boolean isBanned(User user1, User user2);
+
 }

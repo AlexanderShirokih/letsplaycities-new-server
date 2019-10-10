@@ -30,4 +30,9 @@ public class BanlistManagerImpl implements BanlistManager {
 		return banlistDAO.getBannedUsers(banerId.getUserId());
 	}
 
+	@Override
+	public boolean isBanned(User user1, User user2) {
+		return banlistDAO.isBanned(user1.getUserId(), user2.getUserId());
+	}
+
 }

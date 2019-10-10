@@ -4,10 +4,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import lombok.RequiredArgsConstructor;
+import ru.quandastudio.lpsserver.core.Player;
 import ru.quandastudio.lpsserver.data.BanlistManager;
 import ru.quandastudio.lpsserver.data.entities.BannedUser;
 import ru.quandastudio.lpsserver.data.entities.User;
-import ru.quandastudio.lpsserver.netty.core.Player;
 import ru.quandastudio.lpsserver.netty.models.BlackListItem;
 import ru.quandastudio.lpsserver.netty.models.LPSMessage;
 
