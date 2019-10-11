@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import ru.quandastudio.lpsserver.actions.LoginAction;
 import ru.quandastudio.lpsserver.core.MessageRouter;
 import ru.quandastudio.lpsserver.core.Player;
+import ru.quandastudio.lpsserver.core.ServerContext;
 import ru.quandastudio.lpsserver.data.UserManager;
 import ru.quandastudio.lpsserver.netty.NettyMessageChannel;
 import ru.quandastudio.lpsserver.netty.models.LPSClientMessage;
@@ -23,6 +24,8 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
 	private final UserManager userManager;
 
 	private final MessageRouter messageRouter;
+
+	private final ServerContext serverContext;
 
 	private static ConcurrentHashMap<Channel, Player> players = new ConcurrentHashMap<Channel, Player>();
 
@@ -49,7 +52,8 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
 	}
 
 	private void processLoginAction(Channel channel, LPSLogIn msg) {
-		LoginAction loginAction = new LoginAction(new NettyMessageChannel(channel), messageRouter, userManager);
+		LoginAction loginAction = new LoginAction(new NettyMessageChannel(channel), messageRouter, userManager,
+				serverContext);
 
 		loginAction.logIn(msg).ifPresent((p) -> players.put(channel, p));
 	}

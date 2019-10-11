@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import ru.quandastudio.lpsserver.config.ServerProperties;
 import ru.quandastudio.lpsserver.core.Banlist;
 import ru.quandastudio.lpsserver.core.Dictionary;
-import ru.quandastudio.lpsserver.netty.core.Player;
 
 @Slf4j
 public class AdminAction {
@@ -33,16 +32,6 @@ public class AdminAction {
 			Dictionary.reloadDictionary();
 			Banlist.reloadBanDatabase();
 			ServerProperties.reloadConfig();
-			break;
-		case "usrmsglog":
-			if (split[1].equals("on")) {
-				spec("UsrMsgLog: ENABLED");
-				Player.USR_MSG_LOG = true;
-			}
-			if (split[1].equals("off")) {
-				spec("UsrMsgLog: DISABLED");
-				Player.USR_MSG_LOG = false;
-			}
 			break;
 		}
 	}

@@ -1,13 +1,6 @@
 package ru.quandastudio.lpsserver.actions;
 
-import java.util.Iterator;
 import java.util.Optional;
-import java.util.Set;
-
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
 
 import org.apache.commons.text.StringEscapeUtils;
 
@@ -18,34 +11,33 @@ import ru.quandastudio.lpsserver.config.ServerProperties;
 import ru.quandastudio.lpsserver.core.MessageChannel;
 import ru.quandastudio.lpsserver.core.MessageRouter;
 import ru.quandastudio.lpsserver.core.Player;
+import ru.quandastudio.lpsserver.core.ServerContext;
 import ru.quandastudio.lpsserver.data.UserManager;
 import ru.quandastudio.lpsserver.data.entities.User;
 import ru.quandastudio.lpsserver.data.entities.User.State;
 import ru.quandastudio.lpsserver.netty.models.LPSClientMessage.LPSLogIn;
 import ru.quandastudio.lpsserver.netty.models.LPSMessage;
 import ru.quandastudio.lpsserver.util.StringUtil;
+import ru.quandastudio.lpsserver.util.ValidationUtil;
 
 @Slf4j
 @RequiredArgsConstructor
 public class LoginAction {
-	
+
 	private static final String BAN_MSG = "Доступ к онлайн режиму ограничен. Вы заблокированы решением администрации.";
 
 	private final MessageChannel channel;
 	private final MessageRouter handler;
 	private final UserManager userManager;
-
+	private final ServerContext serverContext;
+	
 	public Optional<Player> logIn(LPSLogIn login) {
-		Player player = new Player(channel, handler);
+		Player player = new Player(serverContext, channel, handler);
 
-		ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-		Validator validator = factory.getValidator();
+		final Optional<String> firstError = ValidationUtil.validateMessage(login);
 
-		Set<ConstraintViolation<LPSLogIn>> v = validator.validate(login);
-		Iterator<ConstraintViolation<LPSLogIn>> validates = v.iterator();
-
-		if (validates.hasNext()) {
-			loginError(player, validates.next().getMessage());
+		if (firstError.isPresent()) {
+			loginError(player, firstError.get());
 			return Optional.empty();
 		}
 

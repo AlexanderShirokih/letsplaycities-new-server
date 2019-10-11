@@ -1,7 +1,5 @@
 package ru.quandastudio.lpsserver.core;
 
-import java.util.concurrent.ArrayBlockingQueue;
-
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -14,10 +12,9 @@ import ru.quandastudio.lpsserver.netty.models.LPSMessage;
 @Setter
 @RequiredArgsConstructor
 public class Player {
-	@Getter
-	private static ArrayBlockingQueue<Player> playersQueue = new ArrayBlockingQueue<Player>(256);
 
-	public static boolean USR_MSG_LOG = false;
+	@NonNull
+	private final ServerContext currentContext;
 
 	@NonNull
 	private final MessageChannel channel;
@@ -36,9 +33,9 @@ public class Player {
 	private String avatarData;
 
 	private Integer clientBuild;
-	
+
 	private transient boolean isOnline;
-	
+
 	private Room room;
 
 	public void sendMessage(LPSMessage msg) {
@@ -52,5 +49,9 @@ public class Player {
 	public void onDisconnected() {
 		// TODO Auto-generated method stub
 
+	}
+
+	public boolean checkVersion(int version) {
+		return clientBuild >= version;
 	}
 }

@@ -127,7 +127,8 @@ public class LPSClientMessage {
 	@RequiredArgsConstructor
 	@Getter
 	public static final class LPSWord extends LPSClientMessage {
-		@NonNull
+		@NotNull(message = "Word shouldn't be NULL!")
+		@Size(min = 2, max = 45, message = "Word size should be in range [2,45]")
 		private final String word;
 	}
 

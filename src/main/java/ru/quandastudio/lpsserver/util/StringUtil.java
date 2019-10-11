@@ -8,18 +8,6 @@ public class StringUtil {
 		return name.replaceAll("\"", "").replaceAll("\'", "");
 	}
 
-	// Форматируем слово перед работой с базой
-	public static String formatWord(String name) {
-		if (name == null)
-			return "a";
-		if (name.isEmpty())
-			return "a";
-		if (name.length() > 45)
-			return "a";
-
-		return name;
-	}
-
 	public static String max(String str, int max) {
 		if (str.length() > max)
 			str = str.substring(0, max - 1);

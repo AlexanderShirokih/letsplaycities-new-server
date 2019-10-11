@@ -4,6 +4,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import ru.quandastudio.lpsserver.actions.FriendsRequestAction;
 import ru.quandastudio.lpsserver.core.Player;
 import ru.quandastudio.lpsserver.core.Room;
 import ru.quandastudio.lpsserver.data.BanlistManager;
@@ -12,12 +13,29 @@ import ru.quandastudio.lpsserver.netty.models.LPSClientMessage.LPSPlay;
 @Slf4j
 @RequiredArgsConstructor
 public class PlayMessageHandler implements MessageHandler<LPSPlay> {
-	
+
 	private final BanlistManager banlistManager;
-	
+
 	@Override
 	public void handle(Player player, LPSPlay msg) {
-		ArrayBlockingQueue<Player> queue = Player.getPlayersQueue();
+		switch (msg.getMode()) {
+		case FRIEND:
+			handleAsFriendsRequest(player, msg.getOppUid());
+			break;
+		case RANDOM_PAIR:
+			handleAsRandomPlayRequest(player);
+			break;
+		default:
+			throw new IllegalStateException("Unknown play mode " + msg.getMode().name());
+		}
+	}
+
+	private void handleAsFriendsRequest(Player player, int oppUid) {
+		new FriendsRequestAction(player, oppUid).onNewRequest();
+	}
+
+	private void handleAsRandomPlayRequest(Player player) {
+		ArrayBlockingQueue<Player> queue = player.getCurrentContext().getPlayersQueue();
 
 		if (queue.isEmpty()) {
 			queue.add(player);
