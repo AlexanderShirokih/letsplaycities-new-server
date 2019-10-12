@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import ru.quandastudio.lpsserver.data.BanlistManager;
 import ru.quandastudio.lpsserver.data.entities.User;
 import ru.quandastudio.lpsserver.netty.models.AuthType;
 import ru.quandastudio.lpsserver.netty.models.LPSMessage;
@@ -13,8 +12,6 @@ import ru.quandastudio.lpsserver.netty.models.WordResult;
 @Slf4j
 @RequiredArgsConstructor
 public class Room {
-
-	private final BanlistManager banManager;
 
 	public static final int MOVE_TIME_MS = 92000;
 	private static final int MOVE_TIMER_PERIOD = 5000;
@@ -31,12 +28,13 @@ public class Room {
 
 	public boolean start() {
 		current = starter;
+		final ServerContext context = current.getCurrentContext();
 
-		// TODO:
-//		boolean isFriends = db.getFriendRequestState(starterId, invitedId) == FriendsAction.ACCEPTED
-//				|| db.getFriendRequestState(invitedId, starterId) == FriendsAction.ACCEPTED;
-		boolean isFriends = false;
-		boolean isBanned = banManager.isBanned(starter.getUser(), invited.getUser());
+		boolean isFriends = context.getFriendshipManager()
+				.getFriendsInfo(starter.getUser(), invited.getUser())
+				.map((info) -> info.getIsAccepted())
+				.orElse(false);
+		boolean isBanned = context.getBanlistManager().isBanned(starter.getUser(), invited.getUser());
 		sendPlayMessage(starter, true, isFriends, isBanned, invited);
 		sendPlayMessage(invited, false, isFriends, isBanned, starter);
 

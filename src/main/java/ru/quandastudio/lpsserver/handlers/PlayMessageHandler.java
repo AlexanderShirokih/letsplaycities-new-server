@@ -66,7 +66,7 @@ public class PlayMessageHandler extends MessageHandler<LPSPlay> {
 
 			log.info("NEW room: {} & {}", p.getUser().getName(), player.getUser().getName());
 
-			final Room room = new Room(player.getCurrentContext().getBanlistManager(), p, player);
+			final Room room = new Room(p, player);
 			player.setRoom(room);
 			p.setRoom(room);
 
