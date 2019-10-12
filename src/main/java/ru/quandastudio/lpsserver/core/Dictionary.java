@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.Random;
 
 import org.springframework.context.annotation.Scope;
@@ -51,7 +52,8 @@ public class Dictionary {
 
 		ArrayList<String> data = null;
 		ArrayList<CityInfo> additionalData = null;
-		final String database = getLastDatabasePath();
+		final String database = getDatabasePath(String.valueOf(getLastDatabaseVersion()));
+		;
 
 		log.info("Reading database file {}", database);
 
@@ -101,8 +103,8 @@ public class Dictionary {
 		return new DatabasePair(data, additionalData);
 	}
 
-	private String getLastDatabasePath() {
-		return "database/data-" + getLastDatabaseVersion() + ".bin";
+	private String getDatabasePath(String version) {
+		return "database/data-" + version + ".bin";
 	}
 
 	public int getLastDatabaseVersion() {
@@ -171,5 +173,17 @@ public class Dictionary {
 		d.clear();
 
 		return data.get(index);
+	}
+
+	public Optional<File> getDatabaseFile(String version) {
+		if (version.length() > 12)
+			return Optional.empty();
+
+		final String dbFilename = getDatabasePath(version);
+		final File file = new File(dbFilename);
+		if (file.exists())
+			return Optional.of(file);
+
+		return Optional.empty();
 	}
 }
