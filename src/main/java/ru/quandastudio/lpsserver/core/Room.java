@@ -107,9 +107,7 @@ public class Room {
 	private void startTimer() {
 		moveCounter++;
 		GameTimer gt = new GameTimer(this, moveCounter);
-		// TODO temp
-		// Use link from "server" reference
-		TaskLooper.getInstance().schedule(new DelayedTask(MOVE_TIMER_PERIOD, MOVE_TIMER_PERIOD, gt));
+		current.getCurrentContext().getTaskLooper().schedule(new DelayedTask(MOVE_TIMER_PERIOD, MOVE_TIMER_PERIOD, gt));
 	}
 
 	private boolean isValid(String str) {

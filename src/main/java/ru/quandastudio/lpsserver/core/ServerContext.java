@@ -36,5 +36,7 @@ public class ServerContext {
 	private final RequestNotifier requestNotifier;
 
 	private final ServerProperties serverProperties;
+	
+	private final TaskLooper taskLooper;
 
 }
