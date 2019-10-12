@@ -1,16 +1,23 @@
 package ru.quandastudio.lpsserver.core;
 
-import java.io.BufferedReader;
 import java.io.DataInputStream;
+import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Component
+@Scope("singleton")
 public class Dictionary {
 	public static class DatabasePair {
 		ArrayList<String> data;
@@ -29,20 +36,25 @@ public class Dictionary {
 
 	private static final Random rand = new Random();
 
-	private static boolean CORRECTION = true;
+	@Getter
+	@Setter
+	private boolean isCorrectionEnabled = true;
 
-	private static ArrayList<CityInfo> additionalData;
-	private static ArrayList<String> data;
+	private ArrayList<CityInfo> additionalData;
+	private ArrayList<String> data;
 
-	static DatabasePair loadDictionary() {
+	DatabasePair loadDictionary() {
 		log.info("Loading dictionary...");
 
-		if (!CORRECTION)
+		if (!isCorrectionEnabled)
 			log.warn("Note that correction is DISABLED");
 
 		ArrayList<String> data = null;
 		ArrayList<CityInfo> additionalData = null;
-		final String database = getLastDatabaseName();
+		final String database = getLastDatabasePath();
+
+		log.info("Reading database file {}", database);
+
 		try (DataInputStream in = new DataInputStream(new FileInputStream(database))) {
 			int count = in.readInt();
 			int version = in.readInt();
@@ -89,29 +101,29 @@ public class Dictionary {
 		return new DatabasePair(data, additionalData);
 	}
 
-	private static String getLastDatabaseName() {
-		String lastVersion = "";
-
-		try (BufferedReader br = new BufferedReader(new FileReader("www/getdata"))) {
-			lastVersion = br.readLine().trim();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		return "www/data-" + lastVersion + ".bin";
+	private String getLastDatabasePath() {
+		return "database/data-" + getLastDatabaseVersion() + ".bin";
 	}
 
-	static {
+	public int getLastDatabaseVersion() {
+		final File databaseFolder = new File("database");
+
+		int latestDbVersion = Arrays
+				.stream(databaseFolder.list((File dir, String name) -> name.matches("data-\\d+.bin")))
+				.mapToInt((name) -> Integer.parseInt(name.substring(5, name.length() - 4)))
+				.max()
+				.orElseThrow();
+
+		return latestDbVersion;
+	}
+
+	public Dictionary() {
 		DatabasePair dp = loadDictionary();
 		data = dp.data;
 		additionalData = dp.additionalData;
 	}
 
-	public static void setCorrectionEnabled(boolean b) {
-		CORRECTION = b;
-	}
-
-	public static void reloadDictionary() {
+	public void reloadDictionary() {
 		synchronized (data) {
 			DatabasePair dp = loadDictionary();
 			ArrayList<String> newData = dp.data;
@@ -130,13 +142,10 @@ public class Dictionary {
 	}
 
 	public boolean contains(String word) {
-		return !CORRECTION || data.contains(word);
+		return !isCorrectionEnabled || data.contains(word);
 	}
 
-	public static String getCity(char firstChar, byte diff, int[] prefCountries) {
-
-//		log.info("Looking for the next word fc=" + firstChar + "; diff=" + diff + "; pref="
-//				+ Arrays.toString(prefCountries));
+	public String getCity(char firstChar, byte diff, int[] prefCountries) {
 		ArrayList<Integer> d = new ArrayList<Integer>(1024);
 
 		for (int i = 0; i < additionalData.size(); i++) {
@@ -158,13 +167,9 @@ public class Dictionary {
 			return null;
 		}
 		int idx = rand.ints(0, d.size()).findFirst().getAsInt();
-//		log.info("found size=" + d.size());
-//		log.info("gen idx=" + idx);
-
 		int index = d.get(idx);
 		d.clear();
 
-//		log.info("Found " + data.get(index));
 		return data.get(index);
 	}
 }

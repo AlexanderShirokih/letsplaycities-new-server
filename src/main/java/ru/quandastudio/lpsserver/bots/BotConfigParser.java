@@ -1,17 +1,17 @@
 package ru.quandastudio.lpsserver.bots;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.core.io.ClassPathResource;
 
 public class BotConfigParser {
 
-	public BotInfo[] parseBotsList(Path path) throws IOException {
-		return parseBotsList(new String(Files.readAllBytes(path)));
+	public BotInfo[] parseBotsList(File file) throws IOException {
+		return parseBotsList(new String(Files.readAllBytes(file.toPath())));
 	}
 
 	public BotInfo[] parseBotsList(String source) throws IOException {
@@ -53,7 +53,7 @@ public class BotConfigParser {
 		if (avatar != null) {
 			try {
 				// Important! Image size should be equal to 128 in both dimensions
-				data = Files.readAllBytes(Paths.get(avatar));
+				data = Files.readAllBytes(new ClassPathResource(avatar).getFile().toPath());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

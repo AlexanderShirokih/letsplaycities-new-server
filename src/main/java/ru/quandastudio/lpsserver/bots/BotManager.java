@@ -1,7 +1,7 @@
 package ru.quandastudio.lpsserver.bots;
 
+import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -12,6 +12,8 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
+import org.springframework.core.io.ClassPathResource;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -96,7 +98,8 @@ public class BotManager {
 	private BotInfo[] loadBotConfiguration() {
 		BotInfo[] infos = null;
 		try {
-			infos = new BotConfigParser().parseBotsList(Paths.get("bots.json"));
+			final File file = new ClassPathResource("bots.json").getFile();
+			infos = new BotConfigParser().parseBotsList(file);
 			log.info("Bot list parsed");
 		} catch (IOException e) {
 			infos = new BotInfo[0];

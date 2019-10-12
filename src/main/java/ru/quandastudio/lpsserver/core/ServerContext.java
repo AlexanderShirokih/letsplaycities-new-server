@@ -42,6 +42,8 @@ public class ServerContext {
 	private final ServerProperties serverProperties;
 
 	private final TaskLooper taskLooper;
+	
+	private final Dictionary dictionary;
 
 	public void log() {
 		log.info("QUEUE={}; WAITING_REQUESTS={}", playersQueue.size(), friendsRequests.size());

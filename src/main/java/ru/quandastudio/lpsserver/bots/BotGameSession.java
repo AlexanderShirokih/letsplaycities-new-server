@@ -5,7 +5,6 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import ru.quandastudio.lpsserver.core.Dictionary;
 import ru.quandastudio.lpsserver.core.Room;
 
 @Slf4j
@@ -98,9 +97,9 @@ public class BotGameSession {
 		String word;
 		double d = Math.random();
 		if (d <= CHANCE_TO_PREFERED && prefCountries.length != 0)
-			word = Dictionary.getCity(lastLetter, wordsLevel, prefCountries);
+			word = bot.getCurrentContext().getDictionary().getCity(lastLetter, wordsLevel, prefCountries);
 		else
-			word = Dictionary.getCity(lastLetter, wordsLevel, null);
+			word = bot.getCurrentContext().getDictionary().getCity(lastLetter, wordsLevel, null);
 		return word;
 	}
 

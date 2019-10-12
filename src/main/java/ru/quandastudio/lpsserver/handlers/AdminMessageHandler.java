@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import ru.quandastudio.lpsserver.core.Banlist;
 import ru.quandastudio.lpsserver.core.Dictionary;
 import ru.quandastudio.lpsserver.core.Player;
+import ru.quandastudio.lpsserver.core.ServerContext;
 import ru.quandastudio.lpsserver.netty.models.LPSClientMessage.LPSAdmin;
 
 @Slf4j
@@ -21,22 +22,25 @@ public class AdminMessageHandler extends MessageHandler<LPSAdmin> {
 	}
 
 	private void handleAction(Player player, String[] split) {
+		final ServerContext context = player.getCurrentContext();
+		final Dictionary dictionary = context.getDictionary();
+
 		switch (split[0]) {
 		case "corr":
 			if (split[1].equals("on")) {
 				spec("Correction: ENABLED");
-				Dictionary.setCorrectionEnabled(true);
+				dictionary.setCorrectionEnabled(true);
 			}
 			if (split[1].equals("off")) {
 				spec("Correction: DISABLED");
-				Dictionary.setCorrectionEnabled(false);
+				dictionary.setCorrectionEnabled(false);
 			}
 			break;
 		case "reload":
 			spec("Reloading database and configuration file...");
-			Dictionary.reloadDictionary();
 			Banlist.reloadBanDatabase();
-			player.getCurrentContext().getServerProperties().loadConfig();
+			dictionary.reloadDictionary();
+			context.getServerProperties().loadConfig();
 			break;
 		}
 	}

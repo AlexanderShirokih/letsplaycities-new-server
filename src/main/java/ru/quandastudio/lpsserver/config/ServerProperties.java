@@ -37,7 +37,7 @@ public class ServerProperties {
 	public int getNewerBuild() {
 		return getIntOrThrow("client.newer_build");
 	}
-
+	
 	public boolean isLoggingMsgsEnabled() {
 		return getBoolOrThrow("server.msg_on_log");
 	}
