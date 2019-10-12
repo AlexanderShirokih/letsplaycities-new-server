@@ -10,6 +10,7 @@ import ru.quandastudio.lpsserver.data.entities.User;
 import ru.quandastudio.lpsserver.data.entities.User.State;
 import ru.quandastudio.lpsserver.netty.models.LPSClientMessage;
 import ru.quandastudio.lpsserver.netty.models.LPSMessage;
+import ru.quandastudio.lpsserver.netty.models.LPSMessage.LPSLeaveMessage;
 
 @Getter
 @Setter
@@ -47,8 +48,15 @@ public class Player {
 	}
 
 	public void onDisconnected() {
-		// TODO Auto-generated method stub
-
+		setOnline(false);
+		if (room != null) {
+			Player p = room.oppositePlayer(this);
+			if (p.isOnline())
+				p.sendMessage(new LPSLeaveMessage(false));
+			else
+				room.finish();
+		}
+		getCurrentContext().getFriendsRequests().remove(this);
 	}
 
 	public boolean checkVersion(int version) {

@@ -2,13 +2,16 @@ package ru.quandastudio.lpsserver.core;
 
 import java.util.ArrayList;
 
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j	
+@Slf4j
+@Component
+@Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
 public class TaskLooper implements Runnable {
-	private TaskLooper() {
-
-	}
 
 	private ArrayList<DelayedTask> tasks = new ArrayList<DelayedTask>(128);
 

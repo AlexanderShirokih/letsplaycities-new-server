@@ -54,7 +54,7 @@ public class FriendModeRequestMessageHandler extends MessageHandler<LPSFriendMod
 		log.info("NEW FRIEND room: {} & {}", opp.getUser().getName(), player.getUser().getName());
 
 		final ServerContext context = player.getCurrentContext();
-		final Room room = new Room(context.getBanlistManager(), player, opp);
+		final Room room = new Room(player, opp);
 
 		player.setRoom(room);
 		opp.setRoom(room);
