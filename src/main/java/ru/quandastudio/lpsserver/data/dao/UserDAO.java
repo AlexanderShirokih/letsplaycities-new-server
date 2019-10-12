@@ -9,7 +9,9 @@ public interface UserDAO {
 
 	public void addUser(User user);
 
-	public Optional<User> getUserById(Integer userId, String accessHash);
+	public Optional<User> getUserByIdAndHash(Integer userId, String accessHash);
+
+	public Optional<User> getUserById(Integer userId);
 
 	public Optional<User> getUserBySnUID(String snUID, AuthType authType);
 

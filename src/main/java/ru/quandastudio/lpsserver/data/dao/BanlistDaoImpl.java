@@ -35,7 +35,7 @@ public class BanlistDaoImpl extends BaseDAO implements BanlistDAO {
 	public boolean isBanned(Integer firstUserId, Integer secondUserId) {
 		return (Boolean) transactional((Session session) -> {
 			return ((Number) session.createQuery(
-					"select count(*) from banlist where (banerId=:banerId and bannedId=:bannedId) or (banerId=:bannedId and bannedId=:banerId)")
+					"select count(*) from BannedUser where (banerId=:banerId and bannedId=:bannedId) or (banerId=:bannedId and bannedId=:banerId)")
 					.setParameter("banerId", firstUserId)
 					.setParameter("bannedId", secondUserId)
 					.uniqueResult()).intValue() != 0;

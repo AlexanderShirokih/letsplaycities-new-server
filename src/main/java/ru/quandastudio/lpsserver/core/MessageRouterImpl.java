@@ -10,6 +10,9 @@ import org.springframework.stereotype.Component;
 import lombok.extern.slf4j.Slf4j;
 import ru.quandastudio.lpsserver.handlers.AdminMessageHandler;
 import ru.quandastudio.lpsserver.handlers.BanMessageHandler;
+import ru.quandastudio.lpsserver.handlers.FriendMessageHandler;
+import ru.quandastudio.lpsserver.handlers.FriendModeRequestMessageHandler;
+import ru.quandastudio.lpsserver.handlers.FriendsListMessageHandler;
 import ru.quandastudio.lpsserver.handlers.LeaveMessageHandler;
 import ru.quandastudio.lpsserver.handlers.LoginMessageHandler;
 import ru.quandastudio.lpsserver.handlers.MessageHandler;
@@ -35,6 +38,9 @@ public class MessageRouterImpl implements MessageRouter {
 		registerTypeHandler(new BanMessageHandler());
 		registerTypeHandler(new UserMsgMessageHandler());
 		registerTypeHandler(new WordMessageHandler());
+		registerTypeHandler(new FriendMessageHandler());
+		registerTypeHandler(new FriendsListMessageHandler());
+		registerTypeHandler(new FriendModeRequestMessageHandler());
 	}
 
 	private void registerTypeHandler(MessageHandler<?> handler) {

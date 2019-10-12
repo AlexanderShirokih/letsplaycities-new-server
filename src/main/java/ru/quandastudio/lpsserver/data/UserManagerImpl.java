@@ -36,7 +36,7 @@ public class UserManagerImpl implements UserManager {
 	}
 
 	private Result<User> processAuthorizedUser(LPSLogIn login) {
-		final Optional<User> user = userDAO.getUserById(login.getUid(), login.getHash());
+		final Optional<User> user = userDAO.getUserByIdAndHash(login.getUid(), login.getHash());
 		user.ifPresent((u) -> userDAO.update(u));
 		return Result.from(user, "Ошибка авторизации: Пользователь не найден или токены устарели");
 	}
@@ -61,6 +61,11 @@ public class UserManagerImpl implements UserManager {
 		user.setAccessId(StringUtil.getAccIdHash());
 		user.setState(State.ready);
 		return user;
+	}
+
+	@Override
+	public Optional<User> getUserById(Integer userId) {
+		return userDAO.getUserById(userId);
 	}
 
 }

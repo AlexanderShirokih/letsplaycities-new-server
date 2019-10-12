@@ -1,5 +1,7 @@
 package ru.quandastudio.lpsserver.core;
 
+import java.util.Optional;
+
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -59,5 +61,16 @@ public class Player {
 
 	public boolean isAuthorized() {
 		return user != null && user.getState() != State.banned;
+	}
+
+	public boolean isFriend(Integer userId) {
+		return getCurrentContext().getFriendshipManager()
+				.getFriendsInfo(getUser(), new User(userId))
+				.map((info) -> info.getIsAccepted())
+				.orElse(false);
+	}
+
+	public Optional<Player> getOppositePlayer() {
+		return room != null ? Optional.of(room.oppositePlayer(this)) : Optional.empty();
 	}
 }

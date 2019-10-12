@@ -88,4 +88,8 @@ public class User implements Serializable {
 				&& Objects.equals(userId, other.userId);
 	}
 
+	public User(Integer userId) {
+		setUserId(userId);
+	}
+
 }

@@ -20,7 +20,7 @@ public class UserDaoImpl extends BaseDAO implements UserDAO {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Optional<User> getUserById(Integer userId, String accessHash) {
+	public Optional<User> getUserByIdAndHash(Integer userId, String accessHash) {
 		return (Optional<User>) transactional((Session session) -> {
 			Query query = session.createQuery("from User where userId = :userId and accessId = :accessId");
 			query.setParameter("userId", userId);
@@ -45,6 +45,14 @@ public class UserDaoImpl extends BaseDAO implements UserDAO {
 		transactional((Session session) -> {
 			session.update(user);
 			return null;
+		});
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public Optional<User> getUserById(Integer userId) {
+		return (Optional<User>) transactional((Session session) -> {
+			return Optional.ofNullable(session.find(User.class, userId));
 		});
 	}
 

@@ -3,10 +3,12 @@ package ru.quandastudio.lpsserver.handlers;
 import java.util.concurrent.ArrayBlockingQueue;
 
 import lombok.extern.slf4j.Slf4j;
-import ru.quandastudio.lpsserver.actions.FriendsRequestAction;
 import ru.quandastudio.lpsserver.core.Player;
 import ru.quandastudio.lpsserver.core.Room;
+import ru.quandastudio.lpsserver.core.ServerContext;
+import ru.quandastudio.lpsserver.netty.models.FriendModeResult;
 import ru.quandastudio.lpsserver.netty.models.LPSClientMessage.LPSPlay;
+import ru.quandastudio.lpsserver.netty.models.LPSMessage.LPSFriendModeRequest;
 
 @Slf4j
 public class PlayMessageHandler extends MessageHandler<LPSPlay> {
@@ -30,7 +32,11 @@ public class PlayMessageHandler extends MessageHandler<LPSPlay> {
 	}
 
 	private void handleAsFriendsRequest(Player player, int oppUid) {
-		new FriendsRequestAction(player, oppUid).onNewRequest();
+		if (player.isFriend(oppUid)) {
+			sendNotification(player, oppUid);
+			player.getCurrentContext().getFriendsRequests().put(player, oppUid);
+		} else
+			player.sendMessage(new LPSFriendModeRequest(0, FriendModeResult.NOT_FRIEND));
 	}
 
 	private void handleAsRandomPlayRequest(Player player) {
@@ -68,6 +74,22 @@ public class PlayMessageHandler extends MessageHandler<LPSPlay> {
 				log.info("Meeting of banned players: {} & {}", p.getUser().getName(), player.getUser().getName());
 			}
 		}
+	}
+
+	private void sendNotification(Player player, Integer oppId) {
+		final ServerContext context = player.getCurrentContext();
+
+		context.getUserManager().getUserById(oppId).ifPresentOrElse((user) -> {
+			final String firebaseToken = user.getFirebaseToken();
+			if (firebaseToken != null) {
+				log.info("Sending firebase request to user {}", oppId);
+				context.getRequestNotifier().sendNotification(player.getUser());
+			} else
+				log.warn("# Can't send request for user {}. Token not found", oppId);
+		}, () -> {
+			log.warn("# Can't send notification because user not found! user={}", oppId);
+			player.sendMessage(new LPSFriendModeRequest(0, FriendModeResult.DENIED));
+		});
 	}
 
 }
