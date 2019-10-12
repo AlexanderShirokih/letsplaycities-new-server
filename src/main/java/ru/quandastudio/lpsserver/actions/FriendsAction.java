@@ -1,6 +1,6 @@
 package ru.quandastudio.lpsserver.actions;
 
-import ru.quandastudio.lpsserver.netty.core.Player;
+import ru.quandastudio.lpsserver.core.Player;
 
 public class FriendsAction {
 	public static final int NOT_FRIEND = -1;

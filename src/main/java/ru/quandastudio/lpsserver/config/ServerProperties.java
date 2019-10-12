@@ -6,31 +6,26 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Component
+@Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
 public class ServerProperties {
 
 	private static final String CONFIG_FILE = "env.config.properties";
-	private static ServerProperties inst;
 
 	private Properties props = new Properties();
 
-	private ServerProperties() {
+	public ServerProperties() {
 		loadConfig();
 	}
 
-	public static ServerProperties getInstance() {
-		if (inst == null)
-			inst = new ServerProperties();
-		return inst;
-	}
-
-	public static void reloadConfig() {
-		getInstance().loadConfig();
-	}
-
-	private void loadConfig() {
+	public void loadConfig() {
 		try (InputStream is = new FileInputStream(new File(CONFIG_FILE))) {
 			props.load(is);
 		} catch (IOException e) {

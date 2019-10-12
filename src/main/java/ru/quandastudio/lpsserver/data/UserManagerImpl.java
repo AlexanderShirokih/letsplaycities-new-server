@@ -59,7 +59,7 @@ public class UserManagerImpl implements UserManager {
 		user.setName(login.getLogin());
 		user.setUserId(login.getUid());
 		user.setAccessId(StringUtil.getAccIdHash());
-		user.setState(State.unk);
+		user.setState(State.ready);
 		return user;
 	}
 

@@ -1,20 +1,19 @@
-package ru.quandastudio.lpsserver.core.handlers;
+package ru.quandastudio.lpsserver.handlers;
 
 import java.util.concurrent.ArrayBlockingQueue;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import ru.quandastudio.lpsserver.actions.FriendsRequestAction;
 import ru.quandastudio.lpsserver.core.Player;
 import ru.quandastudio.lpsserver.core.Room;
-import ru.quandastudio.lpsserver.data.BanlistManager;
 import ru.quandastudio.lpsserver.netty.models.LPSClientMessage.LPSPlay;
 
 @Slf4j
-@RequiredArgsConstructor
-public class PlayMessageHandler implements MessageHandler<LPSPlay> {
+public class PlayMessageHandler extends MessageHandler<LPSPlay> {
 
-	private final BanlistManager banlistManager;
+	public PlayMessageHandler() {
+		super(LPSPlay.class);
+	}
 
 	@Override
 	public void handle(Player player, LPSPlay msg) {
@@ -61,7 +60,7 @@ public class PlayMessageHandler implements MessageHandler<LPSPlay> {
 
 			log.info("NEW room: {} & {}", p.getUser().getName(), player.getUser().getName());
 
-			final Room room = new Room(banlistManager, p, player);
+			final Room room = new Room(player.getCurrentContext().getBanlistManager(), p, player);
 			player.setRoom(room);
 			p.setRoom(room);
 

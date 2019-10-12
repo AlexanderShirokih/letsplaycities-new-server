@@ -1,4 +1,4 @@
-package ru.quandastudio.lpsserver.core.handlers;
+package ru.quandastudio.lpsserver.handlers;
 
 import java.util.Optional;
 
@@ -12,7 +12,11 @@ import ru.quandastudio.lpsserver.netty.models.WordResult;
 import ru.quandastudio.lpsserver.util.ValidationUtil;
 
 @Slf4j
-public class WordMessageHandler implements MessageHandler<LPSWord> {
+public class WordMessageHandler extends MessageHandler<LPSWord> {
+
+	public WordMessageHandler() {
+		super(LPSWord.class);
+	}
 
 	@Override
 	public void handle(Player player, LPSWord msg) {

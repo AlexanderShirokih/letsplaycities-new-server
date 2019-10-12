@@ -21,8 +21,8 @@ public class BanlistManagerImpl implements BanlistManager {
 	}
 
 	@Override
-	public void removeFromBanlist(User baner, User banned) {
-		banlistDAO.removeFromBanlist(new BannedUser(baner.getUserId(), banned.getUserId(), null));
+	public void removeFromBanlist(Integer banerId, Integer bannedId) {
+		banlistDAO.removeFromBanlist(new BannedUser(banerId, bannedId, null));
 	}
 
 	@Override

@@ -154,6 +154,14 @@ public class LPSClientMessage {
 	public static final class LPSLeave extends LPSClientMessage {
 		private final String reason;
 	}
+	
+	@Action("admin")
+	@RequiredArgsConstructor
+	@Getter
+	public static final class LPSAdmin extends LPSClientMessage {
+		@NonNull
+		private final String command;
+	}
 
 	@RequiredArgsConstructor
 	@Getter

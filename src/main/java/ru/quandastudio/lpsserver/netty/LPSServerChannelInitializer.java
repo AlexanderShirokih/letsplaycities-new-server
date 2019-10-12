@@ -9,9 +9,7 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 import lombok.RequiredArgsConstructor;
-import ru.quandastudio.lpsserver.core.MessageRouter;
 import ru.quandastudio.lpsserver.core.ServerContext;
-import ru.quandastudio.lpsserver.data.UserManager;
 import ru.quandastudio.lpsserver.netty.handlers.ProtocolDetector;
 import ru.quandastudio.lpsserver.netty.handlers.ServerHandler;
 
@@ -20,13 +18,11 @@ import ru.quandastudio.lpsserver.netty.handlers.ServerHandler;
 public class LPSServerChannelInitializer extends ChannelInitializer<SocketChannel> {
 
 	private final Gson gson;
-	private final UserManager userManager;
-	private final MessageRouter messageRouter;
 	private final ServerContext serverContext;
 
 	@Override
 	protected void initChannel(SocketChannel ch) throws Exception {
 		ChannelPipeline pipeline = ch.pipeline();
-		pipeline.addLast(new ProtocolDetector(gson, new ServerHandler(userManager, messageRouter, serverContext)));
+		pipeline.addLast(new ProtocolDetector(gson, new ServerHandler(serverContext)));
 	}
 }

@@ -5,6 +5,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import ru.quandastudio.lpsserver.data.entities.User;
+import ru.quandastudio.lpsserver.data.entities.User.State;
 import ru.quandastudio.lpsserver.netty.models.LPSClientMessage;
 import ru.quandastudio.lpsserver.netty.models.LPSMessage;
 
@@ -18,9 +19,6 @@ public class Player {
 
 	@NonNull
 	private final MessageChannel channel;
-
-	@NonNull
-	private final MessageRouter messageHandler;
 
 	private User user;
 
@@ -43,7 +41,7 @@ public class Player {
 	}
 
 	public void onMessage(LPSClientMessage msg) {
-		messageHandler.handleMessage(this, msg);
+		currentContext.getMessageRouter().handleMessage(this, msg);
 	}
 
 	public void onDisconnected() {
@@ -53,5 +51,13 @@ public class Player {
 
 	public boolean checkVersion(int version) {
 		return clientBuild >= version;
+	}
+
+	public boolean isAdmin() {
+		return user.getState() == State.admin;
+	}
+
+	public boolean isAuthorized() {
+		return user != null && user.getState() != State.banned;
 	}
 }

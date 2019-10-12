@@ -2,7 +2,7 @@ package ru.quandastudio.lpsserver.actions;
 
 import java.util.ArrayList;
 
-import ru.quandastudio.lpsserver.netty.core.Player;
+import ru.quandastudio.lpsserver.core.Player;
 
 
 public class FriendsListAction {

@@ -9,7 +9,7 @@ public interface BanlistManager {
 
 	public void addToBanlist(User baner, User banned);
 
-	public void removeFromBanlist(User baner, User banned);
+	public void removeFromBanlist(Integer banerId, Integer bannedId);
 
 	public List<BannedUser> getBannedUsers(User banerId);
 

@@ -2,7 +2,7 @@ package ru.quandastudio.lpsserver.actions;
 
 
 import lombok.extern.slf4j.Slf4j;
-import ru.quandastudio.lpsserver.netty.core.Player;
+import ru.quandastudio.lpsserver.core.Player;
 
 @Slf4j
 public class FriendsRequestAction {

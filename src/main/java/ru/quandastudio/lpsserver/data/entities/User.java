@@ -33,7 +33,8 @@ public class User implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	public enum State {
-		unk, banned, ready, pva, pvp;
+		@Deprecated
+		unk, banned, ready, admin;
 	}
 
 	@Id

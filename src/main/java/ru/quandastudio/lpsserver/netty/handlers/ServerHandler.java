@@ -1,6 +1,7 @@
 package ru.quandastudio.lpsserver.netty.handlers;
 
 import java.io.IOException;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import io.netty.channel.Channel;
@@ -8,22 +9,14 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import ru.quandastudio.lpsserver.actions.LoginAction;
-import ru.quandastudio.lpsserver.core.MessageRouter;
 import ru.quandastudio.lpsserver.core.Player;
 import ru.quandastudio.lpsserver.core.ServerContext;
-import ru.quandastudio.lpsserver.data.UserManager;
 import ru.quandastudio.lpsserver.netty.NettyMessageChannel;
 import ru.quandastudio.lpsserver.netty.models.LPSClientMessage;
-import ru.quandastudio.lpsserver.netty.models.LPSClientMessage.LPSLogIn;
 
 @Slf4j
 @RequiredArgsConstructor
 public class ServerHandler extends ChannelInboundHandlerAdapter {
-
-	private final UserManager userManager;
-
-	private final MessageRouter messageRouter;
 
 	private final ServerContext serverContext;
 
@@ -35,27 +28,15 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
 
 	@Override
 	public void channelRead(ChannelHandlerContext ctx, Object msg) {
-
-		final LPSClientMessage mwp = (LPSClientMessage) msg;
-
 		Channel channel = ctx.channel();
-		Player p = players.get(channel);
-		if (p == null) {
-			if (msg instanceof LPSClientMessage.LPSLogIn)
-				processLoginAction(channel, (LPSLogIn) mwp);
-			else
-				log.warn("Waiting for LogIn message, bug received {}", mwp.getAction());
 
-		} else {
-			p.onMessage(mwp);
-		}
-	}
+		Player p = Optional.ofNullable(players.get(channel)).or(() -> {
+			final Player newPlayer = new Player(serverContext, new NettyMessageChannel(channel));
+			players.put(channel, newPlayer);
+			return Optional.of(newPlayer);
+		}).get();
 
-	private void processLoginAction(Channel channel, LPSLogIn msg) {
-		LoginAction loginAction = new LoginAction(new NettyMessageChannel(channel), messageRouter, userManager,
-				serverContext);
-
-		loginAction.logIn(msg).ifPresent((p) -> players.put(channel, p));
+		p.onMessage((LPSClientMessage) msg);
 	}
 
 	@Override

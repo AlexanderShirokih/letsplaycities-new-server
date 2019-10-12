@@ -1,11 +1,15 @@
-package ru.quandastudio.lpsserver.core.handlers;
+package ru.quandastudio.lpsserver.handlers;
 
 import ru.quandastudio.lpsserver.core.Player;
 import ru.quandastudio.lpsserver.core.Room;
 import ru.quandastudio.lpsserver.netty.models.LPSClientMessage.LPSMsg;
 import ru.quandastudio.lpsserver.netty.models.LPSMessage;
 
-public class UserMsgMessageHandler implements MessageHandler<LPSMsg> {
+public class UserMsgMessageHandler extends MessageHandler<LPSMsg> {
+
+	public UserMsgMessageHandler() {
+		super(LPSMsg.class);
+	}
 
 	@Override
 	public void handle(Player player, LPSMsg msg) {

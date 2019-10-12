@@ -1,21 +1,26 @@
-package ru.quandastudio.lpsserver.actions;
+package ru.quandastudio.lpsserver.handlers;
 
 import lombok.extern.slf4j.Slf4j;
-import ru.quandastudio.lpsserver.config.ServerProperties;
 import ru.quandastudio.lpsserver.core.Banlist;
 import ru.quandastudio.lpsserver.core.Dictionary;
+import ru.quandastudio.lpsserver.core.Player;
+import ru.quandastudio.lpsserver.netty.models.LPSClientMessage.LPSAdmin;
 
 @Slf4j
-public class AdminAction {
+public class AdminMessageHandler extends MessageHandler<LPSAdmin> {
 
-	public void onActionReceived(String spec) {
-		if (spec != null) {
-			String[] split = spec.split(">");
-			handleAction(split);
+	public AdminMessageHandler() {
+		super(LPSAdmin.class);
+	}
+
+	@Override
+	public void handle(Player player, LPSAdmin msg) {
+		if (player.isAdmin()) {
+			handleAction(player, msg.getAction().split(">"));
 		}
 	}
 
-	private void handleAction(String[] split) {
+	private void handleAction(Player player, String[] split) {
 		switch (split[0]) {
 		case "corr":
 			if (split[1].equals("on")) {
@@ -31,7 +36,7 @@ public class AdminAction {
 			spec("Reloading database and configuration file...");
 			Dictionary.reloadDictionary();
 			Banlist.reloadBanDatabase();
-			ServerProperties.reloadConfig();
+			player.getCurrentContext().getServerProperties().loadConfig();
 			break;
 		}
 	}
@@ -39,4 +44,5 @@ public class AdminAction {
 	private void spec(String msg) {
 		log.info("***SPEC: {}", msg);
 	}
+
 }
