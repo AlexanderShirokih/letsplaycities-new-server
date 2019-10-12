@@ -1,0 +1,44 @@
+<html>
+
+<head>
+  <link rel="stylesheet" href="styles-def.css">
+</head>
+
+<body>
+  <div class="fr-content">
+    <div class="main" id="main">
+
+      <div class="top-block">
+        <div class="left">
+          <img class="avatar" src="img/player.png">
+          <span id="n_other">--</span>
+        </div>
+        <div class="right">
+          <img class="avatar" src="img/player.png">
+          <span id="n_me">--</span>
+        </div>
+        <div class="btn-group">
+          <button onclick="onSurr();"><img src="img/grs_surrender.png" alt="Сдаться"></button>
+          <button onclick="onMsg();"><img src="img/grs_msg.png" alt="Сообщение"></button>
+
+          <div id="timer"></div>
+        </div>
+      </div>
+
+      <div class="main-block" id="cont">
+      </div>
+
+      <div class="input-block" id="ib">
+        <input id="city" type="text" maxlength="64" placeholder="Введите город" pattern="^[А-Яа-яЁё\s]+$" autofocus>
+        <button onclick="onEnter();">
+                    <img src="img/ic_add.png" alt="Отправить">
+                </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+
+</html>

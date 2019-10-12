@@ -29,12 +29,10 @@ public class NettyConfiguration {
 
 	@Bean
 	public ServerBootstrap lpsBootstrap() {
-		ServerBootstrap b = new ServerBootstrap();
-		b.group(bossGroup(), workerGroup())
+		return new ServerBootstrap().group(bossGroup(), workerGroup())
 				.channel(NioServerSocketChannel.class)
 				.handler(new LoggingHandler())
 				.childHandler(channelInitializer);
-		return b;
 	}
 
 	@Autowired

@@ -5,7 +5,6 @@ import java.time.Duration;
 
 import javax.annotation.PreDestroy;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.netty.bootstrap.ServerBootstrap;
@@ -18,7 +17,7 @@ import ru.quandastudio.lpsserver.netty.handlers.ServerHandler;
 import ru.quandastudio.lpsserver.util.StringUtil;
 
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @__({ @Autowired }))
+@RequiredArgsConstructor
 @Component
 public class LPSServer {
 
@@ -44,9 +43,8 @@ public class LPSServer {
 
 			scheduleSystemTasks();
 
-			lpsChannel.closeFuture().sync();
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			log.error("Error starting LPSServer. ", e);
 		}
 	}
 
@@ -65,7 +63,7 @@ public class LPSServer {
 
 	@PreDestroy
 	public void stop() {
-		log.info("Shutting down server...");
+		log.info("Shutting down LPS server...");
 		if (lpsChannel != null) {
 			lpsChannel.close();
 			lpsChannel.parent().close();
