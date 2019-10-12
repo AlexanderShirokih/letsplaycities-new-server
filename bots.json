@@ -1,0 +1,77 @@
+{
+   "bots":[
+      {
+         "name":"Котельников Ваня",
+         "avatar":"img/bot_kot_vanya.png",
+         "words_level":"1",
+         "user_id":"12408",
+         "min":"6",
+         "max":"30",
+         "pref_country":[
+
+         ]
+      },
+      {
+         "name":"Бот Максим",
+         "avatar":"img/bot_maxim.png",
+         "words_level":"2",
+         "user_id":"12407",
+         "min": "5",
+         "max": "10",
+         "pref_country":[
+            "ru",
+            "ua",
+            "by",
+            "kz"
+         ]
+      },
+      {
+         "name":"Russian Spy",
+         "avatar":"img/bot_rus.png",
+         "words_level":"1",
+         "user_id":"14397",
+         "min":"5",
+         "max":"20",
+         "pref_country":[
+            "ru"
+         ]
+      },
+      {
+         "name":"Елена Ивановна",
+         "avatar":"img/bot_kazan.png",
+         "words_level":"1",
+         "user_id":"14398",
+         "min":"8",
+         "max":"30",
+         "pref_country":[
+            "ru",
+            "kz",
+            "by",
+            "ua",
+            "us"
+         ]
+      },
+      {
+         "name":"Отдыхем вместе",
+         "avatar":"img/bot_autumn.png",
+         "words_level":"1",
+         "user_id":"14399",
+         "min":"6",
+         "max":"20",
+         "pref_country":[
+            
+         ]
+      },
+      {
+         "name":"Гуру топонимики(Просто космос)",
+         "avatar":"img/bot_t.png",
+         "words_level":"2",
+         "user_id":"14400",
+         "min":"5",
+         "max":"25",
+         "pref_country":[
+            
+         ]
+      }
+   ]
+}

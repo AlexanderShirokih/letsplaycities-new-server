@@ -11,7 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
-public class TaskLooper implements Runnable {
+public class TaskLooper extends Thread implements Runnable {
 
 	private ArrayList<DelayedTask> tasks = new ArrayList<DelayedTask>(128);
 
@@ -48,7 +48,7 @@ public class TaskLooper implements Runnable {
 		schedule(new DelayedTask(delay, period, task));
 	}
 
-	public void logstate() {
+	public void log() {
 		log.info(" TASK INFO SERVICE. task count={}", tasks.size());
 	}
 
@@ -56,5 +56,9 @@ public class TaskLooper implements Runnable {
 
 	public static TaskLooper getInstance() {
 		return taskLooperInstance;
+	}
+
+	public void shutdown() {
+		interrupt();
 	}
 }

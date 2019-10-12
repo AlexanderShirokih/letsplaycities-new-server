@@ -1,5 +1,6 @@
 package ru.quandastudio.lpsserver.util;
 
+import java.time.Duration;
 import java.util.Base64;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -38,6 +39,14 @@ public class StringUtil {
 	}
 
 	public static String toBase64(byte[] data) {
-		return Base64.getEncoder().encodeToString(data);
+		return data == null ? null : Base64.getEncoder().encodeToString(data);
+	}
+
+	public static String formatDuration(Duration duration) {
+		long seconds = duration.getSeconds();
+		long absSeconds = Math.abs(seconds);
+		String positive = String.format("%d hours, %02d min, %02d sec", absSeconds / 3600, (absSeconds % 3600) / 60,
+				absSeconds % 60);
+		return seconds < 0 ? "-" + positive : positive;
 	}
 }
