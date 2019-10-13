@@ -17,7 +17,7 @@ public class AdminMessageHandler extends MessageHandler<LPSAdmin> {
 	@Override
 	public void handle(Player player, LPSAdmin msg) {
 		if (player.isAdmin()) {
-			handleAction(player, msg.getAction().split(">"));
+			handleAction(player, msg.getCommand().split(">"));
 		}
 	}
 
@@ -42,6 +42,14 @@ public class AdminMessageHandler extends MessageHandler<LPSAdmin> {
 			dictionary.reloadDictionary();
 			context.getServerProperties().loadConfig();
 			break;
+		case "ban":
+			boolean isOn = split[1].equals("on");
+			Integer userId = Integer.parseInt(split[2]);
+			spec(isOn ? "Ban" : "Unban" + " user with ID=" + userId);
+			player.getCurrentContext().getUserManager().setBanned(userId, isOn);
+			break;
+		default:
+			spec("Receiver unknown ADMIN command [" + split + "]");
 		}
 	}
 

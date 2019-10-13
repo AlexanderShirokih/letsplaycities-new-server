@@ -79,4 +79,11 @@ public class UserManagerImpl implements UserManager {
 		return userDAO.findById(userId);
 	}
 
+	@Override
+	public void setBanned(Integer userId, boolean isOn) {
+		userDAO.findById(userId).ifPresent((user) -> {
+			user.setState(isOn ? State.banned : State.ready);
+		});
+	}
+
 }

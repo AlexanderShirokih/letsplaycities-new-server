@@ -48,11 +48,25 @@ public class FriendMessageHandler extends MessageHandler<LPSFriendAction> {
 			final User oppUser = oppPlayer.getUser();
 			final Optional<Friendship> friendInfo = friendshipManager.getFriendsInfo(player.getUser(), oppUser);
 
-			if (!friendInfo.isPresent()) {
+			friendInfo.ifPresentOrElse((info) -> {
+				// We already have request
+				if (!info.getIsAccepted()) {
+					// That's case when we receive repeated request
+
+					if (!info.getSender().equals(player.getUser())) {
+						// Case of swapping receiver and sender.
+						// We should swap their id's in database to be able to receive request result
+						// from another user.
+						friendshipManager.swapSenderAndReceiver(info.getReceiver(), info.getSender());
+					}
+					// Send notification again.
+					oppPlayer.sendMessage(new LPSFriendRequest(FriendRequest.NEW_REQUEST));
+				}
+			}, () -> {
 				// Users are not friends. Send new request.
 				friendshipManager.addNewRequest(new Friendship(player.getUser(), oppUser));
 				oppPlayer.sendMessage(new LPSFriendRequest(FriendRequest.NEW_REQUEST));
-			}
+			});
 
 		}, this::printNotPresentWarning);
 

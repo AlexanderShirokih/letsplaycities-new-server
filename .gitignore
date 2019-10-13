@@ -32,3 +32,4 @@ build/
 
 logs/
 .directory
+/lps_srv_pass.txt

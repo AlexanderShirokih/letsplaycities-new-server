@@ -21,6 +21,9 @@ public class FriendshipManagerImpl implements FriendshipManager {
 
 	@Override
 	public void addNewRequest(Friendship friendship) {
+		// Assert that we don't have any handing request
+		deleteFriend(friendship.getSender(), friendship.getReceiver());
+
 		friendshipDAO.save(friendship);
 	}
 
@@ -51,6 +54,11 @@ public class FriendshipManagerImpl implements FriendshipManager {
 	@Override
 	public List<Friendship> getFriendsList(User user) {
 		return friendshipDAO.findAllBySenderOrReceiver(user);
+	}
+
+	@Override
+	public void swapSenderAndReceiver(User newSender, User newReceiver) {
+		friendshipDAO.swapSenderAndReceiver(newSender, newReceiver);
 	}
 
 }
