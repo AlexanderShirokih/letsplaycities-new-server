@@ -7,11 +7,12 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public class UpdateMessage {
 
+	private final Dictionary dictionary;
+
 	@RequiredArgsConstructor
 	@Getter
 	public static class Dictionary {
 		private final Integer version;
 	}
-	
-	private final Dictionary dictionary;
+
 }

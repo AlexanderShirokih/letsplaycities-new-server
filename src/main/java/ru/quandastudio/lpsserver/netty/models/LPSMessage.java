@@ -8,15 +8,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 public class LPSMessage {
-	private LPSMessage() {
-	}
-
-	public enum FriendRequest {
-		NEW_REQUEST, ACCEPTED, DENIED;
-	}
 
 	@Getter
 	private final String action = getClass().getAnnotation(Action.class).value();
+
+	private LPSMessage() {
+	}
 
 	@Action("logged_in")
 	@RequiredArgsConstructor
@@ -61,7 +58,7 @@ public class LPSMessage {
 		private final Boolean youStarter;
 		private final boolean banned;
 
-		transient final boolean allowSendSnUid;
+		private transient final boolean allowSendSnUid;
 	}
 
 	@Action("word")
@@ -135,6 +132,10 @@ public class LPSMessage {
 
 	@Action("timeout")
 	public static final class LPSTimeoutMessage extends LPSMessage {
+	}
+
+	public enum FriendRequest {
+		NEW_REQUEST, ACCEPTED, DENIED;
 	}
 
 }

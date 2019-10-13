@@ -184,7 +184,7 @@ function handleMessage(data) {
   } else if (data.msg) {
     appendMessage(data.msg, false);
   } else if (data.sync) {
-    gameTime = maxTime - parseInt(data.sync);
+    gameTime = maxTime - parseInt(data.sync, 10);
   } else if (data.word_result) {
     switch (Number(data.word_result)) {
       case 0: //Received

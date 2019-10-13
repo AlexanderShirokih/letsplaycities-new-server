@@ -16,12 +16,13 @@ import lombok.ToString;
 import ru.quandastudio.lpsserver.validation.CheckInBanlist;
 
 public class LPSClientMessage {
-	private LPSClientMessage() {
-	}
 
 	@Getter
 	private final String action = getClass().getAnnotation(Action.class).value();
 
+	private LPSClientMessage() {
+	}
+	
 	@Action("login")
 	@Builder
 	@AllArgsConstructor(access = AccessLevel.PRIVATE)

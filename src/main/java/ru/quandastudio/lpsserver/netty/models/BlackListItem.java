@@ -8,6 +8,6 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @NonNull
 public class BlackListItem {
-	final String login;
-	final int userId;
+	private final String login;
+	private final int userId;
 }

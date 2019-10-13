@@ -11,7 +11,7 @@ public class StringUtil {
 
 	public static String max(String str, int max) {
 		if (str.length() > max)
-			str = str.substring(0, max - 1);
+			return str.substring(0, max - 1);
 		return str;
 	}
 

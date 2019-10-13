@@ -4,31 +4,14 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.UUID;
+
 import io.netty.buffer.ByteBuf;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import ru.quandastudio.lpsserver.protocol.LPSProtocolException;
 
 public class LPSMessageReader {
-
-	enum LPSType {
-		Bool, Byte, Char, Int, Long, UUID, Bin, Buf
-	}
-
-	class LPSTag {
-		int tag;
-		int length;
-		byte[] data;
-
-		@Override
-		public String toString() {
-			StringBuilder builder = new StringBuilder();
-			builder.append("TAG[tag=");
-			builder.append(tag);
-			builder.append(", data=");
-			builder.append(data);
-			builder.append("]");
-			return builder.toString();
-		}
-	}
 
 	private LPSTag[] tags;
 	private int numTags;
@@ -50,15 +33,11 @@ public class LPSMessageReader {
 			int tag = buf.readUnsignedByte();
 			if (tag == 0)
 				throw new LPSProtocolException("LPS tag cannot be 0");
-			LPSTag ltag = new LPSTag();
 			int length = buf.readUnsignedShort();
 			byte[] data = new byte[length];
 			buf.readBytes(data);
 
-			ltag.tag = tag;
-			ltag.length = length;
-			ltag.data = data;
-			tags[i] = ltag;
+			tags[i] = new LPSTag(tag, length, data);
 		}
 	}
 
@@ -87,7 +66,7 @@ public class LPSMessageReader {
 		for (int i = 0; i < numTags; i++) {
 			if (tags[i].tag == tag) {
 				byte[] data = tags[i].data;
-				Object val = null;
+				Object val;
 				switch (type) {
 				case Bool:
 					val = data[0] != 0;
@@ -113,6 +92,9 @@ public class LPSMessageReader {
 					break;
 				case Buf:
 					val = ByteBuffer.wrap(data);
+					break;
+				default:
+					val = null;
 				}
 				return val;
 			}
@@ -236,8 +218,32 @@ public class LPSMessageReader {
 
 	public void clear() {
 		for (LPSTag t : tags) {
-			t.data = null;
+			t.setData(null);
 		}
 		tags = null;
+	}
+
+	enum LPSType {
+		Bool, Byte, Char, Int, Long, UUID, Bin, Buf
+	}
+
+	@AllArgsConstructor
+	@Getter
+	@Setter
+	static class LPSTag {
+		private final int tag;
+		private final int length;
+		private byte[] data;
+
+		@Override
+		public String toString() {
+			StringBuilder builder = new StringBuilder();
+			builder.append("TAG[tag=");
+			builder.append(tag);
+			builder.append(", data=");
+			builder.append(data);
+			builder.append("]");
+			return builder.toString();
+		}
 	}
 }

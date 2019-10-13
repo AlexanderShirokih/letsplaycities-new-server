@@ -5,15 +5,18 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.UUID;
 
+import lombok.RequiredArgsConstructor;
+
 public class LPSMessageWriter {
 	enum LPSTagType {
 		BYTE, CHAR, INT, LONG, UUID, STRING, BIN
 	}
 
-	class LPSTag {
-		int tag;
-		Object content;
-		LPSTagType type;
+	@RequiredArgsConstructor
+	static class LPSTag {
+		private final int tag;
+		private final Object content;
+		private final LPSTagType type;
 	}
 
 	private DataOutputStream dos;
@@ -24,13 +27,7 @@ public class LPSMessageWriter {
 	}
 
 	private void addData(int tag, Object data, LPSTagType type) {
-		LPSTag ltag = new LPSTag();
-		ltag.content = data;
-		ltag.tag = tag;
-		ltag.type = type;
-
-		tags.add(ltag);
-		
+		tags.add(new LPSTag(tag, data, type));
 	}
 
 	private void writeHead() throws IOException {
@@ -91,11 +88,12 @@ public class LPSMessageWriter {
 		build();
 		dos.flush();
 	}
+
 	public LPSMessageWriter writeBool(int tag, boolean data) {
 		addData(tag, data ? 1 : 0, LPSTagType.BYTE);
 		return this;
 	}
-	
+
 	public LPSMessageWriter writeByte(int tag, int data) {
 		addData(tag, data, LPSTagType.BYTE);
 		return this;

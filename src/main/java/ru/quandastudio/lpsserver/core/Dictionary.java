@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import ru.quandastudio.lpsserver.LPSException;
@@ -21,20 +22,6 @@ import ru.quandastudio.lpsserver.LPSException;
 @Component
 @Scope("singleton")
 public class Dictionary {
-	public static class DatabasePair {
-		ArrayList<String> data;
-		ArrayList<CityInfo> additionalData;
-
-		public DatabasePair(ArrayList<String> data, ArrayList<CityInfo> additionalData) {
-			this.data = data;
-			this.additionalData = additionalData;
-		}
-	}
-
-	public static class CityInfo {
-		byte diff;
-		short countryCode;
-	}
 
 	private static final Random rand = new Random();
 
@@ -45,7 +32,7 @@ public class Dictionary {
 	private ArrayList<CityInfo> additionalData;
 	private ArrayList<String> data;
 
-	DatabasePair loadDictionary() {
+	protected DatabasePair loadDictionary() {
 		log.info("Loading dictionary...");
 
 		if (!isCorrectionEnabled)
@@ -185,5 +172,17 @@ public class Dictionary {
 			return Optional.of(file);
 
 		return Optional.empty();
+	}
+
+	@RequiredArgsConstructor
+	@Getter
+	public static class DatabasePair {
+		private final ArrayList<String> data;
+		private final ArrayList<CityInfo> additionalData;
+	}
+
+	public static class CityInfo {
+		byte diff;
+		short countryCode;
 	}
 }

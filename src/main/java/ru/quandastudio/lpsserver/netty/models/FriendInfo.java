@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 @NonNull
 @EqualsAndHashCode
 public class FriendInfo {
-	final int userId;
-	final String login;
-	final boolean accepted;
+	private final int userId;
+	private final String login;
+	private final boolean accepted;
 }

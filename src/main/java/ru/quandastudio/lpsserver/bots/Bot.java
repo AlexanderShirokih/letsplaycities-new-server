@@ -18,7 +18,10 @@ public class Bot extends Player {
 	private static final int BOT_VERSION_CODE = 133;
 
 	@Getter
-	private int min, max;
+	private int min;
+
+	@Getter
+	private int max;
 
 	private boolean isFree = true;
 	private long lastTime;
@@ -27,9 +30,9 @@ public class Bot extends Player {
 
 	public Bot(ServerContext context, BotInfo info) {
 		super(context, new BotMessageChannel());
-		
+
 		((BotMessageChannel) getChannel()).setBot(this);
-		
+
 		User user = new User();
 		user.setName(info.name);
 		user.setUserId(info.user_id);
