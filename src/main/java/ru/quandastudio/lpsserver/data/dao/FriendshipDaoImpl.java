@@ -32,7 +32,7 @@ public class FriendshipDaoImpl extends BaseDAO implements FriendshipDAO {
 	public Optional<Friendship> getFriendsInfo(User first, User second) {
 		return (Optional<Friendship>) transactional((Session session) -> {
 			return session.createQuery(
-					"from Friendship where (sender=:sender and receiver=:receiver) or (sender=:receiver and receiver=:sender))")
+					"from Friendship where (sender=:sender and receiver=:receiver) or (sender=:receiver and receiver=:sender)")
 					.setParameter("sender", first)
 					.setParameter("receiver", second)
 					.uniqueResultOptional();

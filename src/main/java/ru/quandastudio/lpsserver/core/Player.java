@@ -35,7 +35,7 @@ public class Player {
 
 	private Integer clientBuild;
 
-	private transient boolean isOnline;
+	private transient boolean isOnline = true;
 
 	private Room room;
 

@@ -15,20 +15,21 @@ public class Room {
 
 	public static final int MOVE_TIME_MS = 92000;
 	private static final int MOVE_TIMER_PERIOD = 5000;
-	private static final Dictionary dic = new Dictionary();
 
 	private final Player starter;
 	private final Player invited;
 
 	private ArrayList<String> usedWords = new ArrayList<>();
 
+	private Dictionary dictionary;
 	private Player current;
 	private char lastChar;
 	private int moveCounter = 0;
 
 	public boolean start() {
+		final ServerContext context = starter.getCurrentContext();
+		dictionary = context.getDictionary();
 		current = starter;
-		final ServerContext context = current.getCurrentContext();
 
 		boolean isFriends = context.getFriendshipManager()
 				.getFriendsInfo(starter.getUser(), invited.getUser())
@@ -52,7 +53,7 @@ public class Room {
 			if (isValid(word)) {
 				if (usedWords.contains(word)) {
 					submitWord(player, word, WordResult.ALREADY);
-				} else if (dic.contains(word)) {
+				} else if (dictionary.contains(word)) {
 					int end = word.length();
 					do {
 						if (end == 0) {

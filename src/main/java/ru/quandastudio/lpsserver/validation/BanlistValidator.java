@@ -9,7 +9,7 @@ public class BanlistValidator implements ConstraintValidator<CheckInBanlist, Str
 
 	@Override
 	public boolean isValid(String value, ConstraintValidatorContext context) {
-		return Banlist.checkLogin(value);
+		return value != null && Banlist.checkLogin(value);
 	}
 
 }

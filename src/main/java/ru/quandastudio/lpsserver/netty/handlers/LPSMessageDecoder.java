@@ -32,6 +32,7 @@ import static ru.quandastudio.lpsserver.protocol.lps.LPSv3Tags.SENDER_UID;
 import static ru.quandastudio.lpsserver.protocol.lps.LPSv3Tags.SN;
 import static ru.quandastudio.lpsserver.protocol.lps.LPSv3Tags.SN_UID;
 import static ru.quandastudio.lpsserver.protocol.lps.LPSv3Tags.UID;
+import static ru.quandastudio.lpsserver.protocol.lps.LPSv3Tags.LOGIN;
 
 import java.util.List;
 
@@ -147,6 +148,7 @@ public class LPSMessageDecoder extends ReplayingDecoder<Void> {
 	private LPSClientMessage readLoginAction(LPSMessageReader msg) {
 		return LPSClientMessage.LPSLogIn.builder()
 				.version(Integer.valueOf(msg.readByte(ACTION_LOGIN)))
+				.login(msg.optString(LOGIN))
 				.hash(msg.optString(ACC_HASH))
 				.accToken(msg.optString(ACCESS_TOKEN))
 				.snUID(msg.optString(SN_UID))
