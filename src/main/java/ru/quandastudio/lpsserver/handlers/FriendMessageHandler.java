@@ -80,7 +80,7 @@ public class FriendMessageHandler extends MessageHandler<LPSFriendAction> {
 		final Optional<Player> oppPlayer = player.getOppositePlayer();
 		final User oppUser = oppPlayer.map((opp) -> opp.getUser()).orElse(new User(oppId));
 
-		friendshipManager.markAcceptedIfExistsOrDelete(player.getUser(), oppUser, isAccepted);
+		friendshipManager.markAcceptedIfExistsOrDelete(oppUser, player.getUser(), isAccepted);
 
 		oppPlayer.ifPresent((opp) -> opp
 				.sendMessage(new LPSFriendRequest(isAccepted ? FriendRequest.ACCEPTED : FriendRequest.DENIED)));

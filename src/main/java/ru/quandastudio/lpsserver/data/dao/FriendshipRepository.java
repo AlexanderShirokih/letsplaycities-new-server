@@ -28,6 +28,8 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
 	public List<Friendship> findAllBySenderOrReceiver(User user);
 
 	@Modifying(clearAutomatically = true)
-	@Query("update Friendship f set f.sender = ?2, f.receiver = ?1 where f.sender = ?1 and f.receiver = ?2")
+	@Query("update Friendship f set f.sender = ?1, f.receiver = ?2 where f.sender = ?2 and f.receiver = ?1")
 	public void swapSenderAndReceiver(User newSender, User newReceiver);
+
+	public Optional<Friendship> findBySenderAndReceiver(User sender, User receiver);
 }
