@@ -68,7 +68,6 @@ public class UserManagerImpl implements UserManager {
 		user.setFirebaseToken(login.getFirebaseToken());
 		user.setSnUid(login.getSnUID());
 		user.setName(login.getLogin());
-		user.setUserId(login.getUid());
 		user.setAccessId(StringUtil.getAccIdHash());
 		user.setState(State.ready);
 		return user;
