@@ -37,18 +37,27 @@ public class UserManagerImpl implements UserManager {
 
 	private Result<User> processAuthorizedUser(LPSLogIn login) {
 		final Optional<User> user = userDAO.getUserByIdAndHash(login.getUid(), login.getHash());
-		user.ifPresent((u) -> userDAO.update(u));
+		user.ifPresent((u) -> updateDataIfPresent(u, login));
 		return Result.from(user, "Ошибка авторизации: Пользователь не найден или токены устарели");
 	}
 
 	private Result<User> processUnauthorizedUser(LPSLogIn login) {
 		final Optional<User> user = userDAO.getUserBySnUID(login.getSnUID(), login.getAuthType());
-		user.ifPresent((u) -> userDAO.update(u));
+
+		user.ifPresent((u) -> updateDataIfPresent(u, login));
+
 		return user.or(() -> {
 			final User newUser = createUser(login);
 			userDAO.addUser(newUser);
 			return Optional.of(newUser);
 		}).map((u) -> Result.success(u)).get();
+	}
+
+	private void updateDataIfPresent(User user, LPSLogIn login) {
+		// Update login and fbToken
+		user.setName(login.getLogin());
+		user.setFirebaseToken(login.getFirebaseToken());
+		userDAO.update(user);
 	}
 
 	private User createUser(LPSLogIn login) {
