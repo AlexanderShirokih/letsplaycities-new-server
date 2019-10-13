@@ -49,7 +49,7 @@ public class Room {
 
 	// Игрок дал свой ответ
 	public void word(Player player, String word) {
-		if (player == current) {
+		if (player.equals(current)) {
 			if (isValid(word)) {
 				if (usedWords.contains(word)) {
 					submitWord(player, word, WordResult.ALREADY);
@@ -124,7 +124,7 @@ public class Room {
 	}
 
 	public Player oppositePlayer(Player player) {
-		return player == starter ? invited : starter;
+		return player.equals(starter) ? invited : starter;
 	}
 
 	/**

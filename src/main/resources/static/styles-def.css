@@ -179,7 +179,7 @@ body {
   animation: spin 2s linear infinite;
   position: relative;
   left: 30%;
-  margin: 15px !important;
+  margin: 15px;
 }
 
 @keyframes spin {

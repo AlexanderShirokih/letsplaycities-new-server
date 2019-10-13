@@ -42,7 +42,7 @@ window.onload = function() {
   input = document.getElementById("city");
   input.addEventListener("keypress", function(e) {
     var keycode = (e.keyCode ? e.keyCode : e.which);
-    if (keycode == 13) {
+    if (keycode === 13) {
       onEnter();
     }
   });
@@ -207,8 +207,8 @@ function handleMessage(data) {
         protocolError();
     }
   } else if (data.login_result) {
-    if (Boolean(data.login_result) == true) {
-      if (Number(data.version) != 4) {
+    if (Boolean(data.login_result) === true) {
+      if (Number(data.version) !== 4) {
         protocolError();
       } else if (data.newer_build <= playerInfo.client_build) {
         if (data.uid && data.acc_hash) {

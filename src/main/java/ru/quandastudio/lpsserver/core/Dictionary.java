@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import ru.quandastudio.lpsserver.LPSException;
 
 @Slf4j
 @Component
@@ -53,7 +54,6 @@ public class Dictionary {
 		ArrayList<String> data = null;
 		ArrayList<CityInfo> additionalData = null;
 		final String database = getDatabasePath(String.valueOf(getLastDatabaseVersion()));
-		;
 
 		log.info("Reading database file {}", database);
 
@@ -62,7 +62,7 @@ public class Dictionary {
 			int version = in.readInt();
 			int countTest = in.readInt();
 			if (count != countTest >> 12)
-				throw new RuntimeException("Invalid dictionary file! Header doesn't matches");
+				throw new LPSException("Invalid dictionary file! Header doesn't matches");
 
 			log.info("File version: " + version);
 			log.info("Found " + count + " entities");
@@ -84,7 +84,7 @@ public class Dictionary {
 				if (i == count) {
 					if (Integer.parseInt(name.substring(0, name.length() - 6)) != count) {
 						in.close();
-						throw new RuntimeException("Error parsing file!");
+						throw new LPSException("Error parsing file!");
 					}
 				} else {
 					data.add(name);

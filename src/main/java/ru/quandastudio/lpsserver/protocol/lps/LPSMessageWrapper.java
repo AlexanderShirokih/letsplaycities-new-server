@@ -206,7 +206,7 @@ public class LPSMessageWrapper {
 					case 8:
 						return buffer.getLong(dataOffset);
 					default:
-						throw new RuntimeException("Invalid message length for integer type. len=" + length);
+						throw new LPSProtocolException("Invalid message length for integer type. len=" + length);
 					}
 				}
 			} else {

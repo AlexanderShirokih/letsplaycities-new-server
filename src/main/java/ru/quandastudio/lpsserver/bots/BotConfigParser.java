@@ -8,6 +8,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.core.io.ClassPathResource;
 
+import ru.quandastudio.lpsserver.LPSException;
+
 public class BotConfigParser {
 
 	public BotInfo[] parseBotsList(File file) throws IOException {
@@ -74,6 +76,6 @@ public class BotConfigParser {
 		case "us":
 			return 44;
 		}
-		throw new RuntimeException("Unknown country code: " + code);
+		throw new LPSException("Unknown country code: " + code);
 	}
 }

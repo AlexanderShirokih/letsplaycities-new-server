@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
+import ru.quandastudio.lpsserver.LPSException;
 
 @Slf4j
 @Component
@@ -37,7 +38,7 @@ public class ServerProperties {
 	public int getNewerBuild() {
 		return getIntOrThrow("client.newer_build");
 	}
-	
+
 	public boolean isLoggingMsgsEnabled() {
 		return getBoolOrThrow("server.msg_on_log");
 	}
@@ -49,12 +50,12 @@ public class ServerProperties {
 	private int getIntOrThrow(String key) {
 		String ret = props.getProperty(key);
 		if (ret == null)
-			throw new RuntimeException("Requested property \"" + key + "\" not found!");
+			throw new LPSException("Requested property \"" + key + "\" not found!");
 		int retVal = 0;
 		try {
 			retVal = Integer.parseInt(ret);
 		} catch (NumberFormatException e) {
-			throw new RuntimeException("Property \"" + key + "\" value is not an integer!");
+			throw new LPSException("Property \"" + key + "\" value is not an integer!");
 		}
 		return retVal;
 	}
@@ -62,7 +63,7 @@ public class ServerProperties {
 	private boolean getBoolOrThrow(String key) {
 		String ret = props.getProperty(key);
 		if (ret == null)
-			throw new RuntimeException("Requested property \"" + key + "\" not found!");
+			throw new LPSException("Requested property \"" + key + "\" not found!");
 		return Boolean.parseBoolean(ret);
 	}
 }

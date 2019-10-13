@@ -1,5 +1,6 @@
 package ru.quandastudio.lpsserver.core;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import lombok.Getter;
@@ -81,4 +82,22 @@ public class Player {
 	public Optional<Player> getOppositePlayer() {
 		return room != null ? Optional.of(room.oppositePlayer(this)) : Optional.empty();
 	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(user);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Player other = (Player) obj;
+		return Objects.equals(user, other.user);
+	}
+
 }
