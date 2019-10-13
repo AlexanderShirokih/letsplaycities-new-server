@@ -47,7 +47,7 @@ public class Friendship implements Serializable {
 	private Timestamp creationDate;
 
 	public Friendship(User sender, User receiver) {
-		this(null, sender, receiver, null, null);
+		this(null, sender, receiver, false, null);
 	}
 
 }

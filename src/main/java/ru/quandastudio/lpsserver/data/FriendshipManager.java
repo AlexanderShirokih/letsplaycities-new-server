@@ -14,7 +14,7 @@ public interface FriendshipManager {
 
 	public Optional<Friendship> getFriendsInfo(User first, User second);
 
-	public void markAccepted(User sender, User receiver);
-
 	public List<Friendship> getFriendsList(User user);
+	
+	public void markAcceptedIfExistsOrDelete(User first, User second, boolean isAccepted);
 }

@@ -2,37 +2,40 @@ package ru.quandastudio.lpsserver.data;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import javax.transaction.Transactional;
 
-import ru.quandastudio.lpsserver.data.dao.BanlistDAO;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import ru.quandastudio.lpsserver.data.dao.BannedUserRepository;
 import ru.quandastudio.lpsserver.data.entities.BannedUser;
 import ru.quandastudio.lpsserver.data.entities.User;
 
-@Component
+@Service
+@Transactional
 public class BanlistManagerImpl implements BanlistManager {
 
 	@Autowired
-	private BanlistDAO banlistDAO;
+	private BannedUserRepository banlistDAO;
 
 	@Override
 	public void addToBanlist(User baner, User banned) {
-		banlistDAO.addToBanlist(new BannedUser(baner.getUserId(), banned.getUserId(), banned.getName()));
+		banlistDAO.save(new BannedUser(baner.getUserId(), banned.getUserId(), banned.getName()));
 	}
 
 	@Override
 	public void removeFromBanlist(Integer banerId, Integer bannedId) {
-		banlistDAO.removeFromBanlist(new BannedUser(banerId, bannedId, null));
+		banlistDAO.deleteByBanerIdAndBannedId(banerId, bannedId);
 	}
 
 	@Override
 	public List<BannedUser> getBannedUsers(User banerId) {
-		return banlistDAO.getBannedUsers(banerId.getUserId());
+		return banlistDAO.findByBanerIdOrBannedId(banerId.getUserId());
 	}
 
 	@Override
 	public boolean isBanned(User user1, User user2) {
-		return banlistDAO.isBanned(user1.getUserId(), user2.getUserId());
+		return banlistDAO.existsByUserId(user1.getUserId(), user2.getUserId());
 	}
 
 }

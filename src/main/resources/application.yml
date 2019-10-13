@@ -1,5 +1,14 @@
-netty.lps-port=62964
-netty.boss-count=1
-netty.worker-count=0
-netty.keep-alive=true
-fcm.service-account-file = letsplaycities-firebase-adminsdk-rac3a-2a2b1d2475.json
+fcm:
+  service-account-file: letsplaycities-firebase-adminsdk-rac3a-2a2b1d2475.json
+netty:
+  boss-count: 1
+  keep-alive: true
+  lps-port: 62964
+  worker-count: 0
+  
+spring:
+  datasource:
+    driverClassName: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost/lps_data?useUnicode=true&characterEncoding=UTF-8&verifyServerCertificate=false&useSSL=false&requireSSL=false&useLegacyDatetimeCode=false&serverTimezone=UTC
+    username: ${db.user}
+    password: ${db.pass}

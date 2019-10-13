@@ -1,11 +1,13 @@
 package ru.quandastudio.lpsserver.handlers;
 
+import java.util.Optional;
 import java.util.concurrent.ArrayBlockingQueue;
 
 import lombok.extern.slf4j.Slf4j;
 import ru.quandastudio.lpsserver.core.Player;
 import ru.quandastudio.lpsserver.core.Room;
 import ru.quandastudio.lpsserver.core.ServerContext;
+import ru.quandastudio.lpsserver.data.entities.User;
 import ru.quandastudio.lpsserver.netty.models.FriendModeResult;
 import ru.quandastudio.lpsserver.netty.models.LPSClientMessage.LPSPlay;
 import ru.quandastudio.lpsserver.netty.models.LPSMessage.LPSFriendModeRequest;
@@ -78,12 +80,12 @@ public class PlayMessageHandler extends MessageHandler<LPSPlay> {
 
 	private void sendNotification(Player player, Integer oppId) {
 		final ServerContext context = player.getCurrentContext();
-
-		context.getUserManager().getUserById(oppId).ifPresentOrElse((user) -> {
+		final Optional<User> opp = context.getUserManager().getUserById(oppId);
+		opp.ifPresentOrElse((user) -> {
 			final String firebaseToken = user.getFirebaseToken();
 			if (firebaseToken != null) {
 				log.info("Sending firebase request to user {}", oppId);
-				context.getRequestNotifier().sendNotification(player.getUser());
+				context.getRequestNotifier().sendNotification(player.getUser(), user);
 			} else
 				log.warn("# Can't send request for user {}. Token not found", oppId);
 		}, () -> {

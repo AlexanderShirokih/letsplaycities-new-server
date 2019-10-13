@@ -20,8 +20,8 @@ public class FirebaseRequestNotifier implements RequestNotifier {
 	private final FirebaseMessaging firebaseMessaging;
 
 	@Override
-	public void sendNotification(User user) {
-		Message msg = buildMessage(user.getUserId(), user.getName(), user.getFirebaseToken());
+	public void sendNotification(User sender, User receiver) {
+		Message msg = buildMessage(sender.getUserId(), sender.getName(), receiver.getFirebaseToken());
 		firebaseMessaging.sendAsync(msg);
 	}
 
