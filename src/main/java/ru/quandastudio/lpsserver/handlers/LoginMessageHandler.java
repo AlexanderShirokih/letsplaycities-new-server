@@ -72,8 +72,9 @@ public class LoginMessageHandler extends MessageHandler<LPSLogIn> {
 		player.sendMessage(new LPSMessage.LPSLoggedIn(newerBuild, userData.getUserId(), userData.getAccessId()));
 
 		if (context.getServerProperties().isLoggingMsgsEnabled())
-			log.info("Logged player: [{}, id={}]; version={}{}", userData.getName(), userData.getUserId(),
-					player.getClientVersion(), player.isAdmin() ? " as Admin" : "");
+			log.info("Logged player: [{}, id={} sn={}, snUID={}]; version={}{}", userData.getName(),
+					userData.getUserId(), userData.getAuthType(), userData.getSnUid(), player.getClientVersion(),
+					player.isAdmin() ? " as Admin" : "");
 	}
 
 	private void loginError(Player player, String errMsg) {
