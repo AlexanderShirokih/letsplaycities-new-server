@@ -22,7 +22,7 @@ public class LPSClientMessage {
 
 	private LPSClientMessage() {
 	}
-	
+
 	@Action("login")
 	@Builder
 	@AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -48,8 +48,8 @@ public class LPSClientMessage {
 		@NotNull
 		@Size(max = 20, message = "Client version value is too long!")
 		private final String clientVersion;
-		@NotNull
-		private final Boolean canReceiveMessages;
+		@Builder.Default
+		private final Boolean canReceiveMessages = true;
 
 		@Size(max = 200)
 		private final String firebaseToken;
@@ -155,7 +155,7 @@ public class LPSClientMessage {
 	public static final class LPSLeave extends LPSClientMessage {
 		private final String reason;
 	}
-	
+
 	@Action("admin")
 	@RequiredArgsConstructor
 	@Getter
