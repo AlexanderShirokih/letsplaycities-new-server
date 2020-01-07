@@ -29,7 +29,7 @@ public class SocketHandler extends TextWebSocketHandler {
 	private final ServerContext serverContext;
 
 	public static void logstate() {
-		log.info("ONLINE: {}", players.size());
+		log.info("WS: ONLINE: {}", players.size());
 	}
 
 	@Override

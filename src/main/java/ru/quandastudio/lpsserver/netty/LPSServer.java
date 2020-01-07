@@ -15,6 +15,8 @@ import ru.quandastudio.lpsserver.core.ServerContext;
 import ru.quandastudio.lpsserver.core.TaskLooper;
 import ru.quandastudio.lpsserver.netty.handlers.ServerHandler;
 import ru.quandastudio.lpsserver.util.StringUtil;
+import ru.quandastudio.lpsserver.websocket.SocketHandler;
+import ru.quandastudio.lpsserver.websocket.WebSocketMessageChannel;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -54,6 +56,7 @@ public class LPSServer {
 
 		looper.shedule(5000, 120000, (task) -> {
 			ServerHandler.logstate();
+			SocketHandler.logstate();
 			looper.log();
 			context.log();
 			context.getBotManager().log();
