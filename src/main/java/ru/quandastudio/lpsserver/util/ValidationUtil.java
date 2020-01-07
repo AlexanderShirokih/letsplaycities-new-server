@@ -2,6 +2,7 @@ package ru.quandastudio.lpsserver.util;
 
 import java.util.Iterator;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -16,7 +17,7 @@ public final class ValidationUtil {
 		ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
 		Validator validator = factory.getValidator();
 
-		var v = validator.validate(msg);
+		Set<ConstraintViolation<LPSClientMessage>> v = validator.validate(msg);
 		Iterator<ConstraintViolation<LPSClientMessage>> validates = v.iterator();
 
 		if (validates.hasNext())

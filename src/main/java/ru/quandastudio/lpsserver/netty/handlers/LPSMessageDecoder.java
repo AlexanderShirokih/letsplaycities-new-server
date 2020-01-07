@@ -146,7 +146,7 @@ public class LPSMessageDecoder extends ReplayingDecoder<Void> {
 	}
 
 	private LPSClientMessage readLoginAction(LPSMessageReader msg) {
-		var login = new LPSClientMessage.LPSLogIn();
+		LPSClientMessage.LPSLogIn login = new LPSClientMessage.LPSLogIn();
 		login.setVersion(Integer.valueOf(msg.readByte(ACTION_LOGIN)));
 		login.setLogin(msg.optString(LOGIN));
 		login.setHash(msg.optString(ACC_HASH));

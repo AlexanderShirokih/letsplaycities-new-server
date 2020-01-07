@@ -16,7 +16,6 @@ import ru.quandastudio.lpsserver.core.TaskLooper;
 import ru.quandastudio.lpsserver.netty.handlers.ServerHandler;
 import ru.quandastudio.lpsserver.util.StringUtil;
 import ru.quandastudio.lpsserver.websocket.SocketHandler;
-import ru.quandastudio.lpsserver.websocket.WebSocketMessageChannel;
 
 @Slf4j
 @RequiredArgsConstructor
