@@ -35,7 +35,6 @@ public class SocketHandler extends TextWebSocketHandler {
 	@Override
 	public void handleTextMessage(WebSocketSession session, TextMessage message)
 			throws InterruptedException, IOException {
-
 		Player p = Optional.ofNullable(players.get(session)).or(() -> {
 			final Player newPlayer = new Player(serverContext, new WebSocketMessageChannel(session, messageCoder));
 			players.put(session, newPlayer);

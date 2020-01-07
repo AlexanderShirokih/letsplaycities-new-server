@@ -57,6 +57,7 @@ function appendWord(word, me) {
   wrapper.appendChild(item);
   document.getElementById("cont").appendChild(wrapper);
   gameTime = maxTime;
+  isMyMovement = !me;
 }
 
 function appendMessage(msg, me) {
