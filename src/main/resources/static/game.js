@@ -28,10 +28,8 @@ let currentDialog;
 let playerInfo = {
   "action": "login",
   "version": 4,
-  "login": "Flames",
-  "client_version": "v1.12w",
-  "client_build": "180",
-  "can_rec_msg": true
+  "clientVersion": "v2.4.0web",
+  "clientBuild": 240
 };
 
 let oppInfo;
@@ -130,20 +128,21 @@ function earlyInit() {
 
   if (userId && accHash) {
     playerInfo.uid = userId;
-    playerInfo.acc_hash = accHash;
+    playerInfo.hash = accHash;
   } else {
-    playerInfo.sn = "nv";
-    playerInfo.snuid = 225;
-    playerInfo.access_token = "none";
+    playerInfo.authType = "Native";
+    playerInfo.snUID = "225";
+    playerInfo.accToken = "none";
   }
 
+  playerInfo.login = "Flames";
   player = new Player("Player", true, document.getElementById("n_me"));
   other = new Player("Player", false, document.getElementById("n_other"));
   timer = document.getElementById("timer");
 }
 
 function showWelcomeScreen() {
-  //// TODO:
+  // // TODO:
   var img = "img/player.png";
   var login = "My Username";
 
@@ -152,10 +151,10 @@ function showWelcomeScreen() {
 }
 
 function initGame() {
-  connection = new WebSocket("ws://localhost/ws");
+  connection = new WebSocket("ws://localhost:8080/game");
   showWaitingDialog("Подключение к серверу...");
   connection.onopen = function() {
-    //Send auth request
+    // Send auth request
     send(playerInfo);
     showWaitingDialog("Ожидание оппонента...", "Игра начнётся сразу после того, как вам найдется оппонент. Не забывайте, что на ответ у вас есть полторы минуты");
   }
@@ -172,85 +171,85 @@ function initGame() {
 }
 
 function handleMessage(data) {
-  if (data.join) {
-    oppInfo = {
-      "login": data.opp_login,
-      "uuid": data.opp_uuid,
-      "can_rec_msg": data.can_rec_msg,
-      "client_build": data.client_build,
-      "client_version": data.client_version
-    };
-    beginGame(Boolean(data.join));
-  } else if (data.msg) {
-    appendMessage(data.msg, false);
-  } else if (data.sync) {
-    gameTime = maxTime - parseInt(data.sync, 10);
-  } else if (data.word_result) {
-    switch (Number(data.word_result)) {
-      case 0: //Received
-        appendWord(data.word, false);
-        break
-      case 1: //Accepted
-        appendWord(data.word, true);
-        input.value = "";
-        break;
-      case 2: //Already
-        showMessage("Город \"" + formatWord(input.value) + "\" уже был загадан");
-        break;
-      case 3: //NoWord
-        showMessage("Город \"" + formatWord(input.value) + "\" не существует");
-        break;
-      case 4: //WrongMove
-        showMessage("Не ваш ход!");
-        break;
-      default:
-        protocolError();
-    }
-  } else if (data.login_result) {
-    if (Boolean(data.login_result) === true) {
-      if (Number(data.version) !== 4) {
-        protocolError();
-      } else if (data.newer_build <= playerInfo.client_build) {
-        if (data.uid && data.acc_hash) {
-          setCookie("user_id", data.uid, {
-            expires: 3600 * 24 * 365 * 2
-          });
-          setCookie("acc_hash", data.acc_hash, {
-            expires: 3600 * 24 * 365 * 2
-          });
-        }
-        //Successfully authorized, join the game
-        send({
-          "action": "play",
-          "mode": "random_pair"
-        });
-      } else {
-        showMessage("Вы используете устаревшую версию игры. Обновите страницу для использования новой версии");
-        finishGame();
-      }
-    } else {
-      showMessage(data.ban_reason);
-      finishGame();
-    }
-  } else if (data.leave) {
-    finishGame("Оппонент сдался");
-  } else if (data.timeout) {
-    finishGame("Время вышло");
-  } else if (data.banned) {
-    finishGame("Вы были заблокированы");
-  } else if (data.friend_request) {
-    //TODO Handle friend request
-    send({
-      "action": "friend",
-      "type": "accept_request"
-    });
-  } else {
+	switch(data.action) {
+	case "logged_in":
+		if (data.newerBuild <= playerInfo.clientBuild) {
+	          setCookie("user_id", data.userId, {
+	            expires: 3600 * 24 * 10
+	          });
+	          setCookie("acc_hash", data.accHash, {
+	            expires: 3600 * 24 * 10
+	          });
+	        // Successfully authorized, join the game
+	        send({
+	          "action": "play",
+	          "mode": "RANDOM_PAIR"
+	        });
+	      } else {
+	        showMessage("Вы используете устаревшую версию игры. Обновите страницу для использования новой версии");
+	        finishGame();
+	      }
+		break;
+	case "login_error":
+		 showMessage(data.banReason);
+	     finishGame();
+		break;
+	case "join":
+		 oppInfo = {
+			      "login": data.login,
+			      "canReceiveMessages": data.canReceiveMessages,
+			      "clientBuild": data.clientBuild,
+			      "clientVersion": data.clientVersion
+			    };
+		beginGame(Boolean(data.youStarter));
+		break;
+	case "word":
+		switch (data.result) {
+	      case "RECEIVED": // Received
+	        appendWord(data.word, false);
+	        break
+	      case "ACCEPTED": // Accepted
+	        appendWord(data.word, true);
+	        input.value = "";
+	        break;
+	      case "ALREADY": // Already
+	        showMessage("Город \"" + formatWord(input.value) + "\" уже был загадан");
+	        break;
+	      case "NO_WORD": // NoWord
+	        showMessage("Город \"" + formatWord(input.value) + "\" не существует");
+	        break;
+	      case "WRONG_MOVE": // WrongMove
+	        showMessage("Не ваш ход!");
+	        break;
+	      default:
+	        protocolError();
+	    }
+		break;
+	case "msg":
+	    appendMessage(data.msg, false);
+		break;
+	case "timeout":
+		finishGame("Время вышло");
+		break;
+	case "leave":
+		 finishGame("Оппонент сдался");
+		 break;
+	case "friend_request":
+		if(result === "NEW_REQUEST") {
+			 // TODO Handle friend request
+		    send({
+		      "action": "friend",
+		      "type": "ACCEPT"
+		    });
+		}
+		break;
+	default:
 		console.log("Unknown action="+JSON.stringify(data));
-  }
+	}
 }
 
 function beginGame(youStarter) {
-  hideDialog(); //Hide waiting dialog
+  hideDialog(); // Hide waiting dialog
   playing = true;
   isMyMovement = youStarter;
   player.Name = playerInfo.login;
@@ -261,8 +260,8 @@ function beginGame(youStarter) {
 
 function finishGame(reason) {
   playing = false;
-  //TODO Finish game session
-  //TODO Game stat dialog
+  // TODO Finish game session
+  // TODO Game stat dialog
   showDialog(reason, "Игра завершена!");
   connection.close();
 }

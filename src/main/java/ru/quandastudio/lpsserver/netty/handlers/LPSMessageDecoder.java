@@ -146,21 +146,21 @@ public class LPSMessageDecoder extends ReplayingDecoder<Void> {
 	}
 
 	private LPSClientMessage readLoginAction(LPSMessageReader msg) {
-		return LPSClientMessage.LPSLogIn.builder()
-				.version(Integer.valueOf(msg.readByte(ACTION_LOGIN)))
-				.login(msg.optString(LOGIN))
-				.hash(msg.optString(ACC_HASH))
-				.accToken(msg.optString(ACCESS_TOKEN))
-				.snUID(msg.optString(SN_UID))
-				.clientVersion(msg.readString(CLIENT_VERSION))
-				.clientBuild(msg.optChar(CLIENT_BUILD))
-				.firebaseToken(msg.optString(FIREBASE_TOKEN))
-				.canReceiveMessages(msg.optBoolean(CAN_REC_MSG))
-				.allowSendUID(msg.optBoolean(ALLOW_SEND_UID))
-				.uid(msg.optInt(UID))
-				.authType(msg.optEnum(AuthType.class, SN))
-				.avatar(StringUtil.toBase64(msg.optBytes(AVATAR_PART0)))
-				.build();
+		var login = new LPSClientMessage.LPSLogIn();
+		login.setVersion(Integer.valueOf(msg.readByte(ACTION_LOGIN)));
+		login.setLogin(msg.optString(LOGIN));
+		login.setHash(msg.optString(ACC_HASH));
+		login.setAccToken(msg.optString(ACCESS_TOKEN));
+		login.setSnUID(msg.optString(SN_UID));
+		login.setClientVersion(msg.readString(CLIENT_VERSION));
+		login.setClientBuild(msg.optChar(CLIENT_BUILD));
+		login.setFirebaseToken(msg.optString(FIREBASE_TOKEN));
+		login.setCanReceiveMessages(msg.optBoolean(CAN_REC_MSG));
+		login.setAllowSendUID(msg.optBoolean(ALLOW_SEND_UID));
+		login.setUid(msg.optInt(UID));
+		login.setAuthType(msg.optEnum(AuthType.class, SN));
+		login.setAvatar(StringUtil.toBase64(msg.optBytes(AVATAR_PART0)));
+		return login;
 	}
 
 	private LPSClientMessage readPlayAction(LPSMessageReader msg) {

@@ -5,10 +5,9 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -24,15 +23,15 @@ public class LPSClientMessage {
 	}
 
 	@Action("login")
-	@Builder
-	@AllArgsConstructor(access = AccessLevel.PRIVATE)
+	@NoArgsConstructor
 	@Getter
+	@Setter
 	@ToString
 	public static final class LPSLogIn extends LPSClientMessage {
 		@NotNull
 		@Min(value = 3, message = "Unsupported protocol version")
 		@Max(value = 4, message = "Unsupported protocol version")
-		private final Integer version;
+		private int version;
 
 		@NotNull
 		@Size(min = 2, max = 64, message = "Login must be between 2 and 64 characters")
@@ -40,34 +39,32 @@ public class LPSClientMessage {
 		@Setter
 		private String login;
 
-		@NotNull
-		private final AuthType authType;
+		private AuthType authType = null;
 
 		@NotNull
-		private final Integer clientBuild;
+		private int clientBuild;
 		@NotNull
 		@Size(max = 20, message = "Client version value is too long!")
-		private final String clientVersion;
-		@Builder.Default
-		private final Boolean canReceiveMessages = true;
+		private String clientVersion;
+
+		private Boolean canReceiveMessages = Boolean.TRUE;
 
 		@Size(max = 200)
-		private final String firebaseToken;
+		private String firebaseToken;
 
-		@Builder.Default
-		private final int uid = 0;
-		@Builder.Default
+		private int uid = 0;
+
 		@Size(max = 11, message = "Access hash value is too long!")
-		private final String hash = null;
-		@Builder.Default
+		private String hash = null;
+
 		@Size(max = 64 * 1024)
-		private final String avatar = null;
-		@Builder.Default
-		private final String accToken = null;
-		@Builder.Default
-		private final Boolean allowSendUID = false;
-		@Builder.Default
-		@Size(max = 32, message = "Social network UID is too long!")
+		private String avatar = null;
+
+		private String accToken = null;
+
+		private Boolean allowSendUID = Boolean.FALSE;
+
+		@Size(min = 2, max = 32, message = "Social network UID must be in size [2;32]!")
 		@Setter
 		private String snUID = null;
 	}
