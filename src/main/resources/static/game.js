@@ -152,6 +152,7 @@ function showWelcomeScreen() {
 }
 
 function initGame() {
+  createRandomImage();
   connection = new WebSocket("ws://localhost:8080/game");
   showWaitingDialog("Подключение к серверу...");
   connection.onopen = function() {
@@ -427,4 +428,36 @@ function formatTime(time) {
     str = min + "мин ";
   str += t + "сек";
   timer.textContent = str;
+}
+
+function createRandomImage() {
+	var canvas = document.createElement('canvas');
+	var height=128;
+	var width=128;
+
+	canvas.height=height;
+	canvas.width=width;
+	
+	var context = canvas.getContext("2d");
+
+	var imageData=context.createImageData(width, height);
+	
+	var data=imageData.data;
+	for (var i=0; i<height*width; i++) {
+	     data[i*4+0]=Math.random()*100+100 | 0; // Red
+	     data[i*4+1]=Math.random()*100+100 | 0; // Green
+	     data[i*4+2]=Math.random()*100+100 | 0; // Blue
+	     data[i*4+3]=100; // alpha (transparency)
+	}
+	context.putImageData(imageData, 0, 0);
+
+	canvas.toBlob(function(blob) {
+		var reader = new FileReader();
+		 reader.readAsDataURL(blob); 
+		 reader.onloadend = function() {
+		    base64 = reader.result;                
+		    console.log(base64);
+		    playerInfo.avatar = reader.result;
+		 }
+	}, "image/png");
 }
