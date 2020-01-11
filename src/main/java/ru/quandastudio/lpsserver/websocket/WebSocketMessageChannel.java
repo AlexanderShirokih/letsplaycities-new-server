@@ -9,7 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import ru.quandastudio.lpsserver.core.MessageChannel;
 import ru.quandastudio.lpsserver.core.MessageCoder;
-import ru.quandastudio.lpsserver.netty.models.LPSMessage;
+import ru.quandastudio.lpsserver.models.LPSMessage;
 
 @AllArgsConstructor
 @Slf4j

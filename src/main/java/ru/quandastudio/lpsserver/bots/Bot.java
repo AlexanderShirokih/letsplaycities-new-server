@@ -6,9 +6,9 @@ import ru.quandastudio.lpsserver.core.Player;
 import ru.quandastudio.lpsserver.core.Room;
 import ru.quandastudio.lpsserver.core.ServerContext;
 import ru.quandastudio.lpsserver.data.entities.User;
-import ru.quandastudio.lpsserver.netty.models.AuthType;
-import ru.quandastudio.lpsserver.netty.models.LPSClientMessage.LPSWord;
-import ru.quandastudio.lpsserver.netty.models.WordResult;
+import ru.quandastudio.lpsserver.models.AuthType;
+import ru.quandastudio.lpsserver.models.WordResult;
+import ru.quandastudio.lpsserver.models.LPSClientMessage.LPSWord;
 import ru.quandastudio.lpsserver.util.StringUtil;
 
 @Slf4j

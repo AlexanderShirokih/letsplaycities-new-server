@@ -5,10 +5,10 @@ import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import ru.quandastudio.lpsserver.core.Player;
 import ru.quandastudio.lpsserver.core.Room;
-import ru.quandastudio.lpsserver.netty.models.LPSClientMessage.LPSWord;
-import ru.quandastudio.lpsserver.netty.models.LPSMessage.LPSMsgMessage;
-import ru.quandastudio.lpsserver.netty.models.LPSMessage.LPSWordMessage;
-import ru.quandastudio.lpsserver.netty.models.WordResult;
+import ru.quandastudio.lpsserver.models.WordResult;
+import ru.quandastudio.lpsserver.models.LPSClientMessage.LPSWord;
+import ru.quandastudio.lpsserver.models.LPSMessage.LPSMsgMessage;
+import ru.quandastudio.lpsserver.models.LPSMessage.LPSWordMessage;
 import ru.quandastudio.lpsserver.util.ValidationUtil;
 
 @Slf4j

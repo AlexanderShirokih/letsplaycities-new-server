@@ -7,9 +7,9 @@ import ru.quandastudio.lpsserver.core.Player;
 import ru.quandastudio.lpsserver.data.FriendshipManager;
 import ru.quandastudio.lpsserver.data.entities.Friendship;
 import ru.quandastudio.lpsserver.data.entities.User;
-import ru.quandastudio.lpsserver.netty.models.FriendInfo;
-import ru.quandastudio.lpsserver.netty.models.LPSClientMessage.LPSFriendList;
-import ru.quandastudio.lpsserver.netty.models.LPSMessage.LPSFriendsList;
+import ru.quandastudio.lpsserver.models.FriendInfo;
+import ru.quandastudio.lpsserver.models.LPSClientMessage.LPSFriendList;
+import ru.quandastudio.lpsserver.models.LPSMessage.LPSFriendsList;
 
 public class FriendsListMessageHandler extends MessageHandler<LPSFriendList> {
 

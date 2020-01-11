@@ -3,9 +3,9 @@ package ru.quandastudio.lpsserver.bots;
 import lombok.NonNull;
 import lombok.Setter;
 import ru.quandastudio.lpsserver.core.MessageChannel;
-import ru.quandastudio.lpsserver.netty.models.LPSMessage;
-import ru.quandastudio.lpsserver.netty.models.LPSMessage.LPSPlayMessage;
-import ru.quandastudio.lpsserver.netty.models.LPSMessage.LPSWordMessage;
+import ru.quandastudio.lpsserver.models.LPSMessage;
+import ru.quandastudio.lpsserver.models.LPSMessage.LPSPlayMessage;
+import ru.quandastudio.lpsserver.models.LPSMessage.LPSWordMessage;
 
 public class BotMessageChannel implements MessageChannel {
 

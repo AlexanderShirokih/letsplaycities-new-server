@@ -1,11 +1,6 @@
 fcm:
   service-account-file: letsplaycities-firebase-adminsdk-rac3a-2a2b1d2475.json
-netty:
-  boss-count: 1
-  keep-alive: true
-  lps-port: 62964
-  worker-count: 0
-  
+
 spring:
   datasource:
     driverClassName: com.mysql.cj.jdbc.Driver

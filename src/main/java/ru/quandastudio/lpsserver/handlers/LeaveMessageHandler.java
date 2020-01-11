@@ -2,8 +2,8 @@ package ru.quandastudio.lpsserver.handlers;
 
 import ru.quandastudio.lpsserver.core.Player;
 import ru.quandastudio.lpsserver.core.Room;
-import ru.quandastudio.lpsserver.netty.models.LPSClientMessage.LPSLeave;
-import ru.quandastudio.lpsserver.netty.models.LPSMessage;
+import ru.quandastudio.lpsserver.models.LPSMessage;
+import ru.quandastudio.lpsserver.models.LPSClientMessage.LPSLeave;
 
 public class LeaveMessageHandler extends MessageHandler<LPSLeave> {
 

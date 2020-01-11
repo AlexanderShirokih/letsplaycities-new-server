@@ -18,8 +18,8 @@ import org.springframework.core.io.ClassPathResource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import ru.quandastudio.lpsserver.core.ServerContext;
-import ru.quandastudio.lpsserver.netty.models.LPSClientMessage.LPSPlay;
-import ru.quandastudio.lpsserver.netty.models.LPSClientMessage.PlayMode;
+import ru.quandastudio.lpsserver.models.LPSClientMessage.LPSPlay;
+import ru.quandastudio.lpsserver.models.LPSClientMessage.PlayMode;
 
 @Slf4j
 @RequiredArgsConstructor

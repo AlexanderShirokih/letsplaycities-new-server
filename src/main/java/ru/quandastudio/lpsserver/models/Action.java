@@ -1,4 +1,4 @@
-package ru.quandastudio.lpsserver.netty.models;
+package ru.quandastudio.lpsserver.models;
 
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;

@@ -7,7 +7,6 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 
 import lombok.RequiredArgsConstructor;
-import ru.quandastudio.lpsserver.netty.LPSServer;
 
 @RequiredArgsConstructor
 @SpringBootApplication

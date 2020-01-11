@@ -10,8 +10,8 @@ import ru.quandastudio.lpsserver.core.Player;
 import ru.quandastudio.lpsserver.core.ServerContext;
 import ru.quandastudio.lpsserver.data.entities.User;
 import ru.quandastudio.lpsserver.data.entities.User.State;
-import ru.quandastudio.lpsserver.netty.models.LPSClientMessage.LPSLogIn;
-import ru.quandastudio.lpsserver.netty.models.LPSMessage;
+import ru.quandastudio.lpsserver.models.LPSMessage;
+import ru.quandastudio.lpsserver.models.LPSClientMessage.LPSLogIn;
 import ru.quandastudio.lpsserver.util.StringUtil;
 import ru.quandastudio.lpsserver.util.ValidationUtil;
 

@@ -1,4 +1,4 @@
-package ru.quandastudio.lpsserver.netty.models;
+package ru.quandastudio.lpsserver.models;
 
 import static org.junit.Assert.assertEquals;
 
@@ -6,7 +6,7 @@ import org.junit.Test;
 
 import com.google.gson.Gson;
 
-import ru.quandastudio.lpsserver.netty.models.LPSMessage.LPSFriendsList;
+import ru.quandastudio.lpsserver.models.LPSMessage.LPSFriendsList;
 
 public class LPSMessageTest {
 

@@ -5,7 +5,7 @@ import ru.quandastudio.lpsserver.core.Banlist;
 import ru.quandastudio.lpsserver.core.Dictionary;
 import ru.quandastudio.lpsserver.core.Player;
 import ru.quandastudio.lpsserver.core.ServerContext;
-import ru.quandastudio.lpsserver.netty.models.LPSClientMessage.LPSAdmin;
+import ru.quandastudio.lpsserver.models.LPSClientMessage.LPSAdmin;
 
 @Slf4j
 public class AdminMessageHandler extends MessageHandler<LPSAdmin> {

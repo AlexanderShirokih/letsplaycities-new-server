@@ -16,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import ru.quandastudio.lpsserver.core.MessageCoder;
 import ru.quandastudio.lpsserver.core.Player;
 import ru.quandastudio.lpsserver.core.ServerContext;
-import ru.quandastudio.lpsserver.netty.models.LPSClientMessage;
+import ru.quandastudio.lpsserver.models.LPSClientMessage;
 
 @Component
 @Slf4j

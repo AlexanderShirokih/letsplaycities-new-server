@@ -20,7 +20,7 @@ import ru.quandastudio.lpsserver.handlers.MessageHandler;
 import ru.quandastudio.lpsserver.handlers.PlayMessageHandler;
 import ru.quandastudio.lpsserver.handlers.UserMsgMessageHandler;
 import ru.quandastudio.lpsserver.handlers.WordMessageHandler;
-import ru.quandastudio.lpsserver.netty.models.LPSClientMessage;
+import ru.quandastudio.lpsserver.models.LPSClientMessage;
 
 @Slf4j
 @Component

@@ -1,4 +1,4 @@
-package ru.quandastudio.lpsserver.netty.models;
+package ru.quandastudio.lpsserver.models;
 
 import lombok.Getter;
 import lombok.NonNull;

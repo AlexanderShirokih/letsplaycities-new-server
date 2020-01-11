@@ -8,9 +8,9 @@ import ru.quandastudio.lpsserver.core.Player;
 import ru.quandastudio.lpsserver.core.Room;
 import ru.quandastudio.lpsserver.core.ServerContext;
 import ru.quandastudio.lpsserver.data.entities.User;
-import ru.quandastudio.lpsserver.netty.models.FriendModeResult;
-import ru.quandastudio.lpsserver.netty.models.LPSClientMessage.LPSPlay;
-import ru.quandastudio.lpsserver.netty.models.LPSMessage.LPSFriendModeRequest;
+import ru.quandastudio.lpsserver.models.FriendModeResult;
+import ru.quandastudio.lpsserver.models.LPSClientMessage.LPSPlay;
+import ru.quandastudio.lpsserver.models.LPSMessage.LPSFriendModeRequest;
 
 @Slf4j
 public class PlayMessageHandler extends MessageHandler<LPSPlay> {

@@ -7,8 +7,8 @@ import org.springframework.context.annotation.Scope;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import ru.quandastudio.lpsserver.netty.gson.LPSClientMessageDeserializer;
-import ru.quandastudio.lpsserver.netty.models.LPSClientMessage;
+import ru.quandastudio.lpsserver.gson.LPSClientMessageDeserializer;
+import ru.quandastudio.lpsserver.models.LPSClientMessage;
 
 @Configuration
 public class GsonConfigutation {

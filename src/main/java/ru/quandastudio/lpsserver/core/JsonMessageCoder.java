@@ -5,8 +5,8 @@ import org.springframework.stereotype.Component;
 import com.google.gson.Gson;
 
 import lombok.AllArgsConstructor;
-import ru.quandastudio.lpsserver.netty.models.LPSClientMessage;
-import ru.quandastudio.lpsserver.netty.models.LPSMessage;
+import ru.quandastudio.lpsserver.models.LPSClientMessage;
+import ru.quandastudio.lpsserver.models.LPSMessage;
 
 @AllArgsConstructor
 @Component

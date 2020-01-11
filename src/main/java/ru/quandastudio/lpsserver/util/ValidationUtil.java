@@ -9,7 +9,7 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 
-import ru.quandastudio.lpsserver.netty.models.LPSClientMessage;
+import ru.quandastudio.lpsserver.models.LPSClientMessage;
 
 public final class ValidationUtil {
 

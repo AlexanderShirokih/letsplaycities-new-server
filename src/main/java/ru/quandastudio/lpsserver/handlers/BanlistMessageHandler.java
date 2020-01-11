@@ -5,9 +5,9 @@ import java.util.stream.Collectors;
 
 import ru.quandastudio.lpsserver.core.Player;
 import ru.quandastudio.lpsserver.data.entities.BannedUser;
-import ru.quandastudio.lpsserver.netty.models.BlackListItem;
-import ru.quandastudio.lpsserver.netty.models.LPSMessage;
-import ru.quandastudio.lpsserver.netty.models.LPSClientMessage.LPSBanList;
+import ru.quandastudio.lpsserver.models.BlackListItem;
+import ru.quandastudio.lpsserver.models.LPSMessage;
+import ru.quandastudio.lpsserver.models.LPSClientMessage.LPSBanList;
 
 public class BanlistMessageHandler extends MessageHandler<LPSBanList> {
 

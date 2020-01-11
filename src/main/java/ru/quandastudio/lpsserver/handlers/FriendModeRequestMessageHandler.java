@@ -8,9 +8,9 @@ import lombok.extern.slf4j.Slf4j;
 import ru.quandastudio.lpsserver.core.Player;
 import ru.quandastudio.lpsserver.core.Room;
 import ru.quandastudio.lpsserver.core.ServerContext;
-import ru.quandastudio.lpsserver.netty.models.FriendModeResult;
-import ru.quandastudio.lpsserver.netty.models.LPSClientMessage.LPSFriendMode;
-import ru.quandastudio.lpsserver.netty.models.LPSMessage.LPSFriendModeRequest;
+import ru.quandastudio.lpsserver.models.FriendModeResult;
+import ru.quandastudio.lpsserver.models.LPSClientMessage.LPSFriendMode;
+import ru.quandastudio.lpsserver.models.LPSMessage.LPSFriendModeRequest;
 
 @Slf4j
 public class FriendModeRequestMessageHandler extends MessageHandler<LPSFriendMode> {

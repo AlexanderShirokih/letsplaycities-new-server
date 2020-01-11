@@ -1,4 +1,4 @@
-package ru.quandastudio.lpsserver.netty.models;
+package ru.quandastudio.lpsserver.models;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;

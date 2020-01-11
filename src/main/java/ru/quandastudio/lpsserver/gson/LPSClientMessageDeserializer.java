@@ -1,4 +1,4 @@
-package ru.quandastudio.lpsserver.netty.gson;
+package ru.quandastudio.lpsserver.gson;
 
 import java.lang.reflect.Type;
 import java.util.Arrays;
@@ -9,8 +9,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 
-import ru.quandastudio.lpsserver.netty.models.Action;
-import ru.quandastudio.lpsserver.netty.models.LPSClientMessage;
+import ru.quandastudio.lpsserver.models.Action;
+import ru.quandastudio.lpsserver.models.LPSClientMessage;
 
 public class LPSClientMessageDeserializer implements JsonDeserializer<LPSClientMessage> {
 

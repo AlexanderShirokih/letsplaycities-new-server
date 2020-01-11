@@ -1,6 +1,6 @@
 package ru.quandastudio.lpsserver;
 
-import ru.quandastudio.lpsserver.netty.models.AuthType;
+import ru.quandastudio.lpsserver.models.AuthType;
 
 public class SnManager {
 

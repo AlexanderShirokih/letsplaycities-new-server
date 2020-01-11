@@ -1,4 +1,4 @@
-package ru.quandastudio.lpsserver.netty.models;
+package ru.quandastudio.lpsserver.models;
 
 public enum WordResult {
 	RECEIVED, ACCEPTED, ALREADY, NO_WORD, WRONG_MOVE;

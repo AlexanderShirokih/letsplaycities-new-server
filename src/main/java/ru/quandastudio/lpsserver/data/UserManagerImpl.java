@@ -12,7 +12,7 @@ import ru.quandastudio.lpsserver.SnManager;
 import ru.quandastudio.lpsserver.data.dao.UserRepository;
 import ru.quandastudio.lpsserver.data.entities.User;
 import ru.quandastudio.lpsserver.data.entities.User.State;
-import ru.quandastudio.lpsserver.netty.models.LPSClientMessage.LPSLogIn;
+import ru.quandastudio.lpsserver.models.LPSClientMessage.LPSLogIn;
 import ru.quandastudio.lpsserver.util.StringUtil;
 
 @Service

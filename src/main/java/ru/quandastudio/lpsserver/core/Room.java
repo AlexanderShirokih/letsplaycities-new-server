@@ -5,9 +5,9 @@ import java.util.ArrayList;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import ru.quandastudio.lpsserver.data.entities.User;
-import ru.quandastudio.lpsserver.netty.models.AuthType;
-import ru.quandastudio.lpsserver.netty.models.LPSMessage;
-import ru.quandastudio.lpsserver.netty.models.WordResult;
+import ru.quandastudio.lpsserver.models.AuthType;
+import ru.quandastudio.lpsserver.models.LPSMessage;
+import ru.quandastudio.lpsserver.models.WordResult;
 
 @Slf4j
 @RequiredArgsConstructor

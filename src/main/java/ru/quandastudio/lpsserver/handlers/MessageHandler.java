@@ -3,7 +3,7 @@ package ru.quandastudio.lpsserver.handlers;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import ru.quandastudio.lpsserver.core.Player;
-import ru.quandastudio.lpsserver.netty.models.LPSClientMessage;
+import ru.quandastudio.lpsserver.models.LPSClientMessage;
 
 @RequiredArgsConstructor
 public abstract class MessageHandler<T extends LPSClientMessage> {

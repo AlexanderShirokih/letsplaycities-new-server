@@ -1,4 +1,4 @@
-package ru.quandastudio.lpsserver.netty.models;
+package ru.quandastudio.lpsserver.models;
 
 public enum FriendModeResult {
 	BUSY, OFFLINE, NOT_FRIEND, DENIED;

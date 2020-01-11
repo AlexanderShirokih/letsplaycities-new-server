@@ -9,9 +9,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import ru.quandastudio.lpsserver.data.entities.User;
 import ru.quandastudio.lpsserver.data.entities.User.State;
-import ru.quandastudio.lpsserver.netty.models.LPSClientMessage;
-import ru.quandastudio.lpsserver.netty.models.LPSMessage;
-import ru.quandastudio.lpsserver.netty.models.LPSMessage.LPSLeaveMessage;
+import ru.quandastudio.lpsserver.models.LPSClientMessage;
+import ru.quandastudio.lpsserver.models.LPSMessage;
+import ru.quandastudio.lpsserver.models.LPSMessage.LPSLeaveMessage;
 
 @Getter
 @Setter

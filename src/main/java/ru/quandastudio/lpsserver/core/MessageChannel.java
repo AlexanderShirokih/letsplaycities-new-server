@@ -1,6 +1,6 @@
 package ru.quandastudio.lpsserver.core;
 
-import ru.quandastudio.lpsserver.netty.models.LPSMessage;
+import ru.quandastudio.lpsserver.models.LPSMessage;
 
 public interface MessageChannel {
 

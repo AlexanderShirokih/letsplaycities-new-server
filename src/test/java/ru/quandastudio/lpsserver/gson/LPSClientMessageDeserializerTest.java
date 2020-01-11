@@ -1,7 +1,7 @@
-package ru.quandastudio.lpsserver.netty.gson;
+package ru.quandastudio.lpsserver.gson;
 
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -9,7 +9,7 @@ import org.junit.Test;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import ru.quandastudio.lpsserver.netty.models.LPSClientMessage;
+import ru.quandastudio.lpsserver.models.LPSClientMessage;
 
 public class LPSClientMessageDeserializerTest {
 

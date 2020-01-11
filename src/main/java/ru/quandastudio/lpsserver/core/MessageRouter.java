@@ -1,6 +1,6 @@
 package ru.quandastudio.lpsserver.core;
 
-import ru.quandastudio.lpsserver.netty.models.LPSClientMessage;
+import ru.quandastudio.lpsserver.models.LPSClientMessage;
 
 public interface MessageRouter {
 

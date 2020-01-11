@@ -124,6 +124,7 @@ function onMsg() {
 
 /* Core functions */
 function earlyInit() {
+  createRandomImage();
   var userId = getCookie("user_id");
   var accHash = getCookie("acc_hash");
 
@@ -152,7 +153,6 @@ function showWelcomeScreen() {
 }
 
 function initGame() {
-  createRandomImage();
   connection = new WebSocket("ws://localhost:8080/game");
   showWaitingDialog("Подключение к серверу...");
   connection.onopen = function() {
@@ -455,9 +455,9 @@ function createRandomImage() {
 		var reader = new FileReader();
 		 reader.readAsDataURL(blob); 
 		 reader.onloadend = function() {
-		    base64 = reader.result;                
-		    console.log(base64);
-		    playerInfo.avatar = reader.result;
+		    var base64 = reader.result;
+		    base64 = base64.substring(base64.indexOf(",")+1);
+		    playerInfo.avatar = base64;
 		 }
 	}, "image/png");
 }
