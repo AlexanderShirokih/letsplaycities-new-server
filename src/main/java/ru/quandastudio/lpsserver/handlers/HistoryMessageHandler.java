@@ -9,10 +9,12 @@ import ru.quandastudio.lpsserver.core.Player;
 import ru.quandastudio.lpsserver.core.ServerContext;
 import ru.quandastudio.lpsserver.data.entities.Friendship;
 import ru.quandastudio.lpsserver.data.entities.HistoryItem;
+import ru.quandastudio.lpsserver.data.entities.Picture;
 import ru.quandastudio.lpsserver.data.entities.User;
 import ru.quandastudio.lpsserver.models.HistoryInfo;
 import ru.quandastudio.lpsserver.models.LPSClientMessage.LPSHistoryList;
 import ru.quandastudio.lpsserver.models.LPSMessage;
+import ru.quandastudio.lpsserver.models.PictureInfo;
 
 public class HistoryMessageHandler extends MessageHandler<LPSHistoryList> {
 
@@ -40,22 +42,27 @@ public class HistoryMessageHandler extends MessageHandler<LPSHistoryList> {
 
 		final List<Friendship> friendsList = context.getFriendshipManager().getFriendsListIn(user, other);
 
+		final List<Picture> picturesList = context.getPictureManager().getPicturesByUserId(other);
+
 		final List<HistoryInfo> data = users.stream()
 				.map((Pair<User, HistoryInfo> info) -> info.getSecond())
 				.map((HistoryInfo info) -> {
-					boolean isFriend = false;
+					final Integer uid = info.getUserId();
 					for (Friendship f : friendsList) {
-						final Integer uid = info.getUserId();
 						if (f.getReceiver().getUserId() == uid || f.getSender().getUserId() == uid) {
-							isFriend = true;
+							info.setFriend(true);
 							break;
 						}
 					}
-					info.setFriend(isFriend);
 					return info;
 				})
 				.collect(Collectors.toList());
-		player.sendMessage(new LPSMessage.LPSHistoryList(data));
+
+		final List<PictureInfo> pics = picturesList.stream()
+				.map((Picture pic) -> new PictureInfo(pic.getOwner().getUserId(), new String(pic.getImageData())))
+				.collect(Collectors.toList());
+
+		player.sendMessage(new LPSMessage.LPSHistoryList(data, pics));
 	}
 
 }

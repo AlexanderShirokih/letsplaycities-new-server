@@ -68,6 +68,9 @@ public class User implements Serializable {
 
 	@Column(name = "firebase_token", length = 200)
 	private String firebaseToken;
+	
+	@Column(name = "avatar_hash", length = 32)
+	private String avatarHash;
 
 	@Override
 	public int hashCode() {

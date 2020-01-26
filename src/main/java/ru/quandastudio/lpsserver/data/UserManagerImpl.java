@@ -1,15 +1,19 @@
 package ru.quandastudio.lpsserver.data;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import javax.transaction.Transactional;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import ru.quandastudio.lpsserver.Result;
 import ru.quandastudio.lpsserver.SnManager;
+import ru.quandastudio.lpsserver.data.dao.PictureRepository;
 import ru.quandastudio.lpsserver.data.dao.UserRepository;
+import ru.quandastudio.lpsserver.data.entities.Picture;
 import ru.quandastudio.lpsserver.data.entities.User;
 import ru.quandastudio.lpsserver.data.entities.User.State;
 import ru.quandastudio.lpsserver.models.LPSClientMessage.LPSLogIn;
@@ -21,6 +25,9 @@ public class UserManagerImpl implements UserManager {
 
 	@Autowired
 	private UserRepository userDAO;
+
+	@Autowired
+	private PictureRepository picturesDAO;
 
 	public Result<User> logIn(LPSLogIn login) {
 		if (login.getUid() > 0 && login.getHash() != null) {
@@ -50,16 +57,32 @@ public class UserManagerImpl implements UserManager {
 		user.ifPresent((u) -> updateDataIfPresent(u, login));
 
 		return user.or(() -> {
-			final User newUser = createUser(login);
-			userDAO.save(newUser);
+			User newUser = createUser(login);
+			newUser = userDAO.save(newUser);
+			if (newUser.getAvatarHash() != null)
+				picturesDAO.save(new Picture(newUser, login.getAvatar()));
 			return Optional.of(newUser);
 		}).map((u) -> Result.success(u)).get();
 	}
 
 	private void updateDataIfPresent(User user, LPSLogIn login) {
-		// Update login and fbToken
+		// Update login, fbToken and avatar hash code
 		user.setName(login.getLogin());
 		user.setFirebaseToken(login.getFirebaseToken());
+
+		final String hash = getHash(login);
+		if (!Objects.equals(user.getAvatarHash(), hash)) {
+			user.setAvatarHash(hash);
+			if (hash == null)
+				picturesDAO.deleteByOwner(user);
+			else
+				picturesDAO.save(new Picture(user, login.getAvatar()));
+		}
+	}
+
+	private String getHash(LPSLogIn login) {
+		final String avatar = login.getAvatar();
+		return avatar == null ? null : DigestUtils.md5Hex(avatar);
 	}
 
 	private User createUser(LPSLogIn login) {
@@ -70,6 +93,7 @@ public class UserManagerImpl implements UserManager {
 		user.setName(login.getLogin());
 		user.setAccessId(StringUtil.getAccIdHash());
 		user.setState(State.ready);
+		user.setAvatarHash(getHash(login));
 		return user;
 	}
 

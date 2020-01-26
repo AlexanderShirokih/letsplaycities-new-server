@@ -15,6 +15,7 @@ import ru.quandastudio.lpsserver.config.ServerProperties;
 import ru.quandastudio.lpsserver.data.BanlistManager;
 import ru.quandastudio.lpsserver.data.FriendshipManager;
 import ru.quandastudio.lpsserver.data.HistoryManager;
+import ru.quandastudio.lpsserver.data.PictureManager;
 import ru.quandastudio.lpsserver.data.UserManager;
 
 @Getter
@@ -39,6 +40,8 @@ public class ServerContext {
 	private final FriendshipManager friendshipManager;
 	
 	private final HistoryManager historyManager;
+	
+	private final PictureManager pictureManager;
 
 	private final RequestNotifier requestNotifier;
 
