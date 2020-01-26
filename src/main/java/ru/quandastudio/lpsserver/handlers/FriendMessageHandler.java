@@ -1,9 +1,12 @@
 package ru.quandastudio.lpsserver.handlers;
 
+import java.util.HashMap;
 import java.util.Optional;
 
 import lombok.extern.slf4j.Slf4j;
 import ru.quandastudio.lpsserver.core.Player;
+import ru.quandastudio.lpsserver.core.RequestNotifier.NotificationData;
+import ru.quandastudio.lpsserver.core.ServerContext;
 import ru.quandastudio.lpsserver.data.FriendshipManager;
 import ru.quandastudio.lpsserver.data.entities.Friendship;
 import ru.quandastudio.lpsserver.data.entities.User;
@@ -22,7 +25,7 @@ public class FriendMessageHandler extends MessageHandler<LPSFriendAction> {
 	public void handle(Player player, LPSFriendAction msg) {
 		switch (msg.getType()) {
 		case SEND:
-			handleSendRequest(player);
+			handleSendRequest(player, msg.getOppUid());
 			break;
 		case ACCEPT:
 			handleRequestResult(player, msg.getOppUid(), true);
@@ -41,35 +44,77 @@ public class FriendMessageHandler extends MessageHandler<LPSFriendAction> {
 	/**
 	 * Called when {@code player} sends new friend request to opposite player.
 	 */
-	private void handleSendRequest(Player player) {
-		final FriendshipManager friendshipManager = player.getCurrentContext().getFriendshipManager();
+	private void handleSendRequest(Player player, Integer oppUid) {
+		final ServerContext context = player.getCurrentContext();
+		final FriendshipManager friendshipManager = context.getFriendshipManager();
 
-		player.getOppositePlayer().ifPresentOrElse((Player oppPlayer) -> {
-			final User oppUser = oppPlayer.getUser();
-			final Optional<Friendship> friendInfo = friendshipManager.getFriendsInfo(player.getUser(), oppUser);
+		// If oppUid was specified we will use it, otherwise we will use current
+		// opposite player
+		Optional.ofNullable(oppUid)
+				.map((Integer opp) -> Player.createDummyPlayer(context, opp))
+				.or(() -> player.getOppositePlayer())
+				.ifPresentOrElse((Player oppPlayer) -> {
+					final User oppUser = oppPlayer.getUser();
+					final Optional<Friendship> friendInfo = friendshipManager.getFriendsInfo(player.getUser(), oppUser);
 
-			friendInfo.ifPresentOrElse((info) -> {
-				// We already have request
-				if (!info.getIsAccepted()) {
-					// That's case when we receive repeated request
+					friendInfo.ifPresentOrElse((info) -> {
+						// We already have request
+						if (!info.getIsAccepted()) {
+							// That's case when we receive repeated request
 
-					if (!info.getSender().equals(player.getUser())) {
-						// Case of swapping receiver and sender.
-						// We should swap their id's in database to be able to receive request result
-						// from another user.
-						friendshipManager.swapSenderAndReceiver(info.getReceiver(), info.getSender());
-					}
-					// Send notification again.
-					oppPlayer.sendMessage(new LPSFriendRequest(FriendRequest.NEW_REQUEST));
-				}
+							if (!info.getSender().equals(player.getUser())) {
+								// Case of swapping receiver and sender.
+								// We should swap their id's in database to be able to receive request result
+								// from another user.
+								friendshipManager.swapSenderAndReceiver(info.getReceiver(), info.getSender());
+							}
+							// Send notification again.
+							sendNewRequestMessage(player, oppPlayer);
+						}
+					}, () -> {
+						// Users are not friends. Send new request.
+						friendshipManager.addNewRequest(new Friendship(player.getUser(), oppUser));
+						sendNewRequestMessage(player, oppPlayer);
+					});
+
+				}, this::printNotPresentWarning);
+
+	}
+
+	private void sendNewRequestMessage(Player sender, Player oppPlayer) {
+		final User senderUser = sender.getUser();
+		if (oppPlayer.isOnline())// Normal player
+			oppPlayer.sendMessage(
+					new LPSFriendRequest(FriendRequest.NEW_REQUEST, senderUser.getUserId(), senderUser.getName()));
+		else {
+			// Dummy or offline player
+			final ServerContext context = oppPlayer.getCurrentContext();
+			final Integer oppId = oppPlayer.getUser().getUserId();
+			final Optional<User> opp = context.getUserManager().getUserById(oppId);
+			opp.ifPresentOrElse((user) -> {
+				final String firebaseToken = user.getFirebaseToken();
+				if (firebaseToken != null) {
+					log.info("Sending firebase request to user {}", oppId);
+					NotificationData data = buildNotificationData(sender.getUser());
+					context.getRequestNotifier().sendNotification(user, data);
+				} else
+					log.warn("# Can't send request for user {}. Token not found", oppId);
 			}, () -> {
-				// Users are not friends. Send new request.
-				friendshipManager.addNewRequest(new Friendship(player.getUser(), oppUser));
-				oppPlayer.sendMessage(new LPSFriendRequest(FriendRequest.NEW_REQUEST));
+				log.warn("# Can't send friend request notification because user not found! user={}", oppId);
 			});
+		}
+	}
 
-		}, this::printNotPresentWarning);
+	private NotificationData buildNotificationData(User sender) {
+		final String title = "Пользователь " + sender.getName() + " хочет добавить вас в друзья.";
+		final HashMap<String, String> params = new HashMap<String, String>();
 
+		params.put("action", "friend_request");
+		params.put("result", "NEW_REQUEST");
+		params.put("login", sender.getName());
+		params.put("uid", String.valueOf(sender.getUserId()));
+
+		return new NotificationData(title, params);
 	}
 
 	/**
@@ -78,12 +123,13 @@ public class FriendMessageHandler extends MessageHandler<LPSFriendAction> {
 	private void handleRequestResult(Player player, Integer oppId, boolean isAccepted) {
 		final FriendshipManager friendshipManager = player.getCurrentContext().getFriendshipManager();
 		final Optional<Player> oppPlayer = player.getOppositePlayer();
+		final User pUser = player.getUser();
 		final User oppUser = oppPlayer.map((opp) -> opp.getUser()).orElse(new User(oppId));
 
-		friendshipManager.markAcceptedIfExistsOrDelete(oppUser, player.getUser(), isAccepted);
+		friendshipManager.markAcceptedIfExistsOrDelete(oppUser, pUser, isAccepted);
 
-		oppPlayer.ifPresent((opp) -> opp
-				.sendMessage(new LPSFriendRequest(isAccepted ? FriendRequest.ACCEPTED : FriendRequest.DENIED)));
+		oppPlayer.ifPresent((opp) -> opp.sendMessage(new LPSFriendRequest(
+				isAccepted ? FriendRequest.ACCEPTED : FriendRequest.DENIED, pUser.getUserId(), pUser.getName())));
 	}
 
 	/**

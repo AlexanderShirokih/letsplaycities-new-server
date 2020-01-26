@@ -1,10 +1,12 @@
 package ru.quandastudio.lpsserver.handlers;
 
+import java.util.HashMap;
 import java.util.Optional;
 import java.util.concurrent.ArrayBlockingQueue;
 
 import lombok.extern.slf4j.Slf4j;
 import ru.quandastudio.lpsserver.core.Player;
+import ru.quandastudio.lpsserver.core.RequestNotifier.NotificationData;
 import ru.quandastudio.lpsserver.core.Room;
 import ru.quandastudio.lpsserver.core.ServerContext;
 import ru.quandastudio.lpsserver.data.entities.User;
@@ -85,13 +87,25 @@ public class PlayMessageHandler extends MessageHandler<LPSPlay> {
 			final String firebaseToken = user.getFirebaseToken();
 			if (firebaseToken != null) {
 				log.info("Sending firebase request to user {}", oppId);
-				context.getRequestNotifier().sendNotification(player.getUser(), user);
+				NotificationData data = buildNotificationData(player.getUser());
+				context.getRequestNotifier().sendNotification(user, data);
 			} else
 				log.warn("# Can't send request for user {}. Token not found", oppId);
 		}, () -> {
 			log.warn("# Can't send notification because user not found! user={}", oppId);
 			player.sendMessage(new LPSFriendModeRequest(0, FriendModeResult.DENIED));
 		});
+	}
+
+	private NotificationData buildNotificationData(User sender) {
+		final String title = "Пользователь " + sender.getName() + " приглашает вас сыграть в города.";
+		final HashMap<String, String> params = new HashMap<String, String>();
+
+		params.put("action", "fm_request");
+		params.put("login", sender.getName());
+		params.put("user_id", String.valueOf(sender.getUserId()));
+
+		return new NotificationData(title, params);
 	}
 
 }

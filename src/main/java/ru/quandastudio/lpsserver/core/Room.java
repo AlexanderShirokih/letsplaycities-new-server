@@ -2,8 +2,11 @@ package ru.quandastudio.lpsserver.core;
 
 import java.util.ArrayList;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import ru.quandastudio.lpsserver.data.HistoryManager;
+import ru.quandastudio.lpsserver.data.entities.HistoryItem;
 import ru.quandastudio.lpsserver.data.entities.User;
 import ru.quandastudio.lpsserver.models.AuthType;
 import ru.quandastudio.lpsserver.models.LPSMessage;
@@ -23,6 +26,7 @@ public class Room {
 
 	private Dictionary dictionary;
 	private Player current;
+	private long startTime;
 	private char lastChar;
 	private int moveCounter = 0;
 
@@ -43,6 +47,7 @@ public class Room {
 			return false;
 
 		startTimer();
+		startTime = System.currentTimeMillis();
 
 		return true;
 	}
@@ -107,8 +112,10 @@ public class Room {
 
 	private void startTimer() {
 		moveCounter++;
-		GameTimer gt = new GameTimer(this, moveCounter);
-		current.getCurrentContext().getTaskLooper().schedule(new DelayedTask(MOVE_TIMER_PERIOD, MOVE_TIMER_PERIOD, gt));
+		GameTimer gameTimer = new GameTimer(this, moveCounter);
+		current.getCurrentContext()
+				.getTaskLooper()
+				.schedule(new DelayedTask(MOVE_TIMER_PERIOD, MOVE_TIMER_PERIOD, gameTimer));
 	}
 
 	private boolean isValid(String str) {
@@ -131,10 +138,19 @@ public class Room {
 	 * Битва завершена. Подводим итоги.
 	 */
 	public void finish() {
+		ServerContext context = starter.getCurrentContext();
+		HistoryManager historyManager = context.getHistoryManager();
+		historyManager.addHistoryItem(makeHistoryItem());
+
 		if (usedWords != null) {
 			usedWords.clear();
 			usedWords = null;
 		}
+	}
+
+	private HistoryItem makeHistoryItem() {
+		int duration = (int) ((System.currentTimeMillis() - startTime) / 1000L);
+		return new HistoryItem(starter.getUser(), invited.getUser(), startTime, duration, usedWords.size());
 	}
 
 	private void timeOut() {
@@ -154,6 +170,7 @@ public class Room {
 	class GameTimer implements RunnableTask {
 		private Room r;
 		private int mID;
+		@Getter
 		private int time;
 
 		public GameTimer(Room r, int mID) {

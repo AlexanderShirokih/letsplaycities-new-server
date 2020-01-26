@@ -20,26 +20,19 @@ public class FirebaseRequestNotifier implements RequestNotifier {
 	private final FirebaseMessaging firebaseMessaging;
 
 	@Override
-	public void sendNotification(User sender, User receiver) {
-		Message msg = buildMessage(sender.getUserId(), sender.getName(), receiver.getFirebaseToken());
-		firebaseMessaging.sendAsync(msg);
-	}
-
-	private Message buildMessage(int userId, String login, String token) {
-		return Message.builder()
-				.putData("action", "fm_request")
-				.putData("login", login)
-				.putData("user_id", String.valueOf(userId))
-				.setNotification(new Notification("Сыграем в Города",
-						"Пользователь " + login + " приглашает вас сыграть в города."))
+	public void sendNotification(User receiver, NotificationData data) {
+		Message msg = Message.builder()
+				.putAllData(data.getParams())
+				.setNotification(new Notification("Сыграем в Города", data.getTitle()))
 				.setAndroidConfig(AndroidConfig.builder()
 						.setPriority(Priority.HIGH)
 						.setTtl(0)
 						.setRestrictedPackageName("ru.aleshi.letsplaycities")
 						.setNotification(AndroidNotification.builder().setSound("default").build())
 						.build())
-				.setToken(token)
+				.setToken(receiver.getFirebaseToken())
 				.build();
+		firebaseMessaging.sendAsync(msg);
 	}
 
 }

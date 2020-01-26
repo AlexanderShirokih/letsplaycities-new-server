@@ -100,4 +100,12 @@ public class Player {
 		return Objects.equals(user, other.user);
 	}
 
+	public static Player createDummyPlayer(ServerContext context, Integer userId) {
+		Player p = new Player(context, new MessageChannel() {
+		});
+		p.setUser(new User(userId));
+		p.setOnline(false);
+		return p;
+	}
+
 }

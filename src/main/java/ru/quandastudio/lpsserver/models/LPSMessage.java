@@ -113,6 +113,13 @@ public class LPSMessage {
 		private final List<FriendInfo> data;
 	}
 
+	@Action("history")
+	@RequiredArgsConstructor
+	@Getter
+	public static final class LPSHistoryList extends LPSMessage {
+		private final List<HistoryInfo> data;
+	}
+
 	@Action("fm_request")
 	@RequiredArgsConstructor
 	@Getter
@@ -128,6 +135,10 @@ public class LPSMessage {
 	public static final class LPSFriendRequest extends LPSMessage {
 		@NonNull
 		private final FriendRequest result;
+		@NonNull
+		private final Integer uid;
+		@NonNull
+		private final String login;
 	}
 
 	@Action("timeout")

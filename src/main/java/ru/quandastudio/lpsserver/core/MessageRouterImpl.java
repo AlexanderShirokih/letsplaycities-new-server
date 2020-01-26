@@ -14,6 +14,7 @@ import ru.quandastudio.lpsserver.handlers.BanlistMessageHandler;
 import ru.quandastudio.lpsserver.handlers.FriendMessageHandler;
 import ru.quandastudio.lpsserver.handlers.FriendModeRequestMessageHandler;
 import ru.quandastudio.lpsserver.handlers.FriendsListMessageHandler;
+import ru.quandastudio.lpsserver.handlers.HistoryMessageHandler;
 import ru.quandastudio.lpsserver.handlers.LeaveMessageHandler;
 import ru.quandastudio.lpsserver.handlers.LoginMessageHandler;
 import ru.quandastudio.lpsserver.handlers.MessageHandler;
@@ -43,6 +44,7 @@ public class MessageRouterImpl implements MessageRouter {
 		registerTypeHandler(new FriendMessageHandler());
 		registerTypeHandler(new FriendsListMessageHandler());
 		registerTypeHandler(new FriendModeRequestMessageHandler());
+		registerTypeHandler(new HistoryMessageHandler());
 	}
 
 	private void registerTypeHandler(MessageHandler<?> handler) {

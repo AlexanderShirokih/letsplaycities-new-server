@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import ru.quandastudio.lpsserver.data.entities.Friendship;
@@ -23,6 +24,9 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
 
 	@Query("select f from Friendship f where (f.sender = ?1 and f.receiver = ?2) or (f.sender = ?2 and f.receiver = ?1)")
 	public Optional<Friendship> findBySenderAndReceiverOrReceiverAndSender(User sender, User receiver);
+
+	@Query("select f from Friendship f where f.isAccepted = true and (f.sender = :user and f.receiver in (:other)) or (f.receiver = :user and f.sender in (:other))")
+	public List<Friendship> findBySenderAndReceiverIn(@Param("user") User user, @Param("other") List<User> other);
 
 	@Query("select f from Friendship f where f.sender = ?1 or f.receiver = ?1")
 	public List<Friendship> findAllBySenderOrReceiver(User user);

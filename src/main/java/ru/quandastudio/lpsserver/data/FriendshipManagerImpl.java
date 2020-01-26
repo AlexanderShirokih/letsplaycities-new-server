@@ -57,6 +57,11 @@ public class FriendshipManagerImpl implements FriendshipManager {
 	}
 
 	@Override
+	public List<Friendship> getFriendsListIn(User user, List<User> other) {
+		return friendshipDAO.findBySenderAndReceiverIn(user, other);
+	}
+
+	@Override
 	public void swapSenderAndReceiver(User newSender, User newReceiver) {
 		friendshipDAO.swapSenderAndReceiver(newSender, newReceiver);
 	}

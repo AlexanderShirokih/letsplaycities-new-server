@@ -14,6 +14,7 @@ import ru.quandastudio.lpsserver.bots.BotManager;
 import ru.quandastudio.lpsserver.config.ServerProperties;
 import ru.quandastudio.lpsserver.data.BanlistManager;
 import ru.quandastudio.lpsserver.data.FriendshipManager;
+import ru.quandastudio.lpsserver.data.HistoryManager;
 import ru.quandastudio.lpsserver.data.UserManager;
 
 @Getter
@@ -36,6 +37,8 @@ public class ServerContext {
 	private final BanlistManager banlistManager;
 
 	private final FriendshipManager friendshipManager;
+	
+	private final HistoryManager historyManager;
 
 	private final RequestNotifier requestNotifier;
 

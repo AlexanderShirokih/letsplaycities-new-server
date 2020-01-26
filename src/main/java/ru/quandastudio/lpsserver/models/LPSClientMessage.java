@@ -95,6 +95,10 @@ public class LPSClientMessage {
 	@Action("friends_list")
 	public static final class LPSFriendList extends LPSClientMessage {
 	}
+	
+	@Action("history")
+	public static final class LPSHistoryList extends LPSClientMessage {
+	}
 
 	public enum RequestType {
 		QUERY_LIST, SEND, DELETE, ACCEPT, DENY;
