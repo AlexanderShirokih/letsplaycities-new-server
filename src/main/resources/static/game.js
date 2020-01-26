@@ -237,7 +237,7 @@ function handleMessage(data) {
 		 finishGame("Оппонент сдался");
 		 break;
 	case "friend_request":
-		if(result === "NEW_REQUEST") {
+		if(data.result === "NEW_REQUEST") {
 			 // TODO Handle friend request
 		    send({
 		      "action": "friend",
