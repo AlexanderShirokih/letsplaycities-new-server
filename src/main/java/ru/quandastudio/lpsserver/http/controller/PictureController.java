@@ -35,6 +35,7 @@ public class PictureController {
 				.map((ByteArrayResource resource) -> ResponseEntity.ok()
 						.contentType(MediaType.parseMediaType(MediaType.APPLICATION_OCTET_STREAM_VALUE))
 						.contentLength(resource.contentLength())
+						.header("Base64-Encoded", "true")
 						.body(resource))
 				.orElse(ResponseEntity.notFound().build());
 	}
