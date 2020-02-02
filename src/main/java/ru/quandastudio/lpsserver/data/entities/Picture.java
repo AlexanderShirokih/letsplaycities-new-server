@@ -35,7 +35,7 @@ public class Picture {
 
 	@Basic(fetch = FetchType.LAZY)
 	@OneToOne
-	@JoinColumn(name = "owner_id", nullable = false)
+	@JoinColumn(name = "owner_id", nullable = false, unique = true)
 	private User owner;
 
 	@Lob

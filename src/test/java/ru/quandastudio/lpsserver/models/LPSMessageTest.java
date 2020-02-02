@@ -19,7 +19,7 @@ public class LPSMessageTest {
 		LPSFriendsList output = new Gson().fromJson(input, LPSMessage.LPSFriendsList.class);
 
 		assertEquals(output.getData().size(), 3);
-		assertEquals(output.getData().get(0), new FriendInfo(17873, "Test", true));
+		assertEquals(output.getData().get(0), new FriendInfo(17873, "Test", true, null));
 	}
 
 }

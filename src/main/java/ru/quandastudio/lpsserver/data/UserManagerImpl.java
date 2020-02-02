@@ -72,11 +72,16 @@ public class UserManagerImpl implements UserManager {
 
 		final String hash = getHash(login);
 		if (!Objects.equals(user.getAvatarHash(), hash)) {
-			user.setAvatarHash(hash);
 			if (hash == null)
 				picturesDAO.deleteByOwner(user);
-			else
-				picturesDAO.save(new Picture(user, login.getAvatar()));
+			else {
+				if (user.getAvatarHash() == null) {
+					picturesDAO.save(new Picture(user, login.getAvatar()));
+				} else
+					picturesDAO.updateByOwner(user, login.getAvatar().getBytes());
+			}
+
+			user.setAvatarHash(hash);
 		}
 	}
 

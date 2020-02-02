@@ -1,6 +1,7 @@
 package ru.quandastudio.lpsserver.data;
 
 import java.util.List;
+import java.util.Optional;
 
 import javax.transaction.Transactional;
 
@@ -21,6 +22,11 @@ public class PictureManagerImpl implements PictureManager {
 	@Override
 	public List<Picture> getPicturesByUserId(List<User> users) {
 		return picturesDAO.findByOwnerIn(users);
+	}
+
+	@Override
+	public Optional<Picture> getPictureByUserId(User user) {
+		return picturesDAO.findByOwner(user);
 	}
 
 }

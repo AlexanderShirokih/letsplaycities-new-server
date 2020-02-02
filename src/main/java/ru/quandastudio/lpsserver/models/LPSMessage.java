@@ -111,7 +111,6 @@ public class LPSMessage {
 	@Getter
 	public static final class LPSFriendsList extends LPSMessage {
 		private final List<FriendInfo> data;
-		private final List<PictureInfo> pics;
 	}
 
 	@Action("history")
@@ -119,7 +118,6 @@ public class LPSMessage {
 	@Getter
 	public static final class LPSHistoryList extends LPSMessage {
 		private final List<HistoryInfo> data;
-		private final List<PictureInfo> pics;
 	}
 
 	@Action("fm_request")

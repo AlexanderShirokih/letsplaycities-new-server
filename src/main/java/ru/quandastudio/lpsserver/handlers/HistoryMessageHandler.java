@@ -9,12 +9,10 @@ import ru.quandastudio.lpsserver.core.Player;
 import ru.quandastudio.lpsserver.core.ServerContext;
 import ru.quandastudio.lpsserver.data.entities.Friendship;
 import ru.quandastudio.lpsserver.data.entities.HistoryItem;
-import ru.quandastudio.lpsserver.data.entities.Picture;
 import ru.quandastudio.lpsserver.data.entities.User;
 import ru.quandastudio.lpsserver.models.HistoryInfo;
 import ru.quandastudio.lpsserver.models.LPSClientMessage.LPSHistoryList;
 import ru.quandastudio.lpsserver.models.LPSMessage;
-import ru.quandastudio.lpsserver.models.PictureInfo;
 
 public class HistoryMessageHandler extends MessageHandler<LPSHistoryList> {
 
@@ -32,7 +30,7 @@ public class HistoryMessageHandler extends MessageHandler<LPSHistoryList> {
 		final List<Pair<User, HistoryInfo>> users = userHistory.stream().map((HistoryItem item) -> {
 			User other = (item.getInvited().getUserId() == user.getUserId()) ? item.getStarter() : item.getInvited();
 			HistoryInfo info = new HistoryInfo(other.getUserId(), other.getName(), item.getCreationDate().getTime(),
-					item.getDuration(), item.getWordsCount());
+					item.getDuration(), item.getWordsCount(), other.getAvatarHash());
 			return Pair.of(other, info);
 		}).collect(Collectors.toList());
 
@@ -41,8 +39,6 @@ public class HistoryMessageHandler extends MessageHandler<LPSHistoryList> {
 				.collect(Collectors.toList());
 
 		final List<Friendship> friendsList = context.getFriendshipManager().getFriendsListIn(user, other);
-
-		final List<Picture> picturesList = context.getPictureManager().getPicturesByUserId(other);
 
 		final List<HistoryInfo> data = users.stream()
 				.map((Pair<User, HistoryInfo> info) -> info.getSecond())
@@ -58,11 +54,7 @@ public class HistoryMessageHandler extends MessageHandler<LPSHistoryList> {
 				})
 				.collect(Collectors.toList());
 
-		final List<PictureInfo> pics = picturesList.stream()
-				.map((Picture pic) -> new PictureInfo(pic.getOwner().getUserId(), new String(pic.getImageData())))
-				.collect(Collectors.toList());
-
-		player.sendMessage(new LPSMessage.LPSHistoryList(data, pics));
+		player.sendMessage(new LPSMessage.LPSHistoryList(data));
 	}
 
 }

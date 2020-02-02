@@ -13,4 +13,5 @@ public class FriendInfo {
 	private final int userId;
 	private final String login;
 	private final boolean accepted;
+	private final String pictureHash;
 }
