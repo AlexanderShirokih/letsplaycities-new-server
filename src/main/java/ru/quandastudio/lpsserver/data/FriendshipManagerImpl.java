@@ -1,5 +1,6 @@
 package ru.quandastudio.lpsserver.data;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -58,7 +59,7 @@ public class FriendshipManagerImpl implements FriendshipManager {
 
 	@Override
 	public List<Friendship> getFriendsListIn(User user, List<User> other) {
-		return friendshipDAO.findBySenderAndReceiverIn(user, other);
+		return other.isEmpty() ? Collections.emptyList() : friendshipDAO.findBySenderAndReceiverIn(user, other);
 	}
 
 	@Override
