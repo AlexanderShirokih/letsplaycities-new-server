@@ -6,7 +6,6 @@ import java.util.Optional;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import ru.quandastudio.lpsserver.data.HistoryManager;
 import ru.quandastudio.lpsserver.data.entities.HistoryItem;
 import ru.quandastudio.lpsserver.data.entities.Picture;
 import ru.quandastudio.lpsserver.data.entities.User;
@@ -149,9 +148,10 @@ public class Room {
 	 * Битва завершена. Подводим итоги.
 	 */
 	public void finish() {
-		ServerContext context = starter.getCurrentContext();
-		HistoryManager historyManager = context.getHistoryManager();
-		historyManager.addHistoryItem(makeHistoryItem());
+		if (moveCounter > 0) {
+			ServerContext context = starter.getCurrentContext();
+			context.getHistoryManager().addHistoryItem(makeHistoryItem());
+		}
 
 		if (usedWords != null) {
 			usedWords.clear();
