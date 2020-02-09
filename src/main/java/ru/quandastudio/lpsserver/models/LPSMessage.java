@@ -25,7 +25,7 @@ public class LPSMessage {
 		private final Integer userId;
 		@NonNull
 		private final String accHash;
-		@NonNull
+		
 		private final String picHash;
 	}
 
