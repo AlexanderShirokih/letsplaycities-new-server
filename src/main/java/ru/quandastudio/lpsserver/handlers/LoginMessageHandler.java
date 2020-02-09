@@ -63,13 +63,13 @@ public class LoginMessageHandler extends MessageHandler<LPSLogIn> {
 
 		player.setUser(userData);
 		player.setAllowSendUID(login.getAllowSendUID());
-		player.setAvatarData(login.getAvatar());
 		player.setCanReceiveMessages(login.getCanReceiveMessages());
 		player.setClientBuild(login.getClientBuild());
 		player.setClientVersion(login.getClientVersion());
 
 		final Integer newerBuild = context.getServerProperties().getNewerBuild();
-		player.sendMessage(new LPSMessage.LPSLoggedIn(newerBuild, userData.getUserId(), userData.getAccessId()));
+		player.sendMessage(new LPSMessage.LPSLoggedIn(newerBuild, userData.getUserId(), userData.getAccessId(),
+				userData.getAvatarHash()));
 
 		if (context.getServerProperties().isLoggingMsgsEnabled())
 			log.info("Logged player: [{}, id={} sn={}, snUID={}]; version={}{}", userData.getName(),

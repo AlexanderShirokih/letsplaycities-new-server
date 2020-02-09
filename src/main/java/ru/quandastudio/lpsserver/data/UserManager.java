@@ -13,5 +13,7 @@ public interface UserManager {
 	public Optional<User> getUserById(Integer userId);
 
 	public void setBanned(Integer userId, boolean isOn);
+	
+	public void updateHash(User user, String hash);
 
 }

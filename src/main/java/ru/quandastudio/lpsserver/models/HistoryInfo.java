@@ -18,5 +18,6 @@ public class HistoryInfo {
 	final long startTime;
 	final int duration;
 	final int wordsCount;
+	@Deprecated
 	final String pictureHash;
 }

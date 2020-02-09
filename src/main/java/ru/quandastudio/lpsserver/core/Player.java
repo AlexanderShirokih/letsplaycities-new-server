@@ -32,8 +32,6 @@ public class Player {
 
 	private String clientVersion;
 
-	private String avatarData;
-
 	private Integer clientBuild;
 
 	private transient boolean isOnline = true;

@@ -57,8 +57,11 @@ public class LPSClientMessage {
 		@Size(max = 11, message = "Access hash value is too long!")
 		private String hash = null;
 
+		@Deprecated
 		@Size(max = 64 * 1024)
 		private String avatar = null;
+		
+		private String picHash;
 
 		private String accToken = null;
 
@@ -71,6 +74,18 @@ public class LPSClientMessage {
 
 	public enum PlayMode {
 		RANDOM_PAIR, FRIEND;
+	}
+
+	@Action("avatar")
+	@RequiredArgsConstructor
+	@Getter
+	public static final class LPSAvatar extends LPSClientMessage {
+		@NonNull
+		private final RequestType type;
+		@Size(max = 64 * 1024)
+		private final String avatar;
+		@Size(min = 32, max = 32, message = "Invalid MD5 hash")
+		private final String hash;
 	}
 
 	@Action("play")
@@ -95,7 +110,7 @@ public class LPSClientMessage {
 	@Action("friends_list")
 	public static final class LPSFriendList extends LPSClientMessage {
 	}
-	
+
 	@Action("history")
 	public static final class LPSHistoryList extends LPSClientMessage {
 	}

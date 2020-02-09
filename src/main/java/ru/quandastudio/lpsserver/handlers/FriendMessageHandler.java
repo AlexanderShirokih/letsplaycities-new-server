@@ -51,6 +51,7 @@ public class FriendMessageHandler extends MessageHandler<LPSFriendAction> {
 		// If oppUid was specified we will use it, otherwise we will use current
 		// opposite player
 		Optional.ofNullable(oppUid)
+				.filter((Integer opp) -> opp > 0)
 				.map((Integer opp) -> Player.createDummyPlayer(context, opp))
 				.or(() -> player.getOppositePlayer())
 				.ifPresentOrElse((Player oppPlayer) -> {

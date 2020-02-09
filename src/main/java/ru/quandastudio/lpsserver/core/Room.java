@@ -1,12 +1,14 @@
 package ru.quandastudio.lpsserver.core;
 
 import java.util.ArrayList;
+import java.util.Optional;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import ru.quandastudio.lpsserver.data.HistoryManager;
 import ru.quandastudio.lpsserver.data.entities.HistoryItem;
+import ru.quandastudio.lpsserver.data.entities.Picture;
 import ru.quandastudio.lpsserver.data.entities.User;
 import ru.quandastudio.lpsserver.models.AuthType;
 import ru.quandastudio.lpsserver.models.LPSMessage;
@@ -89,12 +91,13 @@ public class Room {
 		player.sendMessage(new LPSMessage.LPSWordMessage(result, word));
 	}
 
+	@SuppressWarnings("deprecation")
 	private void sendPlayMessage(Player player, boolean isStarter, boolean isFriend, boolean isBanned, Player other) {
 		final User oppUser = other.getUser();
 		final AuthType authType = other.getAllowSendUID() ? AuthType.from(oppUser.getAuthType()) : null;
 		final String snUID = other.getAllowSendUID() ? oppUser.getSnUid() : null;
 		final String login = oppUser.getName();
-		final String avatar = other.getAvatarData();
+		final String avatar = getAvatarForOlderVersions(player, other.getUser());
 		final LPSMessage.LPSPlayMessage play = new LPSMessage.LPSPlayMessage(authType, login, oppUser.getUserId(),
 				other.getClientVersion(), other.getClientBuild(), other.getCanReceiveMessages(), isFriend, isStarter,
 				isBanned, other.getAllowSendUID());
@@ -108,6 +111,14 @@ public class Room {
 		}
 
 		player.sendMessage(play);
+	}
+
+	private String getAvatarForOlderVersions(Player player, User user) {
+		return Optional.of(player)
+				.filter((Player) -> !player.checkVersion(270))
+				.flatMap((Player p) -> p.getCurrentContext().getPictureManager().getPictureByUserId(user))
+				.map((Picture picture) -> new String(picture.getImageData()))
+				.orElse(null);
 	}
 
 	private void startTimer() {

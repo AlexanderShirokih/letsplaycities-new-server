@@ -29,4 +29,14 @@ public class PictureManagerImpl implements PictureManager {
 		return picturesDAO.findByOwner(user);
 	}
 
+	@Override
+	public void deletePictureByUser(User user) {
+		picturesDAO.deleteByOwner(user);
+	}
+
+	@Override
+	public void addPicture(String image, User owner) {
+		picturesDAO.save(new Picture(owner, image));
+	}
+
 }

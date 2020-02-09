@@ -25,6 +25,8 @@ public class LPSMessage {
 		private final Integer userId;
 		@NonNull
 		private final String accHash;
+		@NonNull
+		private final String picHash;
 	}
 
 	@Action("login_error")
@@ -43,6 +45,7 @@ public class LPSMessage {
 		private final AuthType authType;
 		@NonNull
 		private final String login;
+		@Deprecated
 		private String avatar = null;
 		private String snUID = null;
 		@NonNull

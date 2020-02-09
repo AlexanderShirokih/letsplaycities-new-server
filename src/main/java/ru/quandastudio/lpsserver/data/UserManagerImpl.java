@@ -69,25 +69,22 @@ public class UserManagerImpl implements UserManager {
 		// Update login, fbToken and avatar hash code
 		user.setName(login.getLogin());
 		user.setFirebaseToken(login.getFirebaseToken());
-
-		final String hash = getHash(login);
-		if (!Objects.equals(user.getAvatarHash(), hash)) {
-			if (hash == null)
-				picturesDAO.deleteByOwner(user);
-			else {
+		if (login.getClientBuild() < 270) {
+			final String hash = getHash(login);
+			if (!Objects.equals(user.getAvatarHash(), hash) && hash != null) {
 				if (user.getAvatarHash() == null) {
 					picturesDAO.save(new Picture(user, login.getAvatar()));
 				} else
 					picturesDAO.updateByOwner(user, login.getAvatar().getBytes());
+				user.setAvatarHash(hash);
 			}
-
-			user.setAvatarHash(hash);
 		}
 	}
 
 	private String getHash(LPSLogIn login) {
 		final String avatar = login.getAvatar();
-		return avatar == null ? null : DigestUtils.md5Hex(avatar);
+		final boolean isAvatarPresent = avatar != null;
+		return isAvatarPresent ? DigestUtils.md5Hex(avatar) : null;
 	}
 
 	private User createUser(LPSLogIn login) {
@@ -98,7 +95,8 @@ public class UserManagerImpl implements UserManager {
 		user.setName(login.getLogin());
 		user.setAccessId(StringUtil.getAccIdHash());
 		user.setState(State.ready);
-		user.setAvatarHash(getHash(login));
+		if (login.getClientBuild() < 270)
+			user.setAvatarHash(getHash(login));
 		return user;
 	}
 
@@ -112,6 +110,11 @@ public class UserManagerImpl implements UserManager {
 		userDAO.findById(userId).ifPresent((user) -> {
 			user.setState(isOn ? State.banned : State.ready);
 		});
+	}
+
+	@Override
+	public void updateHash(User user, String hash) {
+		user.setAvatarHash(hash);
 	}
 
 }

@@ -7,9 +7,8 @@ import ru.quandastudio.lpsserver.core.Room;
 import ru.quandastudio.lpsserver.core.ServerContext;
 import ru.quandastudio.lpsserver.data.entities.User;
 import ru.quandastudio.lpsserver.models.AuthType;
-import ru.quandastudio.lpsserver.models.WordResult;
 import ru.quandastudio.lpsserver.models.LPSClientMessage.LPSWord;
-import ru.quandastudio.lpsserver.util.StringUtil;
+import ru.quandastudio.lpsserver.models.WordResult;
 
 @Slf4j
 public class Bot extends Player {
@@ -38,7 +37,7 @@ public class Bot extends Player {
 		user.setUserId(info.user_id);
 		user.setAuthType(AuthType.Native.getName());
 		setUser(user);
-		setAvatarData(StringUtil.toBase64(info.avatar));
+//		setAvatarData(StringUtil.toBase64(info.avatar));
 		setClientBuild(BOT_VERSION_CODE);
 		setClientVersion(BOT_VERSION);
 		setAllowSendUID(false);
