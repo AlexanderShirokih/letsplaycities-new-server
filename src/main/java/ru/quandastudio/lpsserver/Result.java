@@ -61,6 +61,20 @@ public class Result<T> {
 		return error(error);
 	}
 
+	public T getOr(T defaultValue) {
+		if (isSuccess()) {
+			return data;
+		}
+		return defaultValue;
+	}
+
+	public Result<T> or(@NonNull Result<T> defaultResult) {
+		if (isSuccess()) {
+			return this;
+		}
+		return defaultResult;
+	}
+
 	public boolean hasErrors() {
 		return error != null;
 	}

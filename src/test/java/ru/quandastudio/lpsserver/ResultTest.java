@@ -91,4 +91,19 @@ public class ResultTest {
 						.getMessage());
 	}
 
+	@Test
+	public void testOr() {
+		assertEquals("Success", Result.success("Success").or(Result.success("Second")).getData());
+		assertEquals("Second", Result.error("Error").or(Result.success("Second")).getData());
+
+		assertEquals("Success", Result.success("Success").or(Result.error("Error")).getData());
+		assertEquals("Error!", Result.error("Error").or(Result.error("Error!")).getError().getMessage());
+	}
+
+	@Test
+	public void testGetOr() {
+		assertEquals("Success", Result.success("Success").getOr("Default"));
+		assertEquals("Default", Result.error("Error").getOr("Default"));
+	}
+
 }
