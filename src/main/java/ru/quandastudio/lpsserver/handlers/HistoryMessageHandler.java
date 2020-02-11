@@ -2,8 +2,7 @@ package ru.quandastudio.lpsserver.handlers;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
-import org.springframework.data.util.Pair;
+import java.util.stream.IntStream;
 
 import ru.quandastudio.lpsserver.core.Player;
 import ru.quandastudio.lpsserver.core.ServerContext;
@@ -27,21 +26,17 @@ public class HistoryMessageHandler extends MessageHandler<LPSHistoryList> {
 		final User user = player.getUser();
 		final List<HistoryItem> userHistory = context.getHistoryManager().getHistoryList(user);
 
-		final List<Pair<User, HistoryInfo>> users = userHistory.stream().map((HistoryItem item) -> {
-			User other = (item.getInvited().getUserId() == user.getUserId()) ? item.getStarter() : item.getInvited();
-			HistoryInfo info = new HistoryInfo(other.getUserId(), other.getName(), item.getCreationDate().getTime(),
-					item.getDuration(), item.getWordsCount(), other.getAvatarHash());
-			return Pair.of(other, info);
+		final List<User> other = userHistory.stream().map((HistoryItem item) -> {
+			return (item.getInvited().getUserId() == user.getUserId()) ? item.getStarter() : item.getInvited();
 		}).collect(Collectors.toList());
 
-		final List<User> other = users.parallelStream()
-				.map((Pair<User, HistoryInfo> info) -> info.getFirst())
+		final List<HistoryInfo> users = IntStream.range(0, userHistory.size())
+				.mapToObj((int i) -> new HistoryInfo(other.get(i), userHistory.get(i)))
 				.collect(Collectors.toList());
 
 		final List<Friendship> friendsList = context.getFriendshipManager().getFriendsListIn(user, other);
 
 		final List<HistoryInfo> data = users.stream()
-				.map((Pair<User, HistoryInfo> info) -> info.getSecond())
 				.map((HistoryInfo info) -> {
 					final Integer uid = info.getUserId();
 					for (Friendship f : friendsList) {
