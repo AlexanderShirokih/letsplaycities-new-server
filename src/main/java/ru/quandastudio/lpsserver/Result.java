@@ -9,6 +9,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
+import ru.quandastudio.lpsserver.http.model.MessageWrapper;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
@@ -68,6 +69,14 @@ public class Result<T> {
 		return defaultValue;
 	}
 
+	public T getOr(Function<Exception, T> func) {
+		if (isSuccess()) {
+			return data;
+		}
+
+		return func.apply(error);
+	}
+
 	public Result<T> or(@NonNull Result<T> defaultResult) {
 		if (isSuccess()) {
 			return this;
@@ -81,6 +90,10 @@ public class Result<T> {
 
 	public boolean isSuccess() {
 		return data != null;
+	}
+
+	public MessageWrapper<T> wrap() {
+		return new MessageWrapper<T>(error.getMessage(), data);
 	}
 
 }
