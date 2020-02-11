@@ -1,6 +1,7 @@
 package ru.quandastudio.lpsserver;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 import java.util.Optional;
@@ -48,4 +49,46 @@ public class ResultTest {
 	public void testGetData() {
 		assertTrue(Result.success("test").getData().equals("test"));
 	}
+
+	@Test
+	public void testCheckFromSuccess() {
+		assertTrue(Result.success("test").check((String test) -> test.equals("test"), "Should'nt happen").isSuccess());
+
+		assertEquals("Filter failed!",
+				Result.success("test").check((String test) -> false, "Filter failed!").getError().getMessage());
+	}
+
+	@Test
+	public void testCheckFromError() {
+		assertEquals("Error!",
+				Result.<String>error("Error!").check((String msg) -> true, "Test").getError().getMessage());
+		assertEquals("Error!",
+				Result.<String>error("Error!").check((String msg) -> false, "Test").getError().getMessage());
+	}
+
+	@Test
+	public void testMapFromSuccess() {
+		assertEquals("123", Result.success(123).map((Integer i) -> i.toString()).getData());
+	}
+
+	@Test
+	public void testMapFromError() {
+		assertEquals("Error!",
+				Result.<Integer>error("Error!").map((Integer i) -> i.toString()).getError().getMessage());
+	}
+
+	@Test
+	public void testFlatMapFromSuccess() {
+		assertEquals("123", Result.success(123).flatMap((Integer i) -> Result.success(String.valueOf(i))).getData());
+	}
+
+	@Test
+	public void testFlatMapFromError() {
+		assertEquals("Error!",
+				Result.<Integer>error("Error!")
+						.flatMap((Integer i) -> Result.success(String.valueOf(i)))
+						.getError()
+						.getMessage());
+	}
+
 }
