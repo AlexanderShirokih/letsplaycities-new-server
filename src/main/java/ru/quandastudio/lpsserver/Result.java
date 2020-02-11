@@ -4,6 +4,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -16,6 +17,14 @@ import ru.quandastudio.lpsserver.http.model.MessageWrapper;
 public class Result<T> {
 	private final T data;
 	private final Exception error;
+
+	public static <T> Result<T> of(Supplier<T> supplier) {
+		try {
+			return success(supplier.get());
+		} catch (Exception e) {
+			return error(e);
+		}
+	}
 
 	public static Result<Object> empty() {
 		return new Result<Object>(new Object(), null);
