@@ -10,10 +10,12 @@ public interface UserManager {
 
 	public Result<User> logIn(LPSLogIn login);
 
+	public Result<User> getUserByIdAndHash(Integer userId, String accessHash);
+
 	public Optional<User> getUserById(Integer userId);
 
 	public void setBanned(Integer userId, boolean isOn);
-	
+
 	public void updateHash(User user, String hash);
 
 }

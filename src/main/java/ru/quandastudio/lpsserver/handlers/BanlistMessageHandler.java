@@ -35,15 +35,11 @@ public class BanlistMessageHandler extends MessageHandler<LPSBanList> {
 				.getBanlistManager()
 				.getBannedUsers(player.getUser());
 		final List<BlackListItem> blacklistItems = bannedList.stream()
-				.map(this::transform)
+				.map(BlackListItem::new)
 				.collect(Collectors.toList());
 		player.sendMessage(new LPSMessage.LPSBannedListMessage(blacklistItems));
 	}
-
-	private BlackListItem transform(BannedUser user) {
-		return new BlackListItem(user.getBannedName(), user.getBannedId());
-	}
-
+	
 	private void handleDeleteAction(Player player, Integer bannedId) {
 		player.getCurrentContext().getBanlistManager().removeFromBanlist(player.getUser().getUserId(), bannedId);
 	}

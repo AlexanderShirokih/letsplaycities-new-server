@@ -101,6 +101,16 @@ public class UserManagerImpl implements UserManager {
 	}
 
 	@Override
+	public Result<User> getUserByIdAndHash(Integer userId, String accessHash) {
+		return Result.empty()
+				.check((Object o) -> userId != null && accessHash != null && accessHash.length() == 8,
+						"#010: Invalid authorization data")
+				.flatMap((Object o) -> Result.from(userDAO.findByUserIdAndAccessId(userId, accessHash),
+						"#011: Authenification error"))
+				.check((User user) -> user.getState() != State.banned, "#012: Access error: User is banned!");
+	}
+
+	@Override
 	public Optional<User> getUserById(Integer userId) {
 		return userDAO.findById(userId);
 	}
