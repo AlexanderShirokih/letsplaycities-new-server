@@ -106,7 +106,7 @@ public class UserManagerImpl implements UserManager {
 				.check((Object o) -> userId != null && accessHash != null && accessHash.length() == 8,
 						"#010: Invalid authorization data")
 				.flatMap((Object o) -> Result.from(userDAO.findByUserIdAndAccessId(userId, accessHash),
-						"#011: Authenification error"))
+						String.format("#011: Authenification error %d:%s", userId, accessHash)))
 				.check((User user) -> user.getState() != State.banned, "#012: Access error: User is banned!");
 	}
 

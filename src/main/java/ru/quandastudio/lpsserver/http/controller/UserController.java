@@ -2,17 +2,16 @@ package ru.quandastudio.lpsserver.http.controller;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -51,25 +50,21 @@ public class UserController {
 				.getOr(ResponseEntity.notFound().build());
 	}
 
-	@GetMapping("/{id}/blacklist")
+	@GetMapping("/blacklist")
 	@ResponseBody
-	public MessageWrapper<List<BlackListItem>> getBlackList(@PathVariable(name = "id") Integer userId,
-			@RequestParam(name = "hash") String accessHash) {
-		return authAndMap(userId, accessHash, (User u) -> context.getBanlistManager().getBannedUsers(u))
-				.map(UserController::convert)
-				.wrap();
+	public MessageWrapper<List<BlackListItem>> getBlackList(@AuthenticationPrincipal User user) {
+		return Result.success(context.getBanlistManager().getBannedUsers(user)).map(UserController::convert).wrap();
 	}
 
 	private static List<BlackListItem> convert(List<BannedUser> bannedList) {
 		return bannedList.stream().map((BannedUser banned) -> new BlackListItem(banned)).collect(Collectors.toList());
 	}
 
-	@GetMapping("/{id}/friends")
+	@GetMapping("/friends")
 	@ResponseBody
-	public MessageWrapper<List<FriendInfo>> getFriendInfo(@PathVariable(name = "id") Integer userId,
-			@RequestParam(name = "hash") String accessHash) {
-		return authAndMap(userId, accessHash, (User u) -> context.getFriendshipManager().getFriendsList(u))
-				.map((List<Friendship> fs) -> convertFriendsList(userId, fs))
+	public MessageWrapper<List<FriendInfo>> getFriendInfo(@AuthenticationPrincipal User user) {
+		return Result.success(context.getFriendshipManager().getFriendsList(user))
+				.map((List<Friendship> fs) -> convertFriendsList(user.getUserId(), fs))
 				.wrap();
 	}
 
@@ -82,12 +77,11 @@ public class UserController {
 		return new FriendInfo(oppUser.getUserId(), oppUser.getName(), fs.getIsAccepted(), oppUser.getAvatarHash());
 	}
 
-	@GetMapping("/{id}/history")
+	@GetMapping("/history")
 	@ResponseBody
-	public MessageWrapper<List<HistoryInfo>> getHistory(@PathVariable(name = "id") Integer userId,
-			@RequestParam(name = "hash") String accessHash) {
-		return authAndMap(userId, accessHash, (User u) -> context.getHistoryManager().getHistoryList(u))
-				.map((List<HistoryItem> list) -> convert(userId, list))
+	public MessageWrapper<List<HistoryInfo>> getHistory(@AuthenticationPrincipal User user) {
+		return Result.success(context.getHistoryManager().getHistoryList(user))
+				.map((List<HistoryItem> list) -> convert(user.getUserId(), list))
 				.wrap();
 	}
 
@@ -104,9 +98,5 @@ public class UserController {
 		final User other = (invited.getUserId() == userId) ? starter : invited;
 
 		return new HistoryInfo(other, item);
-	}
-
-	private <T> Result<T> authAndMap(Integer userId, String accessHash, Function<User, T> mapper) {
-		return context.getUserManager().getUserByIdAndHash(userId, accessHash).map(mapper);
 	}
 }
