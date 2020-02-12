@@ -1,19 +1,16 @@
 package ru.quandastudio.lpsserver;
 
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Optional;
 
-import org.junit.Before;
 import org.junit.Test;
 
 public class ResultTest {
-
-	@Before
-	public void setUp() throws Exception {
-	}
 
 	@Test
 	public void testSuccess() {
@@ -45,9 +42,11 @@ public class ResultTest {
 		assertTrue(Result.from(Optional.empty(), "has errors").getError().getMessage().equals("has errors"));
 	}
 
+	@SuppressWarnings("deprecation")
 	@Test
 	public void testGetData() {
 		assertTrue(Result.success("test").getData().equals("test"));
+		assertNull(Result.error("error").getData());
 	}
 
 	@Test
@@ -68,7 +67,7 @@ public class ResultTest {
 
 	@Test
 	public void testMapFromSuccess() {
-		assertEquals("123", Result.success(123).map((Integer i) -> i.toString()).getData());
+		assertEquals("123", Result.success(123).map((Integer i) -> i.toString()).get());
 	}
 
 	@Test
@@ -79,7 +78,7 @@ public class ResultTest {
 
 	@Test
 	public void testFlatMapFromSuccess() {
-		assertEquals("123", Result.success(123).flatMap((Integer i) -> Result.success(String.valueOf(i))).getData());
+		assertEquals("123", Result.success(123).flatMap((Integer i) -> Result.success(String.valueOf(i))).get());
 	}
 
 	@Test
@@ -93,10 +92,10 @@ public class ResultTest {
 
 	@Test
 	public void testOr() {
-		assertEquals("Success", Result.success("Success").or(Result.success("Second")).getData());
-		assertEquals("Second", Result.error("Error").or(Result.success("Second")).getData());
+		assertEquals("Success", Result.success("Success").or(Result.success("Second")).get());
+		assertEquals("Second", Result.error("Error").or(Result.success("Second")).get());
 
-		assertEquals("Success", Result.success("Success").or(Result.error("Error")).getData());
+		assertEquals("Success", Result.success("Success").or(Result.error("Error")).get());
 		assertEquals("Error!", Result.error("Error").or(Result.error("Error!")).getError().getMessage());
 	}
 
@@ -106,4 +105,23 @@ public class ResultTest {
 		assertEquals("Default", Result.error("Error").getOr("Default"));
 	}
 
+	@Test
+	public void testMapCatchErrors() {
+		assertEquals("Error", Result.success("test").map((String s) -> {
+			throw new RuntimeException("Error");
+		}).getError().getMessage());
+	}
+
+	@Test
+	public void testMapError() {
+		assertTrue(Result.success("test").mapError((Exception e) -> e).isSuccess());
+		assertEquals("Error2",
+				Result.error("Error1").mapError((Exception e) -> new RuntimeException("Error2")).getError().getMessage());
+	}
+
+	@Test
+	public void testGet() {
+		assertEquals("test", Result.success("test").get());
+		assertThatExceptionOfType(RuntimeException.class).isThrownBy(() -> Result.error("error").get());
+	}
 }

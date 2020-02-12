@@ -1,5 +1,6 @@
 package ru.quandastudio.lpsserver;
 
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
@@ -13,22 +14,12 @@ import lombok.NonNull;
 import ru.quandastudio.lpsserver.http.model.MessageWrapper;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Getter
 public class Result<T> {
+
+	@Getter(onMethod_ = { @Deprecated })
 	private final T data;
+	@Getter
 	private final Exception error;
-
-	public static <T> Result<T> of(Supplier<T> supplier) {
-		try {
-			return success(supplier.get());
-		} catch (Exception e) {
-			return error(e);
-		}
-	}
-
-	public static Result<Object> empty() {
-		return new Result<Object>(new Object(), null);
-	}
 
 	public static <T> Result<T> success(@NonNull T data) {
 		return new Result<T>(data, null);
@@ -39,12 +30,28 @@ public class Result<T> {
 	}
 
 	public static <T> Result<T> error(String error) {
-		return error(new IllegalStateException(error));
+		return error(new RuntimeException(error));
+	}
+
+	public static Result<Object> empty() {
+		return success(new Object());
+	}
+
+	public static <T> Result<T> of(Supplier<T> supplier) {
+		try {
+			return success(supplier.get());
+		} catch (Exception e) {
+			return error(e);
+		}
 	}
 
 	public static <T> Result<T> from(@NonNull Optional<T> optional, String errMsg) {
 		if (optional.isPresent())
-			return success(optional.get());
+			try {
+				return success(optional.get());
+			} catch (NoSuchElementException e) {
+				return error(e);
+			}
 		else
 			return error(errMsg);
 	}
@@ -58,17 +65,41 @@ public class Result<T> {
 
 	public <R> Result<R> map(Function<T, R> mapper) {
 		if (isSuccess()) {
-			R newData = mapper.apply(data);
-			return success(Objects.requireNonNull(newData));
+			try {
+				R newData = mapper.apply(data);
+				return success(Objects.requireNonNull(newData));
+			} catch (Exception e) {
+				return error(e);
+			}
 		}
 		return error(error);
 	}
 
+	public Result<T> mapError(Function<Exception, Exception> errorMapper) {
+		if (isSuccess())
+			return this;
+		return error(errorMapper.apply(error));
+	}
+
 	public <R> Result<R> flatMap(Function<T, Result<R>> mapper) {
 		if (isSuccess()) {
-			return Objects.requireNonNull(mapper.apply(data));
+			try {
+				return Objects.requireNonNull(mapper.apply(data));
+			} catch (Exception e) {
+				return error(e);
+			}
 		}
 		return error(error);
+	}
+
+	public T get() throws RuntimeException {
+		if (isSuccess())
+			return data;
+
+		if (error instanceof RuntimeException)
+			throw (RuntimeException) error;
+		else
+			throw new RuntimeException(error);
 	}
 
 	public T getOr(T defaultValue) {
