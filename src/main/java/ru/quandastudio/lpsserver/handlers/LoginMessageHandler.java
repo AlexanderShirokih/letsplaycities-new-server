@@ -52,7 +52,7 @@ public class LoginMessageHandler extends MessageHandler<LPSLogIn> {
 			return;
 		}
 
-		User userData = user.getData();
+		User userData = user.get();
 
 		if (userData.getState() == State.banned) {
 			loginError(player, BAN_MSG);
