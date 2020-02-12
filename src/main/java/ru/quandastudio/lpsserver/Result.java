@@ -133,7 +133,7 @@ public class Result<T> {
 	}
 
 	public MessageWrapper<T> wrap() {
-		return new MessageWrapper<T>(error == null ? null : error.getMessage(), data);
+		return new MessageWrapper<T>(data, error == null ? null : error.getMessage());
 	}
 
 }
