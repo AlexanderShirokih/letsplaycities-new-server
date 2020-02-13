@@ -157,6 +157,7 @@ public class Room {
 			usedWords.clear();
 			usedWords = null;
 		}
+		moveCounter = 0;
 	}
 
 	private HistoryItem makeHistoryItem() {

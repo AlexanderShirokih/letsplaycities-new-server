@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import ru.quandastudio.lpsserver.data.entities.Friendship;
+import ru.quandastudio.lpsserver.data.entities.FriendshipProjection;
 import ru.quandastudio.lpsserver.data.entities.User;
 
 @Repository
@@ -28,8 +29,8 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
 	@Query("select f from Friendship f where f.isAccepted = true and (f.sender = :user and f.receiver in (:other)) or (f.receiver = :user and f.sender in (:other))")
 	public List<Friendship> findBySenderAndReceiverIn(@Param("user") User user, @Param("other") List<User> other);
 
-	@Query("select f from Friendship f where f.sender = ?1 or f.receiver = ?1")
-	public List<Friendship> findAllBySenderOrReceiver(User user);
+	@Query("select case when f.sender=?1 then f.receiver else f.sender end as oppUser, f.isAccepted as accepted from Friendship f where f.sender = ?1 or f.receiver = ?1")
+	public List<FriendshipProjection> findAllFriendsByUser(User user);
 
 	@Modifying(clearAutomatically = true)
 	@Query("update Friendship f set f.sender = ?1, f.receiver = ?2 where f.sender = ?2 and f.receiver = ?1")

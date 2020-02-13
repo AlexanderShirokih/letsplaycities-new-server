@@ -2,7 +2,6 @@ package ru.quandastudio.lpsserver.http.controller;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
@@ -18,15 +17,11 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.RequiredArgsConstructor;
 import ru.quandastudio.lpsserver.Result;
 import ru.quandastudio.lpsserver.core.ServerContext;
-import ru.quandastudio.lpsserver.data.entities.BannedUser;
-import ru.quandastudio.lpsserver.data.entities.Friendship;
-import ru.quandastudio.lpsserver.data.entities.HistoryItem;
+import ru.quandastudio.lpsserver.data.entities.OppUserNameProjection;
+import ru.quandastudio.lpsserver.data.entities.FriendshipProjection;
+import ru.quandastudio.lpsserver.data.entities.HistoryProjection;
 import ru.quandastudio.lpsserver.data.entities.Picture;
 import ru.quandastudio.lpsserver.data.entities.User;
-import ru.quandastudio.lpsserver.http.model.MessageWrapper;
-import ru.quandastudio.lpsserver.models.BlackListItem;
-import ru.quandastudio.lpsserver.models.FriendInfo;
-import ru.quandastudio.lpsserver.models.HistoryInfo;
 
 @RestController
 @RequiredArgsConstructor
@@ -52,51 +47,20 @@ public class UserController {
 
 	@GetMapping("/blacklist")
 	@ResponseBody
-	public MessageWrapper<List<BlackListItem>> getBlackList(@AuthenticationPrincipal User user) {
-		return Result.success(context.getBanlistManager().getBannedUsers(user)).map(UserController::convert).wrap();
-	}
-
-	private static List<BlackListItem> convert(List<BannedUser> bannedList) {
-		return bannedList.stream().map((BannedUser banned) -> new BlackListItem(banned)).collect(Collectors.toList());
+	public List<OppUserNameProjection> getBlackList(@AuthenticationPrincipal User user) {
+		return context.getBanlistManager().getBannedUsers(user);
 	}
 
 	@GetMapping("/friends")
 	@ResponseBody
-	public MessageWrapper<List<FriendInfo>> getFriendInfo(@AuthenticationPrincipal User user) {
-		return Result.success(context.getFriendshipManager().getFriendsList(user))
-				.map((List<Friendship> fs) -> convertFriendsList(user.getUserId(), fs))
-				.wrap();
-	}
-
-	private static List<FriendInfo> convertFriendsList(Integer userId, List<Friendship> list) {
-		return list.stream().map((Friendship fs) -> transform(userId, fs)).collect(Collectors.toList());
-	}
-
-	private static FriendInfo transform(Integer playerId, Friendship fs) {
-		final User oppUser = fs.getReceiver().getUserId() == playerId ? fs.getSender() : fs.getReceiver();
-		return new FriendInfo(oppUser.getUserId(), oppUser.getName(), fs.getIsAccepted(), oppUser.getAvatarHash());
+	public List<FriendshipProjection> getFriendInfo(@AuthenticationPrincipal User user) {
+		return context.getFriendshipManager().getFriendsList(user);
 	}
 
 	@GetMapping("/history")
 	@ResponseBody
-	public MessageWrapper<List<HistoryInfo>> getHistory(@AuthenticationPrincipal User user) {
-		return Result.success(context.getHistoryManager().getHistoryList(user))
-				.map((List<HistoryItem> list) -> convert(user.getUserId(), list))
-				.wrap();
+	public List<HistoryProjection> getHistory(@AuthenticationPrincipal User user) {
+		return context.getHistoryManager().getHistoryList(user);
 	}
 
-	private List<HistoryInfo> convert(Integer userId, List<HistoryItem> userHistory) {
-		final List<HistoryInfo> historyInfo = userHistory.stream()
-				.map((HistoryItem banned) -> transform(userId, banned))
-				.collect(Collectors.toList());
-		return historyInfo;
-	}
-
-	private static HistoryInfo transform(Integer userId, HistoryItem item) {
-		final User invited = item.getInvited();
-		final User starter = item.getStarter();
-		final User other = (invited.getUserId() == userId) ? starter : invited;
-
-		return new HistoryInfo(other, item);
-	}
 }

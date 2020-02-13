@@ -12,7 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import ru.quandastudio.lpsserver.bots.BotManager;
 import ru.quandastudio.lpsserver.config.ServerProperties;
-import ru.quandastudio.lpsserver.data.BanlistManager;
+import ru.quandastudio.lpsserver.data.BlacklistManager;
 import ru.quandastudio.lpsserver.data.FriendshipManager;
 import ru.quandastudio.lpsserver.data.HistoryManager;
 import ru.quandastudio.lpsserver.data.PictureManager;
@@ -35,7 +35,7 @@ public class ServerContext {
 
 	private final UserManager userManager;
 
-	private final BanlistManager banlistManager;
+	private final BlacklistManager banlistManager;
 
 	private final FriendshipManager friendshipManager;
 	

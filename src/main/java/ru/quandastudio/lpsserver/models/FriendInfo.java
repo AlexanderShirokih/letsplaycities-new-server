@@ -4,6 +4,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import ru.quandastudio.lpsserver.data.entities.FriendshipProjection;
 
 @RequiredArgsConstructor
 @Getter
@@ -15,4 +16,8 @@ public class FriendInfo {
 	private final boolean accepted;
 	@Deprecated
 	private final String pictureHash;
+
+	public FriendInfo(FriendshipProjection f) {
+		this(f.getUserId(), f.getLogin(), f.getAccepted(), "");
+	}
 }

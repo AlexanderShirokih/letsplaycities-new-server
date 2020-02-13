@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import ru.quandastudio.lpsserver.data.dao.FriendshipRepository;
 import ru.quandastudio.lpsserver.data.entities.Friendship;
+import ru.quandastudio.lpsserver.data.entities.FriendshipProjection;
 import ru.quandastudio.lpsserver.data.entities.User;
 
 @Service
@@ -22,7 +23,7 @@ public class FriendshipManagerImpl implements FriendshipManager {
 
 	@Override
 	public void addNewRequest(Friendship friendship) {
-		// Assert that we don't have any handing request
+		// Assert that we don't have any hanging request
 		deleteFriend(friendship.getSender(), friendship.getReceiver());
 
 		friendshipDAO.save(friendship);
@@ -53,8 +54,8 @@ public class FriendshipManagerImpl implements FriendshipManager {
 	}
 
 	@Override
-	public List<Friendship> getFriendsList(User user) {
-		return friendshipDAO.findAllBySenderOrReceiver(user);
+	public List<FriendshipProjection> getFriendsList(User user) {
+		return friendshipDAO.findAllFriendsByUser(user);
 	}
 
 	@Override

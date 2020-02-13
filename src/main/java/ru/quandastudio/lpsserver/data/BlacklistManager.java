@@ -2,16 +2,16 @@ package ru.quandastudio.lpsserver.data;
 
 import java.util.List;
 
-import ru.quandastudio.lpsserver.data.entities.BannedUser;
+import ru.quandastudio.lpsserver.data.entities.OppUserNameProjection;
 import ru.quandastudio.lpsserver.data.entities.User;
 
-public interface BanlistManager {
+public interface BlacklistManager {
 
 	public void addToBanlist(User baner, User banned);
 
-	public void removeFromBanlist(Integer banerId, Integer bannedId);
+	public void removeFromBanlist(User baner, User banned);
 
-	public List<BannedUser> getBannedUsers(User banerId);
+	public List<OppUserNameProjection> getBannedUsers(User baner);
 
 	public boolean isBanned(User user1, User user2);
 

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import ru.quandastudio.lpsserver.data.entities.Friendship;
+import ru.quandastudio.lpsserver.data.entities.FriendshipProjection;
 import ru.quandastudio.lpsserver.data.entities.User;
 
 public interface FriendshipManager {
@@ -14,7 +15,7 @@ public interface FriendshipManager {
 
 	public Optional<Friendship> getFriendsInfo(User first, User second);
 
-	public List<Friendship> getFriendsList(User user);
+	public List<FriendshipProjection> getFriendsList(User user);
 
 	public List<Friendship> getFriendsListIn(User user, List<User> other);
 
