@@ -13,7 +13,7 @@
 	<groupId>ru.quandastudio</groupId>
 	<artifactId>lpsserver</artifactId>
 	<packaging>jar</packaging>
-	<version>0.18</version>
+	<version>0.19</version>
 	<name>LPSServer</name>
 	<description>LPS game server</description>
 
