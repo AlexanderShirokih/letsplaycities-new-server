@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import ru.quandastudio.lpsserver.data.entities.OppUserNameProjection;
 
 public class LPSMessage {
 
@@ -107,7 +106,7 @@ public class LPSMessage {
 	@RequiredArgsConstructor
 	@Getter
 	public static final class LPSBannedListMessage extends LPSMessage {
-		private final List<OppUserNameProjection> data;
+		private final List<BlacklistWrapper> data;
 	}
 
 	@Action("friends")

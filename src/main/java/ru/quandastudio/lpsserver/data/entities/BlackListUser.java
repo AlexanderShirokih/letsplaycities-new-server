@@ -42,7 +42,7 @@ public class BlackListUser implements Serializable {
 	private User banned;
 
 	public BlackListUser(User baner, User banned) {
-		this(null, banned, banned);
+		this(null, baner, banned);
 	}
 
 }
