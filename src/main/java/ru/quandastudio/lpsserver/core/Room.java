@@ -99,7 +99,7 @@ public class Room {
 		final String avatar = getAvatarForOlderVersions(player, other.getUser());
 		final LPSMessage.LPSPlayMessage play = new LPSMessage.LPSPlayMessage(authType, login, oppUser.getUserId(),
 				other.getClientVersion(), other.getClientBuild(), other.getCanReceiveMessages(), isFriend, isStarter,
-				isBanned, other.getAllowSendUID());
+				isBanned, oppUser.getAvatarHash(), other.getAllowSendUID());
 
 		if (avatar != null && !avatar.isEmpty()) {
 			play.setAvatar(avatar);

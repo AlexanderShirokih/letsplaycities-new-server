@@ -60,6 +60,8 @@ public class LPSMessage {
 		@NonNull
 		private final Boolean youStarter;
 		private final boolean banned;
+		
+		private final String pictureHash;
 
 		private transient final boolean allowSendSnUid;
 	}
