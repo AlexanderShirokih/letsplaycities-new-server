@@ -17,7 +17,7 @@ public interface HistoryRepository extends JpaRepository<HistoryItem, Long> {
 	public HistoryItem save(HistoryItem item);
 
 	@Query(value="SELECT \n" + 
-			"   CASE WHEN h.starter=?1 THEN h.invited ELSE h.starter END AS opp_id,\n" + 
+			"   CASE WHEN h.starter=?1 THEN h.invited ELSE h.starter END AS oppUser,\n" + 
 			"   CASE WHEN f.isAccepted IS NOT null THEN f.isAccepted else false END AS isFriend,\n" + 
 			"	h.creationDate AS creationDate,\n" +
 			"	h.duration AS duration,\n"+

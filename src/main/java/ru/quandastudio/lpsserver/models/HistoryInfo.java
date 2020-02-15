@@ -17,11 +17,10 @@ public class HistoryInfo {
 	final long startTime;
 	final int duration;
 	final int wordsCount;
-	@Deprecated
 	final String pictureHash;
 
 	public HistoryInfo(HistoryProjection h) {
 		this(h.getUserId(), h.getLogin(), h.getIsFriend(), h.getCreationDate().getTime(), h.getDuration(),
-				h.getWordsCount(), "");
+				h.getWordsCount(), h.getPictureHash());
 	}
 }

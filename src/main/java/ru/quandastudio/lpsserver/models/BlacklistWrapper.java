@@ -15,8 +15,10 @@ public class BlacklistWrapper {
 	private final int userId;
 
 	private final String login;
+	
+	private final String pictureHash;
 
 	public BlacklistWrapper(OppUserNameProjection user) {
-		this(user.getUserId(), user.getLogin());
+		this(user.getUserId(), user.getLogin(), user.getPictureHash());
 	}
 }

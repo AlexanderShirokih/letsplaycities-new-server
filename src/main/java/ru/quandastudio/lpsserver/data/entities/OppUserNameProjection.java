@@ -10,4 +10,6 @@ public interface OppUserNameProjection {
 	@Value("#{target.oppUser.name}")
 	String getLogin();
 
+	@Value("#{target.oppUser.avatarHash}")
+	String getPictureHash();
 }
