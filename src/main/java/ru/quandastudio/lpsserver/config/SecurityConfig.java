@@ -3,6 +3,7 @@ package ru.quandastudio.lpsserver.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
@@ -35,15 +36,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		http.csrf()
 				.disable()
 				.authorizeRequests()
-				.antMatchers("/user/*/picture", "/game")
+				.antMatchers("/user/", "/user/*/picture", "/game")
 				.permitAll()
-				.antMatchers("/user/**")
+				.antMatchers(HttpMethod.POST, "/user/picture")
 				.authenticated()
-				.antMatchers("/friends/**")
-				.authenticated()
-				.antMatchers("/history/**")
-				.authenticated()
-				.antMatchers("/blacklist/**")
+				.antMatchers("/picture/**", "/friends/**", "/history/**", "/blacklist/**")
 				.authenticated()
 				.antMatchers("/**")
 				.permitAll()

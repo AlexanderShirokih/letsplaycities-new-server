@@ -60,7 +60,7 @@ public class LPSClientMessage {
 		@Deprecated
 		@Size(max = 64 * 1024)
 		private String avatar = null;
-		
+
 		private String picHash;
 
 		private String accToken = null;
@@ -74,18 +74,6 @@ public class LPSClientMessage {
 
 	public enum PlayMode {
 		RANDOM_PAIR, FRIEND;
-	}
-
-	@Action("avatar")
-	@RequiredArgsConstructor
-	@Getter
-	public static final class LPSAvatar extends LPSClientMessage {
-		@NonNull
-		private final RequestType type;
-		@Size(max = 64 * 1024)
-		private final String avatar;
-		@Size(min = 32, max = 32, message = "Invalid MD5 hash")
-		private final String hash;
 	}
 
 	@Action("play")

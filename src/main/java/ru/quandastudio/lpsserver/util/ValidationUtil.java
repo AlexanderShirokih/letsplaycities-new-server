@@ -9,19 +9,20 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 
-import ru.quandastudio.lpsserver.models.LPSClientMessage;
-
 public final class ValidationUtil {
 
-	public static Optional<String> validateMessage(LPSClientMessage msg) {
+	public static <T> Optional<String> validateMessage(T msg) {
 		ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
 		Validator validator = factory.getValidator();
 
-		Set<ConstraintViolation<LPSClientMessage>> v = validator.validate(msg);
-		Iterator<ConstraintViolation<LPSClientMessage>> validates = v.iterator();
+		Set<ConstraintViolation<T>> v = validator.validate(msg);
+		Iterator<ConstraintViolation<T>> validates = v.iterator();
 
-		if (validates.hasNext())
-			return Optional.of(validates.next().getMessage());
+		if (validates.hasNext()) {
+			ConstraintViolation<T> cv = validates.next();
+			return Optional
+					.of(String.format("%s (%s): %s", cv.getPropertyPath(), cv.getInvalidValue(), cv.getMessage()));
+		}
 		return Optional.empty();
 
 	}

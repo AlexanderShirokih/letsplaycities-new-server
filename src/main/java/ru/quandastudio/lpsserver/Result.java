@@ -3,6 +3,8 @@ package ru.quandastudio.lpsserver;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -60,6 +62,25 @@ public class Result<T> {
 		if (isSuccess() && !condition.test(data)) {
 			return error(errorMsg);
 		}
+		return this;
+	}
+
+	public Result<T> check(BooleanSupplier condition, String errorMsg) {
+		if (isSuccess() && !condition.getAsBoolean()) {
+			return error(errorMsg);
+		}
+		return this;
+	}
+
+	public Result<T> apply(Consumer<T> cons) {
+		if (isSuccess())
+			cons.accept(data);
+		return this;
+	}
+
+	public Result<T> onError(Consumer<Exception> cons) {
+		if (hasErrors())
+			cons.accept(error);
 		return this;
 	}
 

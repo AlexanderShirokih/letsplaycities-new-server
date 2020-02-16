@@ -33,10 +33,10 @@ public class PictureManagerImpl implements PictureManager {
 	public void deletePictureByUser(User user) {
 		picturesDAO.deleteByOwner(user);
 	}
-
+	
 	@Override
-	public void addPicture(String image, User owner) {
-		picturesDAO.save(new Picture(owner, image));
+	public void save(Picture picture) {
+		picturesDAO.save(picture);
 	}
 
 }

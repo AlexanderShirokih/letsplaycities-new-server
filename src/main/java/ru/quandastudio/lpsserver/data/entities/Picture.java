@@ -3,6 +3,8 @@ package ru.quandastudio.lpsserver.data.entities;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -27,11 +29,24 @@ import lombok.ToString;
 @ToString
 public class Picture {
 
+	public enum Type {
+		BASE64(null), PNG("image/png"), JPEG("image/jpeg"), GIF("image/gif");
+
+		private String name;
+
+		Type(String name) {
+			this.name = name;
+		}
+
+		public String getMediaType() {
+			return name;
+		}
+	}
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "id", precision = 11)
 	private Long id;
-
 
 	@Basic(fetch = FetchType.LAZY)
 	@OneToOne
@@ -43,7 +58,12 @@ public class Picture {
 	@Column(name = "image", nullable = false)
 	private byte[] imageData;
 
-	public Picture(User owner, String image) {
-		this(null, owner, image.getBytes());
+	// b64 or raw
+	@Column(name = "type", nullable = false)
+	@Enumerated(EnumType.ORDINAL)
+	private Type type;
+
+	public Picture(User owner, byte[] image, Type format) {
+		this(null, owner, image, format);
 	}
 }
