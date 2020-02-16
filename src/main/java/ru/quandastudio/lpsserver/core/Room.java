@@ -93,20 +93,15 @@ public class Room {
 	@SuppressWarnings("deprecation")
 	private void sendPlayMessage(Player player, boolean isStarter, boolean isFriend, boolean isBanned, Player other) {
 		final User oppUser = other.getUser();
-		final AuthType authType = other.getAllowSendUID() ? AuthType.from(oppUser.getAuthType()) : null;
-		final String snUID = other.getAllowSendUID() ? oppUser.getSnUid() : null;
+		final AuthType authType = AuthType.from(oppUser.getAuthType());
 		final String login = oppUser.getName();
 		final String avatar = getAvatarForOlderVersions(player, other.getUser());
 		final LPSMessage.LPSPlayMessage play = new LPSMessage.LPSPlayMessage(authType, login, oppUser.getUserId(),
 				other.getClientVersion(), other.getClientBuild(), other.getCanReceiveMessages(), isFriend, isStarter,
-				isBanned, oppUser.getAvatarHash(), other.getAllowSendUID());
+				isBanned, oppUser.getAvatarHash(), false);
 
 		if (avatar != null && !avatar.isEmpty()) {
 			play.setAvatar(avatar);
-		}
-
-		if (other.getAllowSendUID()) {
-			play.setSnUID(snUID);
 		}
 
 		player.sendMessage(play);

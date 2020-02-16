@@ -40,7 +40,6 @@ public class Bot extends Player {
 //		setAvatarData(StringUtil.toBase64(info.avatar));
 		setClientBuild(BOT_VERSION_CODE);
 		setClientVersion(BOT_VERSION);
-		setAllowSendUID(false);
 		setCanReceiveMessages(false);
 		min = info.minWaitingTimeMs;
 		max = info.maxWaitingTimeMs;

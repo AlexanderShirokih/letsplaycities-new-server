@@ -28,8 +28,6 @@ public class Player {
 
 	private Boolean canReceiveMessages;
 
-	private Boolean allowSendUID;
-
 	private String clientVersion;
 
 	private Integer clientBuild;

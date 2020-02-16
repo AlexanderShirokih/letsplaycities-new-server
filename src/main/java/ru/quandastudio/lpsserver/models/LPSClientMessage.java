@@ -30,7 +30,7 @@ public class LPSClientMessage {
 	public static final class LPSLogIn extends LPSClientMessage {
 		@NotNull
 		@Min(value = 3, message = "Unsupported protocol version")
-		@Max(value = 4, message = "Unsupported protocol version")
+		@Max(value = 5, message = "Unsupported protocol version")
 		private int version;
 
 		@NotNull
@@ -39,6 +39,7 @@ public class LPSClientMessage {
 		@Setter
 		private String login;
 
+		@Deprecated
 		private AuthType authType = null;
 
 		@NotNull
@@ -61,14 +62,18 @@ public class LPSClientMessage {
 		@Size(max = 64 * 1024)
 		private String avatar = null;
 
+		@Deprecated
 		private String picHash;
 
+		@Deprecated
 		private String accToken = null;
 
+		@Deprecated
 		private Boolean allowSendUID = Boolean.FALSE;
 
 		@Size(min = 2, max = 32, message = "Social network UID must be in size [2;32]!")
 		@Setter
+		@Deprecated
 		private String snUID = null;
 	}
 

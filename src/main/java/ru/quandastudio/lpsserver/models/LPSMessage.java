@@ -21,11 +21,13 @@ public class LPSMessage {
 	public static final class LPSLoggedIn extends LPSMessage {
 		@NonNull
 		private final Integer newerBuild;
-		@NonNull
+
+		@Deprecated
 		private final Integer userId;
-		@NonNull
+
+		@Deprecated
 		private final String accHash;
-		
+
 		private final String picHash;
 	}
 
@@ -34,6 +36,7 @@ public class LPSMessage {
 	@Getter
 	public static final class LPSBanned extends LPSMessage {
 		private final String banReason;
+		@Deprecated
 		private final String connError;
 	}
 
@@ -60,7 +63,7 @@ public class LPSMessage {
 		@NonNull
 		private final Boolean youStarter;
 		private final boolean banned;
-		
+
 		private final String pictureHash;
 
 		private transient final boolean allowSendSnUid;
