@@ -14,6 +14,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
 import ru.quandastudio.lpsserver.Result;
+import ru.quandastudio.lpsserver.core.Player;
 import ru.quandastudio.lpsserver.core.ServerContext;
 import ru.quandastudio.lpsserver.data.PictureManager;
 import ru.quandastudio.lpsserver.data.entities.Picture;
@@ -29,6 +31,9 @@ import ru.quandastudio.lpsserver.data.entities.User;
 import ru.quandastudio.lpsserver.http.model.MessageWrapper;
 import ru.quandastudio.lpsserver.http.model.SignUpRequest;
 import ru.quandastudio.lpsserver.http.model.SignUpResponse;
+import ru.quandastudio.lpsserver.models.FriendModeResult;
+import ru.quandastudio.lpsserver.models.RequestType;
+import ru.quandastudio.lpsserver.models.LPSMessage.LPSFriendModeRequest;
 import ru.quandastudio.lpsserver.util.ValidationUtil;
 
 @RestController
@@ -101,6 +106,27 @@ public class UserController {
 				.map((User u) -> new SignUpResponse(u))
 				.wrap()
 				.toResponse();
+	}
+
+	@PutMapping("user/request/{id}/{type}")
+	public ResponseEntity<String> handleGameRequest(@PathVariable("id") int userId,
+			@PathVariable("id") RequestType requestType, @AuthenticationPrincipal User user) {
+		if (requestType == RequestType.DENY) {
+			handleDenyResult(user, new User(userId));
+			return ResponseEntity.ok("ok");
+		}
+		return ResponseEntity.badRequest().build();
+	}
+
+	private void handleDenyResult(User current, User oppUser) {
+		final Optional<Player> sender = context.getPlayer(oppUser);
+
+		sender.ifPresent((Player player) -> {
+			if (context.getFriendshipManager().isFriends(current, oppUser)) {
+				player.sendMessage(new LPSFriendModeRequest(current.getUserId(), FriendModeResult.DENIED));
+			} else
+				player.sendMessage(new LPSFriendModeRequest(0, FriendModeResult.NOT_FRIEND));
+		});
 	}
 
 }

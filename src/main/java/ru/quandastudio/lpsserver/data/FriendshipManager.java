@@ -22,4 +22,6 @@ public interface FriendshipManager {
 	public void markAcceptedIfExistsOrDelete(User first, User second, boolean isAccepted);
 
 	public void swapSenderAndReceiver(User newSender, User newReceiver);
+	
+	public boolean isFriends(User user1, User user2);
 }

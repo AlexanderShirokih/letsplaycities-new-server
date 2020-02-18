@@ -69,10 +69,7 @@ public class Player {
 	}
 
 	public boolean isFriend(Integer userId) {
-		return getCurrentContext().getFriendshipManager()
-				.getFriendsInfo(getUser(), new User(userId))
-				.map((info) -> info.getIsAccepted())
-				.orElse(false);
+		return getCurrentContext().getFriendshipManager().isFriends(getUser(), new User(userId));
 	}
 
 	public Optional<Player> getOppositePlayer() {

@@ -1,6 +1,8 @@
 package ru.quandastudio.lpsserver.core;
 
 import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Optional;
 import java.util.concurrent.ArrayBlockingQueue;
 
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -17,6 +19,7 @@ import ru.quandastudio.lpsserver.data.FriendshipManager;
 import ru.quandastudio.lpsserver.data.HistoryManager;
 import ru.quandastudio.lpsserver.data.PictureManager;
 import ru.quandastudio.lpsserver.data.UserManager;
+import ru.quandastudio.lpsserver.data.entities.User;
 
 @Getter
 @RequiredArgsConstructor
@@ -38,9 +41,9 @@ public class ServerContext {
 	private final BlacklistManager banlistManager;
 
 	private final FriendshipManager friendshipManager;
-	
+
 	private final HistoryManager historyManager;
-	
+
 	private final PictureManager pictureManager;
 
 	private final RequestNotifier requestNotifier;
@@ -48,11 +51,37 @@ public class ServerContext {
 	private final ServerProperties serverProperties;
 
 	private final TaskLooper taskLooper;
-	
+
 	private final Dictionary dictionary;
 
 	public void log() {
 		log.info("QUEUE={}; WAITING_REQUESTS={}", playersQueue.size(), friendsRequests.size());
+	}
+
+	public Optional<Player> getPlayerFromWaitingQueue(User target, User sender) {
+		Iterator<Player> iter = friendsRequests.keySet().iterator();
+		while (iter.hasNext()) {
+			Player p = iter.next();
+			if (!p.isOnline()) {
+				iter.remove();
+				continue;
+			}
+			// Check that we have request with Player `sender` and target `target`
+			if (p.getUser().getUserId() == sender.getUserId() && friendsRequests.get(p) == target.getUserId()) {
+				return Optional.of(p);
+			}
+		}
+		return Optional.empty();
+	}
+
+	public Optional<Player> getPlayer(User user) {
+		return playersQueue.stream()
+				.filter((Player p) -> p.isOnline() && p.getUser().getUserId() == user.getUserId())
+				.findFirst()
+				.or(() -> friendsRequests.keySet()
+						.stream()
+						.filter((Player p) -> p.isOnline() && p.getUser().getUserId() == user.getUserId())
+						.findFirst());
 	}
 
 }

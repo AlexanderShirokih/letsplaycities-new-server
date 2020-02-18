@@ -1,13 +1,12 @@
 package ru.quandastudio.lpsserver.handlers;
 
-import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.Optional;
 
 import lombok.extern.slf4j.Slf4j;
 import ru.quandastudio.lpsserver.core.Player;
 import ru.quandastudio.lpsserver.core.Room;
 import ru.quandastudio.lpsserver.core.ServerContext;
+import ru.quandastudio.lpsserver.data.entities.User;
 import ru.quandastudio.lpsserver.models.FriendModeResult;
 import ru.quandastudio.lpsserver.models.LPSClientMessage.LPSFriendMode;
 import ru.quandastudio.lpsserver.models.LPSMessage.LPSFriendModeRequest;
@@ -35,7 +34,8 @@ public class FriendModeRequestMessageHandler extends MessageHandler<LPSFriendMod
 
 	private void handleRequestResult(Player player, Integer oppId, boolean isAccepted) {
 		if (player.isFriend(oppId)) {
-			final Optional<Player> optPlayer = fromWaitingQueue(player, oppId);
+			final Optional<Player> optPlayer = player.getCurrentContext()
+					.getPlayerFromWaitingQueue(player.getUser(), new User(oppId));
 
 			optPlayer.ifPresentOrElse((Player opp) -> {
 				if (opp.getRoom() != null)
@@ -62,23 +62,6 @@ public class FriendModeRequestMessageHandler extends MessageHandler<LPSFriendMod
 		room.start();
 
 		context.getFriendsRequests().remove(player);
-	}
-
-	private Optional<Player> fromWaitingQueue(Player player, Integer oppId) {
-		Hashtable<Player, Integer> requests = player.getCurrentContext().getFriendsRequests();
-
-		Iterator<Player> iter = requests.keySet().iterator();
-		while (iter.hasNext()) {
-			Player p = iter.next();
-			if (!p.isOnline()) {
-				iter.remove();
-				continue;
-			}
-			if (p.getUser().getUserId() == oppId && requests.get(p) == player.getUser().getUserId()) {
-				return Optional.of(p);
-			}
-		}
-		return Optional.empty();
 	}
 
 }

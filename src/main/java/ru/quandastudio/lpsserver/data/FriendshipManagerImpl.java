@@ -68,4 +68,9 @@ public class FriendshipManagerImpl implements FriendshipManager {
 		friendshipDAO.swapSenderAndReceiver(newSender, newReceiver);
 	}
 
+	@Override
+	public boolean isFriends(User user1, User user2) {
+		return getFriendsInfo(user1, user2).map((info) -> info.getIsAccepted()).orElse(false);
+	}
+
 }
