@@ -23,8 +23,8 @@ public class WordMessageHandler extends MessageHandler<LPSWord> {
 		final Optional<String> firstError = ValidationUtil.validateMessage(msg);
 
 		if (firstError.isPresent()) {
-			player.sendMessage(new LPSWordMessage(WordResult.NO_WORD, msg.getWord()));
-			player.sendMessage(new LPSMsgMessage(firstError.get(), true));
+			player.sendMessage(new LPSWordMessage(WordResult.NO_WORD, msg.getWord(),player.getUser().getUserId()));
+			player.sendMessage(new LPSMsgMessage(firstError.get(), true, player.getUser().getUserId()));
 			return;
 		}
 

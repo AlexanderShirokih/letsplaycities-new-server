@@ -77,6 +77,8 @@ public class LPSMessage {
 		private final WordResult result;
 		@NonNull
 		private final String word;
+		@NonNull
+		private final Integer ownerId;
 	}
 
 	@Action("msg")
@@ -86,6 +88,8 @@ public class LPSMessage {
 		@NonNull
 		private final String msg;
 		private final boolean isSystemMsg;
+		@NonNull
+		private final Integer ownerId;
 	}
 
 	@Action("leave")

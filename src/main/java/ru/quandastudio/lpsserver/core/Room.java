@@ -58,7 +58,7 @@ public class Room {
 		if (player.equals(current)) {
 			if (isValid(word)) {
 				if (usedWords.contains(word)) {
-					submitWord(player, word, WordResult.ALREADY);
+					submitWord(player, player, word, WordResult.ALREADY);
 				} else if (dictionary.contains(word)) {
 					int end = word.length();
 					do {
@@ -71,23 +71,23 @@ public class Room {
 					} while (lastChar == 'ь' || lastChar == 'ъ' || lastChar == 'ы' || lastChar == 'ё');
 
 					usedWords.add(word);
-					submitWord(player, word, WordResult.ACCEPTED);
+					submitWord(player, player, word, WordResult.ACCEPTED);
 					current = oppositePlayer(current);
-					submitWord(current, word, WordResult.RECEIVED);
+					submitWord(current, player, word, WordResult.RECEIVED);
 					startTimer();
 				} else {
-					submitWord(player, word, WordResult.NO_WORD);
+					submitWord(player, player, word, WordResult.NO_WORD);
 				}
 			} else {
-				submitWord(player, word, WordResult.NO_WORD);
+				submitWord(player, player, word, WordResult.NO_WORD);
 			}
 		} else {
-			submitWord(player, word, WordResult.WRONG_MOVE);
+			submitWord(player, player, word, WordResult.WRONG_MOVE);
 		}
 	}
 
-	private void submitWord(Player player, String word, WordResult result) {
-		player.sendMessage(new LPSMessage.LPSWordMessage(result, word));
+	private void submitWord(Player player, Player owner, String word, WordResult result) {
+		player.sendMessage(new LPSMessage.LPSWordMessage(result, word, owner.getUser().getUserId()));
 	}
 
 	@SuppressWarnings("deprecation")

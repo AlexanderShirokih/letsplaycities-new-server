@@ -50,7 +50,6 @@ public class UserController {
 				.map((User user) -> context.getPictureManager().getPictureByUserId(user))
 				.flatMap((Optional<Picture> picture) -> Result.from(picture, "No picture"))
 				.map((Picture p) -> {
-
 					boolean isBase64 = p.getType() == Picture.Type.BASE64;
 					ByteArrayResource res = new ByteArrayResource(p.getImageData());
 					return ResponseEntity.ok()
@@ -105,7 +104,7 @@ public class UserController {
 				.flatMap(context.getUserManager()::logIn)
 				.map((User u) -> new SignUpResponse(u))
 				.wrap()
-				.toResponse();
+				.toOkResponse();
 	}
 
 	@PutMapping("user/request/{id}/{type}")

@@ -23,4 +23,8 @@ public class MessageWrapper<T> {
 			return ResponseEntity.ok(this);
 		return ResponseEntity.badRequest().body(this);
 	}
+
+	public ResponseEntity<MessageWrapper<T>> toOkResponse() {
+		return ResponseEntity.ok(this);
+	}
 }
