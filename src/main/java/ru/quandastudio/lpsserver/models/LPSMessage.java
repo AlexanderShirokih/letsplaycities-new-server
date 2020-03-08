@@ -97,6 +97,8 @@ public class LPSMessage {
 	@Getter
 	public static final class LPSLeaveMessage extends LPSMessage {
 		private final boolean leaved;
+		@NonNull
+		private final Integer ownerId;
 	}
 
 	@Action("banned")

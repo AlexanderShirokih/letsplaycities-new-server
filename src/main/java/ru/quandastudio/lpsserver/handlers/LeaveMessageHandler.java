@@ -21,7 +21,7 @@ public class LeaveMessageHandler extends MessageHandler<LPSLeave> {
 		Player p = room.oppositePlayer(player);
 
 		if (p.isOnline()) {
-			p.sendMessage(new LPSMessage.LPSLeaveMessage(true));
+			p.sendMessage(new LPSMessage.LPSLeaveMessage(true, player.getUser().getUserId()));
 		}
 	}
 

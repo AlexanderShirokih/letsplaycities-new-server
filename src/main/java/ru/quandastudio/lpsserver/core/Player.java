@@ -49,7 +49,7 @@ public class Player {
 		if (room != null) {
 			Player p = room.oppositePlayer(this);
 			if (p.isOnline())
-				p.sendMessage(new LPSLeaveMessage(false));
+				p.sendMessage(new LPSLeaveMessage(false, getUser().getUserId()));
 			else
 				room.finish();
 		}
