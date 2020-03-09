@@ -94,7 +94,7 @@ public class FriendMessageHandler extends MessageHandler<LPSFriendAction> {
 			final Optional<User> opp = context.getUserManager().getUserById(oppId);
 			opp.ifPresentOrElse((user) -> {
 				final String firebaseToken = user.getFirebaseToken();
-				if (firebaseToken != null) {
+				if (firebaseToken != null && !firebaseToken.isBlank()) {
 					log.info("Sending firebase request to user {}", oppId);
 					NotificationData data = buildNotificationData(sender.getUser());
 					context.getRequestNotifier().sendNotification(user, data);
@@ -113,7 +113,7 @@ public class FriendMessageHandler extends MessageHandler<LPSFriendAction> {
 		params.put("action", "friend_request");
 		params.put("result", "NEW_REQUEST");
 		params.put("login", sender.getName());
-		params.put("uid", String.valueOf(sender.getUserId()));
+		params.put("user_id", String.valueOf(sender.getUserId()));
 
 		return new NotificationData(title, params);
 	}

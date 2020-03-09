@@ -36,9 +36,9 @@ public class FriendsController {
 		context.getFriendshipManager().deleteFriend(user, new User(friendId));
 	}
 
-	@PutMapping("friend/request/{id}/{type}")
+	@PutMapping("/request/{id}/{type}")
 	public ResponseEntity<String> handleRequest(@PathVariable("id") int userId,
-			@PathVariable("id") RequestType requestType, @AuthenticationPrincipal User user) {
+			@PathVariable("type") RequestType requestType, @AuthenticationPrincipal User user) {
 		final FriendshipManager friendshipManager = context.getFriendshipManager();
 		final User oppUser = new User(userId);
 
