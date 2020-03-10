@@ -32,7 +32,7 @@ public class FriendsController {
 
 	@DeleteMapping("/{id}")
 	@ResponseStatus(HttpStatus.OK)
-	public void getBlackList(@PathVariable("id") int friendId, @AuthenticationPrincipal User user) {
+	public void deleteFriend(@PathVariable("id") int friendId, @AuthenticationPrincipal User user) {
 		context.getFriendshipManager().deleteFriend(user, new User(friendId));
 	}
 
@@ -44,10 +44,10 @@ public class FriendsController {
 
 		switch (requestType) {
 		case ACCEPT:
-			friendshipManager.markAcceptedIfExistsOrDelete(user, oppUser, true);
+			friendshipManager.markAcceptedIfExistsOrDelete(oppUser, user, true);
 			break;
 		case DENY:
-			friendshipManager.markAcceptedIfExistsOrDelete(user, oppUser, true);
+			friendshipManager.markAcceptedIfExistsOrDelete(oppUser, user, false);
 			break;
 		default:
 			return ResponseEntity.badRequest().build();

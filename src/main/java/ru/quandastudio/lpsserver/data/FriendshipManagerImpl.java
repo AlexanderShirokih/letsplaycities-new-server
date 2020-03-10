@@ -40,12 +40,12 @@ public class FriendshipManagerImpl implements FriendshipManager {
 	}
 
 	@Override
-	public void markAcceptedIfExistsOrDelete(User first, User second, boolean isAccepted) {
-		final Optional<Friendship> friendInfo = friendshipDAO.findBySenderAndReceiver(first, second);
+	public void markAcceptedIfExistsOrDelete(User sender, User receiver, boolean isAccepted) {
+		final Optional<Friendship> friendInfo = friendshipDAO.findBySenderAndReceiverAndIsAcceptedFalse(sender, receiver);
 
-		// Check if request exists
+		// Check if request exists or not
 		friendInfo.ifPresent((Friendship info) -> {
-			if (isAccepted) {
+			if (isAccepted && !info.getIsAccepted()) {
 				info.setIsAccepted(true);
 			} else {
 				friendshipDAO.delete(info);

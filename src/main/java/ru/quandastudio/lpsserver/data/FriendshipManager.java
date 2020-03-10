@@ -19,7 +19,7 @@ public interface FriendshipManager {
 
 	public List<Friendship> getFriendsListIn(User user, List<User> other);
 
-	public void markAcceptedIfExistsOrDelete(User first, User second, boolean isAccepted);
+	public void markAcceptedIfExistsOrDelete(User sender, User receiver, boolean isAccepted);
 
 	public void swapSenderAndReceiver(User newSender, User newReceiver);
 	

@@ -36,5 +36,5 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
 	@Query("update Friendship f set f.sender = ?1, f.receiver = ?2 where f.sender = ?2 and f.receiver = ?1")
 	public void swapSenderAndReceiver(User newSender, User newReceiver);
 
-	public Optional<Friendship> findBySenderAndReceiver(User sender, User receiver);
+	public Optional<Friendship> findBySenderAndReceiverAndIsAcceptedFalse(User sender, User receiver);
 }

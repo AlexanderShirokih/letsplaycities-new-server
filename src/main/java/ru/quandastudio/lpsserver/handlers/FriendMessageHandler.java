@@ -120,6 +120,9 @@ public class FriendMessageHandler extends MessageHandler<LPSFriendAction> {
 
 	/**
 	 * Called when {@code player} accept or decline request sent by opposite player.
+	 * @param player user who receives the request
+	 * @param oppId user who sends the request
+	 * 
 	 */
 	private void handleRequestResult(Player player, Integer oppId, boolean isAccepted) {
 		final FriendshipManager friendshipManager = player.getCurrentContext().getFriendshipManager();
