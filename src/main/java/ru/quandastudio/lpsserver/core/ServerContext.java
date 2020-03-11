@@ -2,6 +2,7 @@ package ru.quandastudio.lpsserver.core;
 
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.ArrayBlockingQueue;
 
@@ -59,15 +60,19 @@ public class ServerContext {
 	}
 
 	public Optional<Player> getPlayerFromWaitingQueue(User target, User sender) {
-		Iterator<Player> iter = friendsRequests.keySet().iterator();
+		Iterator<Entry<Player, Integer>> iter = friendsRequests.entrySet().iterator();
 		while (iter.hasNext()) {
-			Player p = iter.next();
+			Entry<Player, Integer> entry = iter.next();
+			Player p = entry.getKey();
+			Integer targetId = entry.getValue();
 			if (!p.isOnline()) {
 				iter.remove();
 				continue;
 			}
+			boolean senderMatches = p.getUser().getUserId().equals(sender.getUserId());
+			boolean targetMatches = targetId == target.getUserId();
 			// Check that we have request with Player `sender` and target `target`
-			if (p.getUser().getUserId() == sender.getUserId() && friendsRequests.get(p) == target.getUserId()) {
+			if (senderMatches && targetMatches) {
 				return Optional.of(p);
 			}
 		}
