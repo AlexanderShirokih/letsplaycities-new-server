@@ -21,4 +21,6 @@ public interface UserManager {
 
 	public void updateHash(User user, String hash);
 
+	public void updateToken(User user, String token);
+
 }

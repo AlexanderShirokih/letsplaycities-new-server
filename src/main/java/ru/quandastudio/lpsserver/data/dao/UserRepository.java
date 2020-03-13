@@ -22,5 +22,9 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 	@Modifying(clearAutomatically = true)
 	@Query("UPDATE User u SET u.avatarHash = ?2 WHERE u = ?1")
 	public void updateHash(User user, String hash);
+	
+	@Modifying(clearAutomatically = true)
+	@Query("UPDATE User u SET u.firebaseToken = ?2 WHERE u = ?1")
+	public void updateToken(User user, String token);
 
 }

@@ -160,4 +160,11 @@ public class UserManagerImpl implements UserManager {
 		userDAO.updateHash(user, hash);
 	}
 
+	@Override
+	public void updateToken(User user, String token) {
+		if (!token.isBlank() && token.length() <= 200) {
+			userDAO.updateToken(user, token);
+		}
+	}
+
 }

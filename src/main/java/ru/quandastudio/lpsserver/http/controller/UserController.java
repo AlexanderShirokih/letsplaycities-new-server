@@ -107,6 +107,12 @@ public class UserController {
 				.toOkResponse();
 	}
 
+	@PostMapping("/token/{token}")
+	@ResponseStatus(HttpStatus.OK)
+	public void updateToken(@AuthenticationPrincipal User user, @PathVariable("token") String token) {
+		context.getUserManager().updateToken(user, token);
+	}
+
 	@PutMapping("user/request/{id}/{type}")
 	public ResponseEntity<String> handleGameRequest(@PathVariable("id") int userId,
 			@PathVariable("id") RequestType requestType, @AuthenticationPrincipal User user) {
