@@ -1,7 +1,6 @@
 package ru.quandastudio.lpsserver.handlers;
 
 import java.util.HashMap;
-import java.util.Optional;
 import java.util.concurrent.ArrayBlockingQueue;
 
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +9,7 @@ import ru.quandastudio.lpsserver.core.RequestNotifier.NotificationData;
 import ru.quandastudio.lpsserver.core.Room;
 import ru.quandastudio.lpsserver.core.ServerContext;
 import ru.quandastudio.lpsserver.data.entities.User;
+import ru.quandastudio.lpsserver.data.entities.User.State;
 import ru.quandastudio.lpsserver.models.FriendModeResult;
 import ru.quandastudio.lpsserver.models.LPSClientMessage.LPSPlay;
 import ru.quandastudio.lpsserver.models.LPSMessage.LPSFriendModeRequest;
@@ -36,11 +36,34 @@ public class PlayMessageHandler extends MessageHandler<LPSPlay> {
 	}
 
 	private void handleAsFriendsRequest(Player player, int oppUid) {
+		ServerContext context = player.getCurrentContext();
+		User opponent = context.getUserManager()
+				.getUserById(oppUid)
+				.filter((User u) -> u.isAtLeast(State.ready))
+				.orElse(null);
+
+		if (opponent == null) {
+			log.warn("# Can't send notification because user not found! user={}", oppUid);
+			player.sendMessage(new LPSFriendModeRequest(null, 0,
+					player.isAtLeastHasVersion(270) ? FriendModeResult.NO_USER : FriendModeResult.OFFLINE));
+			return;
+		}
+
+		Player target = context.getPlayer(opponent).orElse(null);
+
+		if (target != null && target.getRoom() != null) {
+			player.sendMessage(new LPSFriendModeRequest(opponent, FriendModeResult.BUSY));
+			return;
+		}
+
 		if (player.isFriend(oppUid)) {
-			sendNotification(player, oppUid);
-			player.getCurrentContext().getFriendsRequests().put(player, oppUid);
+			if (!sendNotification(player, opponent)) {
+				player.sendMessage(new LPSFriendModeRequest(null, 0,
+						player.isAtLeastHasVersion(270) ? FriendModeResult.NO_USER : FriendModeResult.OFFLINE));
+			} else
+				context.getFriendsRequests().put(player, oppUid);
 		} else
-			player.sendMessage(new LPSFriendModeRequest(0, FriendModeResult.NOT_FRIEND));
+			player.sendMessage(new LPSFriendModeRequest(opponent, FriendModeResult.NOT_FRIEND));
 	}
 
 	private void handleAsRandomPlayRequest(Player player) {
@@ -80,21 +103,18 @@ public class PlayMessageHandler extends MessageHandler<LPSPlay> {
 		}
 	}
 
-	private void sendNotification(Player player, Integer oppId) {
-		final ServerContext context = player.getCurrentContext();
-		final Optional<User> opp = context.getUserManager().getUserById(oppId);
-		opp.ifPresentOrElse((user) -> {
-			final String firebaseToken = user.getFirebaseToken();
-			if (firebaseToken != null) {
-				log.info("Sending firebase request to user {}", oppId);
-				NotificationData data = buildNotificationData(player.getUser());
-				context.getRequestNotifier().sendNotification(user, data);
-			} else
-				log.warn("# Can't send request for user {}. Token not found", oppId);
-		}, () -> {
-			log.warn("# Can't send notification because user not found! user={}", oppId);
-			player.sendMessage(new LPSFriendModeRequest(0, FriendModeResult.DENIED));
-		});
+	private boolean sendNotification(Player player, User user) {
+		final String firebaseToken = user.getFirebaseToken();
+		if (firebaseToken != null) {
+			log.info("Sending friend game request to user {}", user.getUserId());
+			NotificationData data = buildNotificationData(player.getUser());
+			player.getCurrentContext().getRequestNotifier().sendNotification(user, data);
+		} else {
+			log.warn("# Can't send request for user {}. Token not found", user.getUserId());
+			return false;
+		}
+
+		return true;
 	}
 
 	private NotificationData buildNotificationData(User sender) {

@@ -7,6 +7,7 @@ import ru.quandastudio.lpsserver.core.Player;
 import ru.quandastudio.lpsserver.core.Room;
 import ru.quandastudio.lpsserver.core.ServerContext;
 import ru.quandastudio.lpsserver.data.entities.User;
+import ru.quandastudio.lpsserver.data.entities.User.State;
 import ru.quandastudio.lpsserver.models.FriendModeResult;
 import ru.quandastudio.lpsserver.models.LPSClientMessage.LPSFriendMode;
 import ru.quandastudio.lpsserver.models.LPSMessage.LPSFriendModeRequest;
@@ -32,22 +33,35 @@ public class FriendModeRequestMessageHandler extends MessageHandler<LPSFriendMod
 		}
 	}
 
+	/**
+	 * Handle request of {@code player}'s result, on {@code oppId}'s request
+	 * 
+	 * @param player     {@code Player} who sends response to oppId request.
+	 * @param oppId      user's if who sends request to player
+	 * @param isAccepted true if player accepts this request, false otherwise
+	 */
 	private void handleRequestResult(Player player, Integer oppId, boolean isAccepted) {
+		final ServerContext context = player.getCurrentContext();
+
+		Optional<User> opponent = context.getUserManager().getUserById(oppId);
+		User oppUser = opponent.orElse(null);
+
+		if (opponent.isEmpty() || !oppUser.isAtLeast(State.ready)) {
+			return;
+		}
+
 		if (player.isFriend(oppId)) {
-			final Optional<Player> optPlayer = player.getCurrentContext()
-					.getPlayerFromWaitingQueue(player.getUser(), new User(oppId));
+			final Optional<Player> optPlayer = context.getPlayerFromWaitingQueue(player.getUser(), oppUser);
 
-			optPlayer.ifPresentOrElse((Player opp) -> {
-				if (opp.getRoom() != null)
-					player.sendMessage(new LPSFriendModeRequest(opp.getUser().getUserId(), FriendModeResult.BUSY));
-				else if (isAccepted) {
-					startFriendRoom(opp, player);
-				} else
-					opp.sendMessage(new LPSFriendModeRequest(player.getUser().getUserId(), FriendModeResult.DENIED));
-			}, () -> player.sendMessage(new LPSFriendModeRequest(0, FriendModeResult.OFFLINE)));
+			optPlayer.ifPresent((Player requestSender) -> {
+				if (requestSender.getRoom() != null)
+					if (isAccepted) {
+						startFriendRoom(requestSender, player);
+					} else
+						requestSender.sendMessage(new LPSFriendModeRequest(player.getUser(), FriendModeResult.DENIED));
+			});
+		}
 
-		} else
-			player.sendMessage(new LPSFriendModeRequest(0, FriendModeResult.NOT_FRIEND));
 	}
 
 	private void startFriendRoom(Player opp, Player player) {

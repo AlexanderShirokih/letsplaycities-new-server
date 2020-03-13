@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import ru.quandastudio.lpsserver.data.entities.User;
 
 public class LPSMessage {
 
@@ -138,9 +139,14 @@ public class LPSMessage {
 	@RequiredArgsConstructor
 	@Getter
 	public static final class LPSFriendModeRequest extends LPSMessage {
-		private final String login = null;
+		private final String login;
 		private final int oppUid;
+		@NonNull
 		private final FriendModeResult result;
+
+		public LPSFriendModeRequest(User user, FriendModeResult result) {
+			this(user.getName(), user.getUserId(), result);
+		}
 	}
 
 	@Action("friend_request")

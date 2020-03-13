@@ -122,9 +122,9 @@ public class UserController {
 
 		sender.ifPresent((Player player) -> {
 			if (context.getFriendshipManager().isFriends(current, oppUser)) {
-				player.sendMessage(new LPSFriendModeRequest(current.getUserId(), FriendModeResult.DENIED));
+				player.sendMessage(new LPSFriendModeRequest(current, FriendModeResult.DENIED));
 			} else
-				player.sendMessage(new LPSFriendModeRequest(0, FriendModeResult.NOT_FRIEND));
+				player.sendMessage(new LPSFriendModeRequest(current, FriendModeResult.NOT_FRIEND));
 		});
 	}
 
