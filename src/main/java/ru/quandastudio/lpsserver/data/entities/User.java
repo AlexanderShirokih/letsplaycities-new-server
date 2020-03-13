@@ -94,5 +94,9 @@ public class User implements Serializable {
 	public User(Integer userId) {
 		setUserId(userId);
 	}
+	
+	public boolean isAtLeast(State state) {
+		return this.state.ordinal() >= state.ordinal();
+	}
 
 }

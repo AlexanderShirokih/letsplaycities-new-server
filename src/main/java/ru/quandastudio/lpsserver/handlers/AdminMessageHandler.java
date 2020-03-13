@@ -16,7 +16,7 @@ public class AdminMessageHandler extends MessageHandler<LPSAdmin> {
 
 	@Override
 	public void handle(Player player, LPSAdmin msg) {
-		if (player.isAdmin()) {
+		if (player.hasAdminPrivilges()) {
 			handleAction(player, msg.getCommand().split(">"));
 		}
 	}

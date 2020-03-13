@@ -20,7 +20,7 @@ public class BanMessageHandler extends MessageHandler<LPSBan> {
 
 		Player p = room.oppositePlayer(player);
 
-		if (player.checkVersion(190))
+		if (player.isAtLeastHasVersion(190))
 			player.getCurrentContext().getBanlistManager().addToBanlist(player.getUser(), p.getUser());
 
 		if (p.isOnline()) {

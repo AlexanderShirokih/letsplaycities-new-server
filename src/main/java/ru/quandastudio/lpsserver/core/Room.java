@@ -109,7 +109,7 @@ public class Room {
 
 	private String getAvatarForOlderVersions(Player player, User user) {
 		return Optional.of(player)
-				.filter((Player) -> !player.checkVersion(270))
+				.filter((Player) -> !player.isAtLeastHasVersion(270))
 				.flatMap((Player p) -> p.getCurrentContext().getPictureManager().getPictureByUserId(user))
 				.map((Picture picture) -> new String(picture.getImageData()))
 				.orElse(null);

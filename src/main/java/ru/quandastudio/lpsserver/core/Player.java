@@ -56,16 +56,16 @@ public class Player {
 		getCurrentContext().getFriendsRequests().remove(this);
 	}
 
-	public boolean checkVersion(int version) {
+	public boolean isAtLeastHasVersion(int version) {
 		return clientBuild >= version;
 	}
 
-	public boolean isAdmin() {
-		return user.getState() == State.admin;
+	public boolean hasAdminPrivilges() {
+		return user.isAtLeast(State.admin);
 	}
 
 	public boolean isAuthorized() {
-		return user != null && user.getState() != State.banned;
+		return user != null && user.isAtLeast(State.ready);
 	}
 
 	public boolean isFriend(Integer userId) {
