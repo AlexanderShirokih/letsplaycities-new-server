@@ -61,6 +61,9 @@ public class ServerContext {
 	}
 
 	public Optional<Player> popPlayerFromWaitingQueue(User target, User sender) {
+		int tId = target.getUserId();
+		int sId = sender.getUserId();
+
 		Iterator<Entry<Player, Integer>> iter = friendsRequests.entrySet().iterator();
 		while (iter.hasNext()) {
 			Entry<Player, Integer> entry = iter.next();
@@ -70,8 +73,8 @@ public class ServerContext {
 				iter.remove();
 				continue;
 			}
-			boolean senderMatches = p.getUser().getUserId().equals(sender.getUserId());
-			boolean targetMatches = targetId == target.getUserId();
+			boolean senderMatches = p.getUser().getUserId().equals(sId);
+			boolean targetMatches = targetId == tId;
 			// Check that we have request with Player `sender` and target `target`
 			if (senderMatches && targetMatches) {
 				iter.remove();

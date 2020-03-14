@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import ru.quandastudio.lpsserver.Result;
 import ru.quandastudio.lpsserver.core.Player;
 import ru.quandastudio.lpsserver.core.ServerContext;
@@ -39,6 +40,7 @@ import ru.quandastudio.lpsserver.util.ValidationUtil;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/user")
+@Slf4j
 public class UserController {
 
 	@Autowired
@@ -58,9 +60,6 @@ public class UserController {
 							.contentLength(res.contentLength())
 							.header("Base64-Encoded", String.valueOf(isBase64))
 							.body(res);
-				})
-				.onError((Exception e) -> {
-					e.printStackTrace();
 				})
 				.getOr(ResponseEntity.notFound().build());
 	}
@@ -82,7 +81,7 @@ public class UserController {
 						pic.setImageData(body);
 						pic.setType(t);
 						pics.save(pic);
-						context.getUserManager().updateHash(user, hash);
+						context.getUserManager().updateAvatarHash(user, hash);
 					}
 				})
 				.wrap()
@@ -93,6 +92,7 @@ public class UserController {
 	@ResponseStatus(HttpStatus.OK)
 	public void deletePicture(@AuthenticationPrincipal User user) {
 		context.getPictureManager().deletePictureByUser(user);
+		context.getUserManager().updateAvatarHash(user, null);
 	}
 
 	@PostMapping("/")
@@ -116,6 +116,7 @@ public class UserController {
 	@PutMapping("/request/{id}/{type}")
 	public ResponseEntity<String> handleGameRequest(@PathVariable("id") int userId,
 			@PathVariable("type") RequestType requestType, @AuthenticationPrincipal User user) {
+		log.info("Got a REST request result! ;type={}", requestType);
 		if (requestType == RequestType.DENY) {
 			handleDenyResult(user, new User(userId));
 			return ResponseEntity.ok("ok");
@@ -129,8 +130,9 @@ public class UserController {
 		sender.ifPresent((Player player) -> {
 			if (context.getFriendshipManager().isFriends(current, oppUser)) {
 				player.sendMessage(new LPSFriendModeRequest(current, FriendModeResult.DENIED));
-			} else
+			} else {
 				player.sendMessage(new LPSFriendModeRequest(current, FriendModeResult.NOT_FRIEND));
+			}
 		});
 	}
 

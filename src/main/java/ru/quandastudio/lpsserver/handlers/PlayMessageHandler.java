@@ -37,6 +37,7 @@ public class PlayMessageHandler extends MessageHandler<LPSPlay> {
 
 	private void handleAsFriendsRequest(Player player, int oppUid) {
 		ServerContext context = player.getCurrentContext();
+
 		User opponent = context.getUserManager()
 				.getUserById(oppUid)
 				.filter((User u) -> u.isAtLeast(State.ready))
@@ -60,10 +61,12 @@ public class PlayMessageHandler extends MessageHandler<LPSPlay> {
 			if (!sendNotification(player, opponent)) {
 				player.sendMessage(new LPSFriendModeRequest(null, 0,
 						player.isAtLeastHasVersion(270) ? FriendModeResult.NO_USER : FriendModeResult.OFFLINE));
-			} else
+			} else {
 				context.getFriendsRequests().put(player, oppUid);
-		} else
+			}
+		} else {
 			player.sendMessage(new LPSFriendModeRequest(opponent, FriendModeResult.NOT_FRIEND));
+		}
 	}
 
 	private void handleAsRandomPlayRequest(Player player) {
@@ -107,7 +110,7 @@ public class PlayMessageHandler extends MessageHandler<LPSPlay> {
 		final String firebaseToken = user.getFirebaseToken();
 		if (firebaseToken != null) {
 			log.info("Sending friend game request to user {}", user.getUserId());
-			NotificationData data = buildNotificationData(player.getUser());
+			NotificationData data = buildNotificationData(player.getUser(), user);
 			player.getCurrentContext().getRequestNotifier().sendNotification(user, data);
 		} else {
 			log.warn("# Can't send request for user {}. Token not found", user.getUserId());
@@ -117,13 +120,14 @@ public class PlayMessageHandler extends MessageHandler<LPSPlay> {
 		return true;
 	}
 
-	private NotificationData buildNotificationData(User sender) {
+	private NotificationData buildNotificationData(User sender, User receiver) {
 		final String title = "Пользователь " + sender.getName() + " приглашает вас сыграть в города.";
 		final HashMap<String, String> params = new HashMap<String, String>();
 
 		params.put("action", "fm_request");
 		params.put("login", sender.getName());
 		params.put("user_id", String.valueOf(sender.getUserId()));
+		params.put("target_id", String.valueOf(receiver.getUserId()));
 
 		return new NotificationData(title, params);
 	}

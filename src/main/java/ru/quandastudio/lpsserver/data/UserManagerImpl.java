@@ -156,8 +156,8 @@ public class UserManagerImpl implements UserManager {
 	}
 
 	@Override
-	public void updateHash(User user, String hash) {
-		userDAO.updateHash(user, hash);
+	public void updateAvatarHash(User user, String hash) {
+		userDAO.updateAvatarHash(user, hash);
 	}
 
 	@Override

@@ -19,7 +19,7 @@ public interface UserManager {
 
 	public void setBanned(Integer userId, boolean isOn);
 
-	public void updateHash(User user, String hash);
+	public void updateAvatarHash(User user, String hash);
 
 	public void updateToken(User user, String token);
 
