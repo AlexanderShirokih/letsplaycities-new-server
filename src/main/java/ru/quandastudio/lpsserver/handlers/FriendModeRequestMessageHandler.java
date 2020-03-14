@@ -51,14 +51,13 @@ public class FriendModeRequestMessageHandler extends MessageHandler<LPSFriendMod
 		}
 
 		if (player.isFriend(oppId)) {
-			final Optional<Player> optPlayer = context.getPlayerFromWaitingQueue(player.getUser(), oppUser);
+			final Optional<Player> optPlayer = context.popPlayerFromWaitingQueue(player.getUser(), oppUser);
 
-			optPlayer.ifPresent((Player requestSender) -> {
-				if (requestSender.getRoom() != null)
-					if (isAccepted) {
-						startFriendRoom(requestSender, player);
-					} else
-						requestSender.sendMessage(new LPSFriendModeRequest(player.getUser(), FriendModeResult.DENIED));
+			optPlayer.filter((p) -> p.getRoom() == null).ifPresent((Player requestSender) -> {
+				if (isAccepted) {
+					startFriendRoom(requestSender, player);
+				} else
+					requestSender.sendMessage(new LPSFriendModeRequest(player.getUser(), FriendModeResult.DENIED));
 			});
 		}
 

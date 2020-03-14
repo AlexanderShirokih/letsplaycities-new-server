@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.function.Predicate;
 
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
@@ -59,7 +60,7 @@ public class ServerContext {
 		log.info("QUEUE={}; WAITING_REQUESTS={}", playersQueue.size(), friendsRequests.size());
 	}
 
-	public Optional<Player> getPlayerFromWaitingQueue(User target, User sender) {
+	public Optional<Player> popPlayerFromWaitingQueue(User target, User sender) {
 		Iterator<Entry<Player, Integer>> iter = friendsRequests.entrySet().iterator();
 		while (iter.hasNext()) {
 			Entry<Player, Integer> entry = iter.next();
@@ -73,6 +74,7 @@ public class ServerContext {
 			boolean targetMatches = targetId == target.getUserId();
 			// Check that we have request with Player `sender` and target `target`
 			if (senderMatches && targetMatches) {
+				iter.remove();
 				return Optional.of(p);
 			}
 		}
@@ -80,13 +82,14 @@ public class ServerContext {
 	}
 
 	public Optional<Player> getPlayer(User user) {
+		Predicate<Player> isTargetUser = (Player p) -> {
+			return p.isOnline() && p.getUser().getUserId() == user.getUserId();
+		};
+
 		return playersQueue.stream()
-				.filter((Player p) -> p.isOnline() && p.getUser().getUserId() == user.getUserId())
+				.filter(isTargetUser)
 				.findFirst()
-				.or(() -> friendsRequests.keySet()
-						.stream()
-						.filter((Player p) -> p.isOnline() && p.getUser().getUserId() == user.getUserId())
-						.findFirst());
+				.or(() -> friendsRequests.keySet().stream().filter(isTargetUser).findFirst());
 	}
 
 }

@@ -113,9 +113,9 @@ public class UserController {
 		context.getUserManager().updateToken(user, token);
 	}
 
-	@PutMapping("user/request/{id}/{type}")
+	@PutMapping("/request/{id}/{type}")
 	public ResponseEntity<String> handleGameRequest(@PathVariable("id") int userId,
-			@PathVariable("id") RequestType requestType, @AuthenticationPrincipal User user) {
+			@PathVariable("type") RequestType requestType, @AuthenticationPrincipal User user) {
 		if (requestType == RequestType.DENY) {
 			handleDenyResult(user, new User(userId));
 			return ResponseEntity.ok("ok");
@@ -124,7 +124,7 @@ public class UserController {
 	}
 
 	private void handleDenyResult(User current, User oppUser) {
-		final Optional<Player> sender = context.getPlayer(oppUser);
+		final Optional<Player> sender = context.popPlayerFromWaitingQueue(current, oppUser);
 
 		sender.ifPresent((Player player) -> {
 			if (context.getFriendshipManager().isFriends(current, oppUser)) {
