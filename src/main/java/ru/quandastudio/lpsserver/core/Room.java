@@ -6,10 +6,9 @@ import java.util.Optional;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import ru.quandastudio.lpsserver.data.entities.HistoryItem;
+import ru.quandastudio.lpsserver.data.entities.History;
 import ru.quandastudio.lpsserver.data.entities.Picture;
 import ru.quandastudio.lpsserver.data.entities.User;
-import ru.quandastudio.lpsserver.models.AuthType;
 import ru.quandastudio.lpsserver.models.LPSMessage;
 import ru.quandastudio.lpsserver.models.WordResult;
 
@@ -93,10 +92,9 @@ public class Room {
 	@SuppressWarnings("deprecation")
 	private void sendPlayMessage(Player player, boolean isStarter, boolean isFriend, boolean isBanned, Player other) {
 		final User oppUser = other.getUser();
-		final AuthType authType = AuthType.from(oppUser.getAuthType());
 		final String login = oppUser.getName();
 		final String avatar = getAvatarForOlderVersions(player, other.getUser());
-		final LPSMessage.LPSPlayMessage play = new LPSMessage.LPSPlayMessage(authType, login, oppUser.getUserId(),
+		final LPSMessage.LPSPlayMessage play = new LPSMessage.LPSPlayMessage(other.getAuthType(), login, oppUser.getUserId(),
 				other.getClientVersion(), other.getClientBuild(), other.getCanReceiveMessages(), isFriend, isStarter,
 				isBanned, oppUser.getAvatarHash(), false);
 
@@ -155,9 +153,9 @@ public class Room {
 		moveCounter = 0;
 	}
 
-	private HistoryItem makeHistoryItem() {
+	private History makeHistoryItem() {
 		int duration = (int) ((System.currentTimeMillis() - startTime) / 1000L);
-		return new HistoryItem(starter.getUser(), invited.getUser(), startTime, duration, usedWords.size());
+		return new History(starter.getUser(), invited.getUser(), startTime, duration, usedWords.size());
 	}
 
 	private void timeOut() {

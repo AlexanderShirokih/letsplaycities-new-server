@@ -3,10 +3,10 @@ package ru.quandastudio.lpsserver.data.entities;
 import java.io.Serializable;
 import java.sql.Timestamp;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -18,26 +18,29 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+/**
+ * Represents game history
+ * @author Alexander Shirokikh
+ */
 @Entity
-@Table(name = "battle_history")
+@Table
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
 @ToString
-public class HistoryItem implements Serializable {
-	private static final long serialVersionUID = 1L;
-
+public class History implements Serializable {
+	private static final long serialVersionUID = 2L;
+	
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "id", precision = 11)
+	@GeneratedValue
 	private Long id;
 
-	@ManyToOne
+	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "starter_id")
 	private User starter;
 
-	@ManyToOne
+	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "invited_id")
 	private User invited;
 
@@ -58,7 +61,7 @@ public class HistoryItem implements Serializable {
 	 * @param duration   duration of this battle in seconds
 	 * @param wordsCount total count of words used in the battle
 	 */
-	public HistoryItem(User starter, User invited, long startTime, Integer duration, Integer wordsCount) {
+	public History(User starter, User invited, long startTime, Integer duration, Integer wordsCount) {
 		this(null, starter, invited, new Timestamp(startTime), duration, wordsCount);
 	}
 }

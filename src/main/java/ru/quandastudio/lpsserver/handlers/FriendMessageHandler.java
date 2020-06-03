@@ -8,6 +8,7 @@ import ru.quandastudio.lpsserver.core.Player;
 import ru.quandastudio.lpsserver.core.RequestNotifier.NotificationData;
 import ru.quandastudio.lpsserver.core.ServerContext;
 import ru.quandastudio.lpsserver.data.FriendshipManager;
+import ru.quandastudio.lpsserver.data.entities.AuthData;
 import ru.quandastudio.lpsserver.data.entities.Friendship;
 import ru.quandastudio.lpsserver.data.entities.User;
 import ru.quandastudio.lpsserver.models.LPSClientMessage.LPSFriendAction;
@@ -91,13 +92,13 @@ public class FriendMessageHandler extends MessageHandler<LPSFriendAction> {
 			// Dummy or offline player
 			final ServerContext context = oppPlayer.getCurrentContext();
 			final Integer oppId = oppPlayer.getUser().getUserId();
-			final Optional<User> opp = context.getUserManager().getUserById(oppId);
-			opp.ifPresentOrElse((user) -> {
-				final String firebaseToken = user.getFirebaseToken();
+			final Optional<AuthData> opp = context.getUserManager().getAuthDataById(oppId);
+			opp.ifPresentOrElse((authData) -> {
+				final String firebaseToken = authData.getFirebaseToken();
 				if (firebaseToken != null && !firebaseToken.isBlank()) {
 					log.info("Sending firebase request to user {}", oppId);
 					NotificationData data = buildNotificationData(sender.getUser());
-					context.getRequestNotifier().sendNotification(user, data);
+					context.getRequestNotifier().sendNotification(authData, data);
 				} else
 					log.warn("# Can't send request for user {}. Token not found", oppId);
 			}, () -> {

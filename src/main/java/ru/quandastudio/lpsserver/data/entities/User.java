@@ -13,7 +13,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import lombok.AllArgsConstructor;
@@ -22,19 +21,34 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+/**
+ * Main entity representing User
+ * 
+ * @author Alexander Shirokikh
+ */
 @Entity
-@Table(name = "users")
+@Table
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
 @ToString
 public class User implements Serializable {
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 
 	public enum State {
-		@Deprecated
-		unk, banned, ready, admin;
+		banned, ready, admin;
+
+		/**
+		 * Checks that entity is at least in {@code state}
+		 * 
+		 * @param state required state
+		 * @return {@literal true} if entity is at least in {@code state},
+		 *         {@literal false} otherwise
+		 */
+		public boolean isAtLeast(State state) {
+			return ordinal() >= state.ordinal();
+		}
 	}
 
 	@Id
@@ -42,39 +56,23 @@ public class User implements Serializable {
 	@Column(name = "user_id", precision = 6)
 	private Integer userId;
 
-	@Column(name = "name", length = 64)
+	@Column(name = "name", length = 64, nullable = false)
 	private String name;
-
-	@Column(name = "auth_type")
-	private String authType;
-
-	@CreationTimestamp
-	@Column(name = "reg_date")
-	private Timestamp regDate;
 
 	@UpdateTimestamp
 	@Column(name = "last_visit")
 	private Timestamp lastVisitDate;
 
-	@Column(name = "sn_uid", length = 32)
-	private String snUid;
-
-	@Column(name = "acc_id", length = 8)
-	private String accessId;
-
-	@Enumerated(EnumType.STRING)
-	@Column(name = "state")
-	private State state;
-
-	@Column(name = "firebase_token", length = 200)
-	private String firebaseToken;
-	
 	@Column(name = "avatar_hash", length = 32)
 	private String avatarHash;
 
+	@Enumerated(EnumType.STRING)
+	@Column(name = "state", nullable = false)
+	private State state;
+
 	@Override
 	public int hashCode() {
-		return Objects.hash(accessId, authType, firebaseToken, lastVisitDate, name, regDate, snUid, state, userId);
+		return Objects.hash(lastVisitDate, name, userId, state);
 	}
 
 	@Override
@@ -86,17 +84,12 @@ public class User implements Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		User other = (User) obj;
-		return Objects.equals(accessId, other.accessId) && Objects.equals(authType, other.authType)
-				&& Objects.equals(name, other.name) && Objects.equals(snUid, other.snUid)
-				&& Objects.equals(userId, other.userId);
+		return Objects.equals(name, other.name)
+				&& Objects.equals(userId, other.userId) && Objects.equals(state, other.state);
 	}
 
 	public User(Integer userId) {
 		setUserId(userId);
-	}
-	
-	public boolean isAtLeast(State state) {
-		return this.state.ordinal() >= state.ordinal();
 	}
 
 }

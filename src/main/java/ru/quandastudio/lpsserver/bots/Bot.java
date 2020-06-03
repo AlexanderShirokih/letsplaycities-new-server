@@ -35,7 +35,7 @@ public class Bot extends Player {
 		User user = new User();
 		user.setName(info.name);
 		user.setUserId(info.user_id);
-		user.setAuthType(AuthType.Native.getName());
+		setAuthType(AuthType.Native);
 		setUser(user);
 //		setAvatarData(StringUtil.toBase64(info.avatar));
 		setClientBuild(BOT_VERSION_CODE);

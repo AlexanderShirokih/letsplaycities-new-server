@@ -11,8 +11,10 @@ import org.springframework.stereotype.Service;
 
 import ru.quandastudio.lpsserver.Result;
 import ru.quandastudio.lpsserver.SnManager;
+import ru.quandastudio.lpsserver.data.dao.AuthDataRepository;
 import ru.quandastudio.lpsserver.data.dao.PictureRepository;
 import ru.quandastudio.lpsserver.data.dao.UserRepository;
+import ru.quandastudio.lpsserver.data.entities.AuthData;
 import ru.quandastudio.lpsserver.data.entities.Picture;
 import ru.quandastudio.lpsserver.data.entities.User;
 import ru.quandastudio.lpsserver.data.entities.User.State;
@@ -28,30 +30,33 @@ public class UserManagerImpl implements UserManager {
 	private UserRepository userDAO;
 
 	@Autowired
+	private AuthDataRepository authDataDAO;
+
+	@Autowired
 	private PictureRepository picturesDAO;
 
 	@Override
-	public Result<User> logIn(SignUpRequest request) {
+	public Result<AuthData> logIn(SignUpRequest request) {
 		if (SnManager.validateAccessToken(request.getAuthType(), request.getAccToken(), request.getSnUID())) {
-			final Optional<User> user = userDAO.findBySnUidAndAuthType(request.getSnUID(),
+			final Optional<AuthData> user = authDataDAO.findBySnUidAndAuthType(request.getSnUID(),
 					request.getAuthType().getName());
 
 			user.ifPresent((u) -> {
-				u.setName(request.getLogin());
+				u.getUser().setName(request.getLogin());
 				u.setFirebaseToken(request.getFirebaseToken());
 			});
 
 			return user.or(() -> {
-				User newUser = createUser(request);
-				newUser = userDAO.save(newUser);
-				return Optional.of(newUser);
-			}).map((u) -> Result.success(u)).get();
+				AuthData authData = createAuthData(request);
+				authDataDAO.save(authData);
+				return Optional.of(authData);
+			}).map((AuthData a) -> Result.success(a)).get();
 		}
 		return Result.error("Ошибка авторизации: Неверный токен доступа");
 	}
 
 	@Override
-	public Result<User> logIn(LPSLogIn login) {
+	public Result<AuthData> logIn(LPSLogIn login) {
 		if (login.getUid() > 0 && login.getHash() != null) {
 			// Authorized user
 			return processAuthorizedUser(login);
@@ -67,35 +72,38 @@ public class UserManagerImpl implements UserManager {
 		return Result.error("Not all requested tags was received!");
 	}
 
-	private Result<User> processAuthorizedUser(LPSLogIn login) {
-		final Optional<User> user = userDAO.findByUserIdAndAccessId(login.getUid(), login.getHash());
-		user.ifPresent((u) -> updateDataIfPresent(u, login));
-		return Result.from(user, "Ошибка авторизации: Пользователь не найден или токены устарели");
+	private Result<AuthData> processAuthorizedUser(LPSLogIn login) {
+		final Optional<AuthData> authData = authDataDAO.findByUserAndAccessHash(login.getUid(), login.getHash());
+		authData.ifPresent((a) -> updateDataIfPresent(a, login));
+		return Result.from(authData, "Ошибка авторизации: Пользователь не найден или токены устарели");
 	}
 
-	private Result<User> processUnauthorizedUser(LPSLogIn login) {
-		final Optional<User> user = userDAO.findBySnUidAndAuthType(login.getSnUID(), login.getAuthType().getName());
+	private Result<AuthData> processUnauthorizedUser(LPSLogIn login) {
+		final Optional<AuthData> authData = authDataDAO.findBySnUidAndAuthType(login.getSnUID(),
+				login.getAuthType().getName());
 
-		user.ifPresent((u) -> updateDataIfPresent(u, login));
+		authData.ifPresent((a) -> updateDataIfPresent(a, login));
 
-		return user.or(() -> {
-			User newUser = createUser(login);
-			newUser = userDAO.save(newUser);
+		return authData.or(() -> {
+			AuthData newAuthData = createAuthData(login);
+			authDataDAO.save(newAuthData);
+			User newUser = newAuthData.getUser();
 			if (newUser.getAvatarHash() != null)
-				picturesDAO.save(new Picture(newUser, login.getAvatar().getBytes(), Picture.Type.BASE64));
-			return Optional.of(newUser);
+				picturesDAO.save(new Picture(null, newUser, login.getAvatar().getBytes(), Picture.Type.BASE64));
+			return Optional.of(newAuthData);
 		}).map((u) -> Result.success(u)).get();
 	}
 
-	private void updateDataIfPresent(User user, LPSLogIn login) {
+	private void updateDataIfPresent(AuthData authData, LPSLogIn login) {
 		// Update login, fbToken and avatar hash code
+		User user = authData.getUser();
 		user.setName(login.getLogin());
-		user.setFirebaseToken(login.getFirebaseToken());
+		authData.setFirebaseToken(login.getFirebaseToken());
 		if (login.getClientBuild() < 270) {
 			final String hash = getHash(login);
 			if (!Objects.equals(user.getAvatarHash(), hash) && hash != null) {
 				if (user.getAvatarHash() == null) {
-					picturesDAO.save(new Picture(user, login.getAvatar().getBytes(), Picture.Type.BASE64));
+					picturesDAO.save(new Picture(null, user, login.getAvatar().getBytes(), Picture.Type.BASE64));
 				} else
 					picturesDAO.updateByOwner(user, login.getAvatar().getBytes());
 				user.setAvatarHash(hash);
@@ -109,28 +117,32 @@ public class UserManagerImpl implements UserManager {
 		return isAvatarPresent ? DigestUtils.md5Hex(avatar) : null;
 	}
 
-	private User createUser(LPSLogIn login) {
+	private AuthData createAuthData(LPSLogIn login) {
+		AuthData authData = new AuthData();
 		User user = new User();
-		user.setAuthType(login.getAuthType().getName());
-		user.setFirebaseToken(login.getFirebaseToken());
-		user.setSnUid(login.getSnUID());
 		user.setName(login.getLogin());
-		user.setAccessId(StringUtil.getAccIdHash());
 		user.setState(State.ready);
+		authData.setUser(user);
+		authData.setFirebaseToken(login.getFirebaseToken());
+		authData.setSnUid(login.getSnUID());
+		authData.setAccessHash(StringUtil.getAccIdHash());
+		authData.setAuthType(login.getAuthType().getName());
 		if (login.getClientBuild() < 270)
 			user.setAvatarHash(getHash(login));
-		return user;
+		return authData;
 	}
 
-	private User createUser(SignUpRequest request) {
+	private AuthData createAuthData(SignUpRequest request) {
+		AuthData authData = new AuthData();
 		User user = new User();
-		user.setAuthType(request.getAuthType().getName());
-		user.setFirebaseToken(request.getFirebaseToken());
-		user.setSnUid(request.getSnUID());
 		user.setName(request.getLogin());
-		user.setAccessId(StringUtil.getAccIdHash());
 		user.setState(State.ready);
-		return user;
+		authData.setUser(user);
+		authData.setFirebaseToken(request.getFirebaseToken());
+		authData.setSnUid(request.getSnUID());
+		authData.setAccessHash(StringUtil.getAccIdHash());
+		authData.setAuthType(request.getAuthType().getName());
+		return authData;
 	}
 
 	@Override
@@ -138,14 +150,20 @@ public class UserManagerImpl implements UserManager {
 		return Result.empty()
 				.check(() -> userId != null && accessHash != null && accessHash.length() == 8,
 						"#010: Invalid authorization data")
-				.flatMap((Object o) -> Result.from(userDAO.findByUserIdAndAccessId(userId, accessHash),
+				.flatMap((Object o) -> Result.from(authDataDAO.findByUserAndAccessHash(userId, accessHash),
 						String.format("#011: Authenification error %d:%s", userId, accessHash)))
+				.map((AuthData auth) -> auth.getUser())
 				.check((User user) -> user.getState() != State.banned, "#012: Access error: User is banned!");
 	}
 
 	@Override
 	public Optional<User> getUserById(Integer userId) {
 		return userDAO.findById(userId);
+	}
+
+	@Override
+	public Optional<AuthData> getAuthDataById(Integer userId) {
+		return authDataDAO.findByUser(userId);
 	}
 
 	@Override
@@ -161,10 +179,14 @@ public class UserManagerImpl implements UserManager {
 	}
 
 	@Override
-	public void updateToken(User user, String token) {
+	public void updateFirebaseToken(User user, String token) {
 		if (!token.isBlank() && token.length() <= 200) {
-			userDAO.updateToken(user, token);
+			authDataDAO.updateFirebaseToken(user, token);
 		}
 	}
 
+	@Override
+	public String getFirebaseToken(User user) {
+		return authDataDAO.findFirebaseTokenByUser(user);
+	}
 }

@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import ru.quandastudio.lpsserver.data.entities.User;
+import ru.quandastudio.lpsserver.data.entities.AuthData;
 
 public interface RequestNotifier {
 
@@ -15,6 +15,6 @@ public interface RequestNotifier {
 		final HashMap<String, String> params;
 	}
 
-	public void sendNotification(User receiver, NotificationData data);
+	public void sendNotification(AuthData authData, NotificationData data);
 
 }

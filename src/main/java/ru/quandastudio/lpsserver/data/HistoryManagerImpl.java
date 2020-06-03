@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 
 import ru.quandastudio.lpsserver.data.dao.HistoryRepository;
 import ru.quandastudio.lpsserver.data.entities.HistoryProjection;
-import ru.quandastudio.lpsserver.data.entities.HistoryItem;
+import ru.quandastudio.lpsserver.data.entities.History;
 import ru.quandastudio.lpsserver.data.entities.User;
 
 @Service
@@ -21,7 +21,7 @@ public class HistoryManagerImpl implements HistoryManager {
 	private HistoryRepository historyDAO;
 
 	@Override
-	public void addHistoryItem(HistoryItem item) {
+	public void addHistoryItem(History item) {
 		historyDAO.save(item);
 	}
 

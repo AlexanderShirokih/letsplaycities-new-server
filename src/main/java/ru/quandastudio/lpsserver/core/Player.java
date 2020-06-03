@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import ru.quandastudio.lpsserver.data.entities.User;
 import ru.quandastudio.lpsserver.data.entities.User.State;
+import ru.quandastudio.lpsserver.models.AuthType;
 import ru.quandastudio.lpsserver.models.LPSClientMessage;
 import ru.quandastudio.lpsserver.models.LPSMessage;
 import ru.quandastudio.lpsserver.models.LPSMessage.LPSLeaveMessage;
@@ -25,6 +26,8 @@ public class Player {
 	private final MessageChannel channel;
 
 	private User user;
+	
+	private AuthType authType;	
 
 	private Boolean canReceiveMessages;
 
@@ -60,12 +63,12 @@ public class Player {
 		return clientBuild >= version;
 	}
 
-	public boolean hasAdminPrivilges() {
-		return user.isAtLeast(State.admin);
+	public boolean hasAdminPrivilages() {
+		return user.getState().isAtLeast(State.admin);
 	}
 
 	public boolean isAuthorized() {
-		return user != null && user.isAtLeast(State.ready);
+		return user != null && user.getState().isAtLeast(State.ready);
 	}
 
 	public boolean isFriend(Integer userId) {

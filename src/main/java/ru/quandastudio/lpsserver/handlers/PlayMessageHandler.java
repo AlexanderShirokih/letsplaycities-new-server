@@ -8,6 +8,8 @@ import ru.quandastudio.lpsserver.core.Player;
 import ru.quandastudio.lpsserver.core.RequestNotifier.NotificationData;
 import ru.quandastudio.lpsserver.core.Room;
 import ru.quandastudio.lpsserver.core.ServerContext;
+import ru.quandastudio.lpsserver.data.UserManager;
+import ru.quandastudio.lpsserver.data.entities.AuthData;
 import ru.quandastudio.lpsserver.data.entities.User;
 import ru.quandastudio.lpsserver.data.entities.User.State;
 import ru.quandastudio.lpsserver.models.FriendModeResult;
@@ -37,10 +39,10 @@ public class PlayMessageHandler extends MessageHandler<LPSPlay> {
 
 	private void handleAsFriendsRequest(Player player, int oppUid) {
 		ServerContext context = player.getCurrentContext();
+		UserManager userManager = context.getUserManager();
 
-		User opponent = context.getUserManager()
-				.getUserById(oppUid)
-				.filter((User u) -> u.isAtLeast(State.ready))
+		AuthData opponent = userManager.getAuthDataById(oppUid)
+				.filter((AuthData a) -> a.getUser().getState().isAtLeast(State.ready))
 				.orElse(null);
 
 		if (opponent == null) {
@@ -50,10 +52,11 @@ public class PlayMessageHandler extends MessageHandler<LPSPlay> {
 			return;
 		}
 
-		Player target = context.getPlayer(opponent).orElse(null);
+		User oppUser = opponent.getUser();
+		Player target = context.getPlayer(oppUser).orElse(null);
 
 		if (target != null && target.getRoom() != null) {
-			player.sendMessage(new LPSFriendModeRequest(opponent, FriendModeResult.BUSY));
+			player.sendMessage(new LPSFriendModeRequest(oppUser, FriendModeResult.BUSY));
 			return;
 		}
 
@@ -65,7 +68,7 @@ public class PlayMessageHandler extends MessageHandler<LPSPlay> {
 				context.getFriendsRequests().put(player, oppUid);
 			}
 		} else {
-			player.sendMessage(new LPSFriendModeRequest(opponent, FriendModeResult.NOT_FRIEND));
+			player.sendMessage(new LPSFriendModeRequest(oppUser, FriendModeResult.NOT_FRIEND));
 		}
 	}
 
@@ -106,12 +109,13 @@ public class PlayMessageHandler extends MessageHandler<LPSPlay> {
 		}
 	}
 
-	private boolean sendNotification(Player player, User user) {
-		final String firebaseToken = user.getFirebaseToken();
+	private boolean sendNotification(Player player, AuthData authData) {
+		final String firebaseToken = authData.getFirebaseToken();
+		final User user = authData.getUser();
 		if (firebaseToken != null) {
 			log.info("Sending friend game request to user {}", user.getUserId());
 			NotificationData data = buildNotificationData(player.getUser(), user);
-			player.getCurrentContext().getRequestNotifier().sendNotification(user, data);
+			player.getCurrentContext().getRequestNotifier().sendNotification(authData, data);
 		} else {
 			log.warn("# Can't send request for user {}. Token not found", user.getUserId());
 			return false;

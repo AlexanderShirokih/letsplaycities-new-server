@@ -39,7 +39,7 @@ public class FriendshipRepositoryTest {
 		Friendship f = new Friendship(a, b);
 		rep.save(f);
 
-		Friendship found = rep.findById(f.getId()).orElse(null);
+		Friendship found = rep.findBySenderAndReceiverOrReceiverAndSender(a, b).orElse(null);
 
 		assertNotNull(found);
 		assertEquals(f.getSender().getUserId(), found.getSender().getUserId());
@@ -48,9 +48,7 @@ public class FriendshipRepositoryTest {
 	@Test
 	public void testFindAllFriendsByUser() {
 		List<FriendshipProjection> friends = rep.findAllFriendsByUser(new User(3));
-		assertThat(friends)
-		.hasSize(3)
-		.allMatch((FriendshipProjection fd) -> fd.getUserId() != 3);
+		assertThat(friends).hasSize(3).allMatch((FriendshipProjection fd) -> fd.getUserId() != 3);
 	}
 
 }

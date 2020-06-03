@@ -49,7 +49,6 @@ ALTER TABLE banlist ADD CONSTRAINT FK_BanlistBanned
 -- Delete invalid entries:
 DELETE FROM battle_history WHERE duration <= 0;
 
-ALTER TABLE battle_history DROP COLUMN id;
 ALTER TABLE battle_history ADD CONSTRAINT CHK_Battle_Duration CHECK (duration>0);
 ALTER TABLE battle_history ADD CONSTRAINT FK_BattleHistoryStarter
 	FOREIGN KEY (starter_id) REFERENCES users(user_id)
@@ -65,20 +64,26 @@ CREATE TABLE IF NOT EXISTS `AuthData` (
   `acc_id` varchar(8) COLLATE utf8mb4_bin DEFAULT NULL,
   `firebase_token` varchar(200) CHARACTER SET utf8 DEFAULT NULL,
   `reg_date` datetime DEFAULT CURRENT_TIMESTAMP,
-  `state` enum('banned','ready','admin') COLLATE utf8mb4_bin NOT NULL DEFAULT 'ready',
+  `auth_type` enum('nv','gl','vk','ok','fb') COLLATE utf8mb4_bin NOT NULL,
   PRIMARY KEY (`user_id`)
 );
 
-INSERT INTO AuthData(user_id, sn_uid, acc_id, firebase_token, reg_date, state)
-SELECT user_id, sn_uid, acc_id, firebase_token, reg_date, state FROM users;
+INSERT INTO AuthData(user_id, sn_uid, acc_id, firebase_token, reg_date, auth_type)
+SELECT user_id, sn_uid, acc_id, firebase_token, reg_date, auth_type FROM users;
 
 ALTER TABLE users DROP COLUMN sn_uid;
 ALTER TABLE users DROP COLUMN acc_id;
 ALTER TABLE users DROP COLUMN firebase_token;
 ALTER TABLE users DROP COLUMN reg_date;
-ALTER TABLE users DROP COLUMN state;
+ALTER TABLE users DROP COLUMN auth_type;
 ALTER TABLE AuthData CHANGE acc_id access_hash  varchar(8) COLLATE utf8mb4_bin DEFAULT NULL;
 
 ALTER TABLE AuthData ADD CONSTRAINT FK_AuthData_UserId
 	FOREIGN KEY (user_id) REFERENCES users(user_id)
 	ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE users RENAME TO User;
+ALTER TABLE banlist RENAME TO Banlist;
+ALTER TABLE friends RENAME TO Friendship;
+ALTER TABLE battle_history RENAME TO History;
+ALTER TABLE pictures RENAME TO Picture;

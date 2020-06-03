@@ -27,14 +27,15 @@ import ru.quandastudio.lpsserver.Result;
 import ru.quandastudio.lpsserver.core.Player;
 import ru.quandastudio.lpsserver.core.ServerContext;
 import ru.quandastudio.lpsserver.data.PictureManager;
+import ru.quandastudio.lpsserver.data.entities.AuthData;
 import ru.quandastudio.lpsserver.data.entities.Picture;
 import ru.quandastudio.lpsserver.data.entities.User;
 import ru.quandastudio.lpsserver.http.model.MessageWrapper;
 import ru.quandastudio.lpsserver.http.model.SignUpRequest;
 import ru.quandastudio.lpsserver.http.model.SignUpResponse;
 import ru.quandastudio.lpsserver.models.FriendModeResult;
-import ru.quandastudio.lpsserver.models.RequestType;
 import ru.quandastudio.lpsserver.models.LPSMessage.LPSFriendModeRequest;
+import ru.quandastudio.lpsserver.models.RequestType;
 import ru.quandastudio.lpsserver.util.ValidationUtil;
 
 @RestController
@@ -77,7 +78,7 @@ public class UserController {
 					final Picture.Type t = Picture.Type.valueOf(type.toUpperCase());
 					PictureManager pics = context.getPictureManager();
 					if (!Objects.equals(hash, user.getAvatarHash())) {
-						Picture pic = pics.getPictureByUserId(user).orElse(new Picture(user, body, t));
+						Picture pic = pics.getPictureByUserId(user).orElse(new Picture(null, user, body, t));
 						pic.setImageData(body);
 						pic.setType(t);
 						pics.save(pic);
@@ -102,7 +103,7 @@ public class UserController {
 		return Result.success(request)
 				.check(() -> firstError.isEmpty(), firstError.orElse(null))
 				.flatMap(context.getUserManager()::logIn)
-				.map((User u) -> new SignUpResponse(u))
+				.map((AuthData a) -> new SignUpResponse(a))
 				.wrap()
 				.toOkResponse();
 	}
@@ -110,7 +111,7 @@ public class UserController {
 	@PostMapping("/token/{token}")
 	@ResponseStatus(HttpStatus.OK)
 	public void updateToken(@AuthenticationPrincipal User user, @PathVariable("token") String token) {
-		context.getUserManager().updateToken(user, token);
+		context.getUserManager().updateFirebaseToken(user, token);
 	}
 
 	@PutMapping("/request/{id}/{type}")

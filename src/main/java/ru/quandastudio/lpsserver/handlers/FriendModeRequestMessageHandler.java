@@ -46,7 +46,7 @@ public class FriendModeRequestMessageHandler extends MessageHandler<LPSFriendMod
 		Optional<User> opponent = context.getUserManager().getUserById(oppId);
 		User oppUser = opponent.orElse(null);
 
-		if (opponent.isEmpty() || !oppUser.isAtLeast(State.ready)) {
+		if (opponent.isEmpty() || !oppUser.getState().isAtLeast(State.ready)) {
 			player.sendMessage(new LPSFriendModeRequest(null, 0, FriendModeResult.NO_USER));
 			return;
 		}

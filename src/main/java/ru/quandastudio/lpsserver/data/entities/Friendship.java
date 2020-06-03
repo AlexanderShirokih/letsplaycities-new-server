@@ -5,9 +5,8 @@ import java.sql.Timestamp;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.IdClass;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
@@ -19,24 +18,22 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "friends")
+@Table
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
+@IdClass(CompositeFriendshipKey.class)
 public class Friendship implements Serializable {
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "id", precision = 11)
-	private Long id;
-
 	@ManyToOne
-	@JoinColumn(name = "sender_id")
+	@JoinColumn(name = "sender_id", referencedColumnName = "user_id")
 	private User sender;
-
+	
+	@Id
 	@ManyToOne
-	@JoinColumn(name = "receiver_id")
+	@JoinColumn(name = "receiver_id", referencedColumnName = "user_id")
 	private User receiver;
 
 	@Column(name = "accepted")
@@ -47,7 +44,7 @@ public class Friendship implements Serializable {
 	private Timestamp creationDate;
 
 	public Friendship(User sender, User receiver) {
-		this(null, sender, receiver, false, null);
+		this(sender, receiver, false, null);
 	}
 
 }

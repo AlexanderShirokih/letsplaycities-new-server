@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import ru.quandastudio.lpsserver.data.dao.BlacklistRepository;
-import ru.quandastudio.lpsserver.data.entities.BlackListUser;
+import ru.quandastudio.lpsserver.data.entities.Banlist;
 import ru.quandastudio.lpsserver.data.entities.OppUserNameProjection;
 import ru.quandastudio.lpsserver.data.entities.User;
 
@@ -21,7 +21,7 @@ public class BlacklistManagerImpl implements BlacklistManager {
 
 	@Override
 	public void addToBanlist(User baner, User banned) {
-		banlistDAO.save(new BlackListUser(baner, banned));
+		banlistDAO.save(new Banlist(baner, banned));
 	}
 
 	@Override

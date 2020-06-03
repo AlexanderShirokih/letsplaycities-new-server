@@ -2,6 +2,7 @@ package ru.quandastudio.lpsserver.http.model;
 
 import lombok.Getter;
 import lombok.NonNull;
+import ru.quandastudio.lpsserver.data.entities.AuthData;
 import ru.quandastudio.lpsserver.data.entities.User;
 import ru.quandastudio.lpsserver.data.entities.User.State;
 import ru.quandastudio.lpsserver.models.AuthType;
@@ -26,13 +27,14 @@ public class SignUpResponse {
 
 	private final String picHash;
 
-	public SignUpResponse(final User user) {
+	public SignUpResponse(final AuthData authData) {
+		User user = authData.getUser();
 		userId = user.getUserId();
-		accHash = user.getAccessId();
 		picHash = user.getAvatarHash();
 		state = user.getState();
 		name = user.getName();
-		authType = AuthType.from(user.getAuthType());
+		accHash = authData.getAccessHash();
+		authType = AuthType.from(authData.getAuthType());
 	}
 
 }
