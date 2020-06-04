@@ -2,6 +2,7 @@ package ru.quandastudio.lpsserver.data.entities;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.time.Instant;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -44,7 +45,7 @@ public class Friendship implements Serializable {
 	private Timestamp creationDate;
 
 	public Friendship(User sender, User receiver) {
-		this(sender, receiver, false, null);
+		this(sender, receiver, false, Timestamp.from(Instant.now()));
 	}
 
 }
