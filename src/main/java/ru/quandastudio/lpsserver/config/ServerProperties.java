@@ -20,7 +20,7 @@ public class ServerProperties {
 
 	private static final String CONFIG_FILE = "env.config.properties";
 
-	private Properties props = new Properties();
+	private final Properties props = new Properties();
 
 	public ServerProperties() {
 		loadConfig();
@@ -51,7 +51,7 @@ public class ServerProperties {
 		String ret = props.getProperty(key);
 		if (ret == null)
 			throw new LPSException("Requested property \"" + key + "\" not found!");
-		int retVal = 0;
+		int retVal;
 		try {
 			retVal = Integer.parseInt(ret);
 		} catch (NumberFormatException e) {

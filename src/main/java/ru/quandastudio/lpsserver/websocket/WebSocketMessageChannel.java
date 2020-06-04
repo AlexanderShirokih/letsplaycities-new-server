@@ -28,7 +28,7 @@ public class WebSocketMessageChannel implements MessageChannel {
 				log.warn("ERR sending websocket message: {}", e.toString());
 				try {
 					session.close();
-				} catch (IOException e1) {
+				} catch (IOException ignored) {
 				}
 			}
 		}

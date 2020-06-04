@@ -16,7 +16,7 @@ public class LPSClientMessageDeserializerTest {
 	private Gson gson;
 
 	@Before
-	public void setUp() throws Exception {
+	public void setUp() {
 		gson = new GsonBuilder().registerTypeAdapter(LPSClientMessage.class, new LPSClientMessageDeserializer())
 								.create();
 	}

@@ -39,6 +39,7 @@ public class FcmConfiguration {
 		} catch (IOException e) {
 			log.error("Error on initalization firebase messaging", e);
 		}
+		assert options != null;
 		FirebaseApp app = FirebaseApp.initializeApp(options);
 
 		return FirebaseMessaging.getInstance(app);

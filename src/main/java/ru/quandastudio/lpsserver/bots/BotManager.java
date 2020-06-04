@@ -57,15 +57,11 @@ public class BotManager {
 	}
 
 	private void scheduleUpdate() {
-		Runnable task = new Runnable() {
-
-			@Override
-			public void run() {
-				try {
-					update();
-				} catch (Exception e) {
-					log.error("Error in BOT update():", e);
-				}
+		Runnable task = () -> {
+			try {
+				update();
+			} catch (Exception e) {
+				log.error("Error in BOT update():", e);
 			}
 		};
 		botUpdaterExecutor.scheduleWithFixedDelay(task, 10, 10, TimeUnit.SECONDS);
@@ -96,7 +92,7 @@ public class BotManager {
 	}
 
 	private BotInfo[] loadBotConfiguration() {
-		BotInfo[] infos = null;
+		BotInfo[] infos;
 		try {
 			final File file = new ClassPathResource("bots.json").getFile();
 			infos = new BotConfigParser().parseBotsList(file);

@@ -1,18 +1,16 @@
 package ru.quandastudio.lpsserver.core;
 
-import java.util.Objects;
-import java.util.Optional;
-
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import ru.quandastudio.lpsserver.data.entities.User;
-import ru.quandastudio.lpsserver.data.entities.User.State;
-import ru.quandastudio.lpsserver.models.AuthType;
 import ru.quandastudio.lpsserver.models.LPSClientMessage;
 import ru.quandastudio.lpsserver.models.LPSMessage;
 import ru.quandastudio.lpsserver.models.LPSMessage.LPSLeaveMessage;
+
+import java.util.Objects;
+import java.util.Optional;
 
 @Getter
 @Setter
@@ -26,8 +24,6 @@ public class Player {
 	private final MessageChannel channel;
 
 	private User user;
-	
-	private AuthType authType;	
 
 	private Boolean canReceiveMessages;
 
@@ -52,7 +48,7 @@ public class Player {
 		if (room != null) {
 			Player p = room.oppositePlayer(this);
 			if (p.isOnline())
-				p.sendMessage(new LPSLeaveMessage(false, getUser().getUserId()));
+				p.sendMessage(new LPSLeaveMessage(false, getUser().getId()));
 			else
 				room.finish();
 		}
@@ -63,12 +59,12 @@ public class Player {
 		return clientBuild >= version;
 	}
 
-	public boolean hasAdminPrivilages() {
-		return user.getState().isAtLeast(State.admin);
+	public boolean hasAdminPrivileges() {
+		return user.getRole().isAtLeast(User.Role.ADMIN);
 	}
 
 	public boolean isAuthorized() {
-		return user != null && user.getState().isAtLeast(State.ready);
+		return user != null && user.getRole().isAtLeast(User.Role.REGULAR_USER);
 	}
 
 	public boolean isFriend(Integer userId) {

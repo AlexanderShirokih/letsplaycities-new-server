@@ -31,7 +31,7 @@ public class MessageRouterImpl implements MessageRouter {
 	private final Map<Class<? extends LPSClientMessage>, MessageHandler<? extends LPSClientMessage>> handlers;
 
 	public MessageRouterImpl() {
-		handlers = new HashMap<Class<? extends LPSClientMessage>, MessageHandler<? extends LPSClientMessage>>();
+		handlers = new HashMap<>();
 
 		registerTypeHandler(new LoginMessageHandler());
 		registerTypeHandler(new PlayMessageHandler());

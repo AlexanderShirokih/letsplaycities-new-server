@@ -23,7 +23,7 @@ public class HistoryMessageHandler extends MessageHandler<LPSHistoryList> {
 		final List<HistoryInfo> data = context.getHistoryManager()
 				.getHistoryList(player.getUser())
 				.stream()
-				.map((HistoryProjection item) -> new HistoryInfo(item))
+				.map(HistoryInfo::new)
 				.collect(Collectors.toList());
 
 		player.sendMessage(new LPSMessage.LPSHistoryList(data));

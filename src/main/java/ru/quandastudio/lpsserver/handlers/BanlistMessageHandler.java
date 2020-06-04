@@ -36,7 +36,7 @@ public class BanlistMessageHandler extends MessageHandler<LPSBanList> {
 				.getBanlistManager()
 				.getBannedUsers(player.getUser())
 				.stream()
-				.map((OppUserNameProjection user) -> new BlacklistWrapper(user))
+				.map(BlacklistWrapper::new)
 				.collect(Collectors.toList());
 
 		player.sendMessage(new LPSMessage.LPSBannedListMessage(blacklistItems));

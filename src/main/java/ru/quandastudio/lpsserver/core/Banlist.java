@@ -18,7 +18,7 @@ public class Banlist {
 		if (banLoginFile.exists()) {
 			try {
 				BufferedReader br = new BufferedReader(new FileReader(banLoginFile));
-				String line = null;
+				String line;
 				int size = Integer.parseInt(br.readLine());
 				bannedLogin = new ArrayList<>(size);
 				while ((line = br.readLine()) != null) {
@@ -47,7 +47,7 @@ public class Banlist {
 	public static boolean checkLogin(String login) {
 		for (String bad : bannedLogin)
 			if (login.contains(bad)) {
-				log.info("Banned user was detected! Login={}", login);
+				log.info("BANNED_USER user was detected! Login={}", login);
 				return false;
 			}
 		return true;

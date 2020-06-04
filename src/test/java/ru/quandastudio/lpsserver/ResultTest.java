@@ -29,7 +29,7 @@ public class ResultTest {
 
 	@Test
 	public void testFailFromOptional() {
-		assertTrue(Result.from(Optional.ofNullable(null), "has errors").hasErrors());
+		assertTrue(Result.from(Optional.empty(), "has errors").hasErrors());
 	}
 
 	@Test
@@ -39,13 +39,12 @@ public class ResultTest {
 
 	@Test
 	public void testGetError() {
-		assertTrue(Result.from(Optional.empty(), "has errors").getError().getMessage().equals("has errors"));
+		assertEquals("has errors", Result.from(Optional.empty(), "has errors").getError().getMessage());
 	}
 
-	@SuppressWarnings("deprecation")
 	@Test
 	public void testGetData() {
-		assertTrue(Result.success("test").getData().equals("test"));
+		assertEquals("test", Result.success("test").getData());
 		assertNull(Result.error("error").getData());
 	}
 
@@ -67,13 +66,13 @@ public class ResultTest {
 
 	@Test
 	public void testMapFromSuccess() {
-		assertEquals("123", Result.success(123).map((Integer i) -> i.toString()).get());
+		assertEquals("123", Result.success(123).map(Object::toString).get());
 	}
 
 	@Test
 	public void testMapFromError() {
 		assertEquals("Error!",
-				Result.<Integer>error("Error!").map((Integer i) -> i.toString()).getError().getMessage());
+				Result.<Integer>error("Error!").map(Object::toString).getError().getMessage());
 	}
 
 	@Test

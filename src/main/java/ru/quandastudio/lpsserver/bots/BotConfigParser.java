@@ -16,7 +16,7 @@ public class BotConfigParser {
 		return parseBotsList(new String(Files.readAllBytes(file.toPath())));
 	}
 
-	public BotInfo[] parseBotsList(String source) throws IOException {
+	public BotInfo[] parseBotsList(String source) {
 		JSONObject json = new JSONObject(source);
 		JSONArray arrayOfBots = json.getJSONArray("bots");
 

@@ -7,7 +7,7 @@ import ru.quandastudio.lpsserver.core.Player;
 import ru.quandastudio.lpsserver.core.Room;
 import ru.quandastudio.lpsserver.core.ServerContext;
 import ru.quandastudio.lpsserver.data.entities.User;
-import ru.quandastudio.lpsserver.data.entities.User.State;
+import ru.quandastudio.lpsserver.data.entities.User.Role;
 import ru.quandastudio.lpsserver.models.FriendModeResult;
 import ru.quandastudio.lpsserver.models.LPSClientMessage.LPSFriendMode;
 import ru.quandastudio.lpsserver.models.LPSMessage.LPSFriendModeRequest;
@@ -46,7 +46,7 @@ public class FriendModeRequestMessageHandler extends MessageHandler<LPSFriendMod
 		Optional<User> opponent = context.getUserManager().getUserById(oppId);
 		User oppUser = opponent.orElse(null);
 
-		if (opponent.isEmpty() || !oppUser.getState().isAtLeast(State.ready)) {
+		if (opponent.isEmpty() || !oppUser.getRole().isAtLeast(Role.REGULAR_USER)) {
 			player.sendMessage(new LPSFriendModeRequest(null, 0, FriendModeResult.NO_USER));
 			return;
 		}
@@ -60,9 +60,7 @@ public class FriendModeRequestMessageHandler extends MessageHandler<LPSFriendMod
 				} else {
 					requestSender.sendMessage(new LPSFriendModeRequest(player.getUser(), FriendModeResult.DENIED));
 				}
-			}, () -> {
-				player.sendMessage(new LPSFriendModeRequest(null, 0, FriendModeResult.NO_USER));
-			});
+			}, () -> player.sendMessage(new LPSFriendModeRequest(null, 0, FriendModeResult.NO_USER)));
 		}
 
 	}

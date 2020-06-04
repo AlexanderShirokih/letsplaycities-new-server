@@ -1,24 +1,22 @@
 package ru.quandastudio.lpsserver.data;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import ru.quandastudio.lpsserver.data.dao.HistoryRepository;
+import ru.quandastudio.lpsserver.data.entities.History;
+import ru.quandastudio.lpsserver.data.entities.HistoryProjection;
+import ru.quandastudio.lpsserver.data.entities.User;
+
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.transaction.Transactional;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import ru.quandastudio.lpsserver.data.dao.HistoryRepository;
-import ru.quandastudio.lpsserver.data.entities.HistoryProjection;
-import ru.quandastudio.lpsserver.data.entities.History;
-import ru.quandastudio.lpsserver.data.entities.User;
-
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class HistoryManagerImpl implements HistoryManager {
 
-	@Autowired
-	private HistoryRepository historyDAO;
+	private final HistoryRepository historyDAO;
 
 	@Override
 	public void addHistoryItem(History item) {

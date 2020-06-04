@@ -18,7 +18,7 @@ public class UserMsgMessageHandler extends MessageHandler<LPSMsg> {
 		if (room != null) {
 			Player p = room.oppositePlayer(player);
 			if (p.isOnline() && p.getCanReceiveMessages()) {
-				p.sendMessage(new LPSMessage.LPSMsgMessage(msg.getMsg(), false, player.getUser().getUserId()));
+				p.sendMessage(new LPSMessage.LPSMsgMessage(msg.getMsg(), false, player.getUser().getId()));
 			}
 		}
 	}

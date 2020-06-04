@@ -8,7 +8,6 @@ import ru.quandastudio.lpsserver.core.Player;
 import ru.quandastudio.lpsserver.core.RequestNotifier.NotificationData;
 import ru.quandastudio.lpsserver.core.ServerContext;
 import ru.quandastudio.lpsserver.data.FriendshipManager;
-import ru.quandastudio.lpsserver.data.entities.AuthData;
 import ru.quandastudio.lpsserver.data.entities.Friendship;
 import ru.quandastudio.lpsserver.data.entities.User;
 import ru.quandastudio.lpsserver.models.LPSClientMessage.LPSFriendAction;
@@ -54,7 +53,7 @@ public class FriendMessageHandler extends MessageHandler<LPSFriendAction> {
 		Optional.ofNullable(oppUid)
 				.filter((Integer opp) -> opp > 0)
 				.map((Integer opp) -> Player.createDummyPlayer(context, opp))
-				.or(() -> player.getOppositePlayer())
+				.or(player::getOppositePlayer)
 				.ifPresentOrElse((Player oppPlayer) -> {
 					final User oppUser = oppPlayer.getUser();
 					final Optional<Friendship> friendInfo = friendshipManager.getFriendsInfo(player.getUser(), oppUser);
@@ -87,12 +86,12 @@ public class FriendMessageHandler extends MessageHandler<LPSFriendAction> {
 		final User senderUser = sender.getUser();
 		if (oppPlayer.isOnline())// Normal player
 			oppPlayer.sendMessage(
-					new LPSFriendRequest(FriendRequest.NEW_REQUEST, senderUser.getUserId(), senderUser.getName()));
+					new LPSFriendRequest(FriendRequest.NEW_REQUEST, senderUser.getId(), senderUser.getName()));
 		else {
 			// Dummy or offline player
 			final ServerContext context = oppPlayer.getCurrentContext();
-			final Integer oppId = oppPlayer.getUser().getUserId();
-			final Optional<AuthData> opp = context.getUserManager().getAuthDataById(oppId);
+			final Integer oppId = oppPlayer.getUser().getId();
+			final Optional<User> opp = context.getUserManager().getUserById(oppId);
 			opp.ifPresentOrElse((authData) -> {
 				final String firebaseToken = authData.getFirebaseToken();
 				if (firebaseToken != null && !firebaseToken.isBlank()) {
@@ -101,20 +100,18 @@ public class FriendMessageHandler extends MessageHandler<LPSFriendAction> {
 					context.getRequestNotifier().sendNotification(authData, data);
 				} else
 					log.warn("# Can't send request for user {}. Token not found", oppId);
-			}, () -> {
-				log.warn("# Can't send friend request notification because user not found! user={}", oppId);
-			});
+			}, () -> log.warn("# Can't send friend request notification because user not found! user={}", oppId));
 		}
 	}
 
 	private NotificationData buildNotificationData(User sender) {
 		final String title = "Пользователь " + sender.getName() + " хочет добавить вас в друзья.";
-		final HashMap<String, String> params = new HashMap<String, String>();
+		final HashMap<String, String> params = new HashMap<>();
 
 		params.put("action", "friend_request");
 		params.put("result", "NEW_REQUEST");
 		params.put("login", sender.getName());
-		params.put("user_id", String.valueOf(sender.getUserId()));
+		params.put("user_id", String.valueOf(sender.getId()));
 
 		return new NotificationData(title, params);
 	}
@@ -129,12 +126,12 @@ public class FriendMessageHandler extends MessageHandler<LPSFriendAction> {
 		final FriendshipManager friendshipManager = player.getCurrentContext().getFriendshipManager();
 		final Optional<Player> oppPlayer = player.getOppositePlayer();
 		final User pUser = player.getUser();
-		final User oppUser = oppPlayer.map((opp) -> opp.getUser()).orElse(new User(oppId));
+		final User oppUser = oppPlayer.map(Player::getUser).orElse(new User(oppId));
 
 		friendshipManager.markAcceptedIfExistsOrDelete(oppUser, pUser, isAccepted);
 
 		oppPlayer.ifPresent((opp) -> opp.sendMessage(new LPSFriendRequest(
-				isAccepted ? FriendRequest.ACCEPTED : FriendRequest.DENIED, pUser.getUserId(), pUser.getName())));
+				isAccepted ? FriendRequest.ACCEPTED : FriendRequest.DENIED, pUser.getId(), pUser.getName())));
 	}
 
 	/**
@@ -142,7 +139,7 @@ public class FriendMessageHandler extends MessageHandler<LPSFriendAction> {
 	 */
 	private void handleDeleteRequest(Player player, Integer oppId) {
 		final User first = player.getUser();
-		final User second = player.getOppositePlayer().map((p) -> p.getUser()).orElse(new User(oppId));
+		final User second = player.getOppositePlayer().map(Player::getUser).orElse(new User(oppId));
 
 		final FriendshipManager friendshipManager = player.getCurrentContext().getFriendshipManager();
 

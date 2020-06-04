@@ -7,12 +7,12 @@ import ru.quandastudio.lpsserver.data.entities.User;
 
 public interface BlacklistManager {
 
-	public void addToBanlist(User baner, User banned);
+	void addToBanlist(User baner, User banned);
 
-	public void removeFromBanlist(User baner, User banned);
+	void removeFromBanlist(User baner, User banned);
 
-	public List<OppUserNameProjection> getBannedUsers(User baner);
+	List<OppUserNameProjection> getBannedUsers(User baner);
 
-	public boolean isBanned(User user1, User user2);
+	boolean isBanned(User user1, User user2);
 
 }

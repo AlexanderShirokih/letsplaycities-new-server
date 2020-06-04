@@ -33,7 +33,7 @@ public class BotGameSession {
 	}
 
 	private char getLastChar(String word) {
-		char lastChar = 0;
+		char lastChar;
 		int end = word.length();
 		do {
 			if (end == 0) {
@@ -84,7 +84,7 @@ public class BotGameSession {
 
 	private String getNextWord() {
 		Room room = bot.getRoom();
-		String w = null;
+		String w;
 
 		do {
 			w = getRandomWord();

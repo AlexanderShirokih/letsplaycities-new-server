@@ -1,25 +1,22 @@
 package ru.quandastudio.lpsserver.data;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
-import javax.transaction.Transactional;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import ru.quandastudio.lpsserver.data.dao.FriendshipRepository;
 import ru.quandastudio.lpsserver.data.entities.Friendship;
 import ru.quandastudio.lpsserver.data.entities.FriendshipProjection;
 import ru.quandastudio.lpsserver.data.entities.User;
 
+import javax.transaction.Transactional;
+import java.util.List;
+import java.util.Optional;
+
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class FriendshipManagerImpl implements FriendshipManager {
 
-	@Autowired
-	private FriendshipRepository friendshipDAO;
+	private final FriendshipRepository friendshipDAO;
 
 	@Override
 	public void addNewRequest(Friendship friendship) {
@@ -58,19 +55,14 @@ public class FriendshipManagerImpl implements FriendshipManager {
 		return friendshipDAO.findAllFriendsByUser(user);
 	}
 
-	@Override
-	public List<Friendship> getFriendsListIn(User user, List<User> other) {
-		return other.isEmpty() ? Collections.emptyList() : friendshipDAO.findBySenderAndReceiverIn(user, other);
-	}
-
-	@Override
+    @Override
 	public void swapSenderAndReceiver(User newSender, User newReceiver) {
 		friendshipDAO.swapSenderAndReceiver(newSender, newReceiver);
 	}
 
 	@Override
 	public boolean isFriends(User user1, User user2) {
-		return getFriendsInfo(user1, user2).map((info) -> info.getIsAccepted()).orElse(false);
+		return getFriendsInfo(user1, user2).map(Friendship::getIsAccepted).orElse(false);
 	}
 
 }

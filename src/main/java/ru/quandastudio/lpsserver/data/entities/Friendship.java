@@ -28,12 +28,12 @@ public class Friendship implements Serializable {
 
 	@Id
 	@ManyToOne
-	@JoinColumn(name = "sender_id", referencedColumnName = "user_id")
+	@JoinColumn(name = "sender_id", referencedColumnName = "id")
 	private User sender;
 	
 	@Id
 	@ManyToOne
-	@JoinColumn(name = "receiver_id", referencedColumnName = "user_id")
+	@JoinColumn(name = "receiver_id", referencedColumnName = "id")
 	private User receiver;
 
 	@Column(name = "accepted")

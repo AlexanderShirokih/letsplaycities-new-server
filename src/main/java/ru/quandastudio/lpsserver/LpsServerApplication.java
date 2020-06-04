@@ -20,11 +20,6 @@ public class LpsServerApplication {
 
 	@Bean
 	public ApplicationListener<ApplicationReadyEvent> readyEventApplicationListener() {
-		return new ApplicationListener<ApplicationReadyEvent>() {
-			@Override
-			public void onApplicationEvent(ApplicationReadyEvent applicationReadyEvent) {
-				lpsServer.start();
-			}
-		};
+		return applicationReadyEvent -> lpsServer.start();
 	}
 }

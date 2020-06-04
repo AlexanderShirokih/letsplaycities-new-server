@@ -1,23 +1,21 @@
 package ru.quandastudio.lpsserver.data;
 
-import java.util.List;
-
-import javax.transaction.Transactional;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import ru.quandastudio.lpsserver.data.dao.BlacklistRepository;
 import ru.quandastudio.lpsserver.data.entities.Banlist;
 import ru.quandastudio.lpsserver.data.entities.OppUserNameProjection;
 import ru.quandastudio.lpsserver.data.entities.User;
 
+import javax.transaction.Transactional;
+import java.util.List;
+
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class BlacklistManagerImpl implements BlacklistManager {
 
-	@Autowired
-	private BlacklistRepository banlistDAO;
+	private final BlacklistRepository banlistDAO;
 
 	@Override
 	public void addToBanlist(User baner, User banned) {

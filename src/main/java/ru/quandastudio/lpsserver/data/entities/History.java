@@ -3,14 +3,7 @@ package ru.quandastudio.lpsserver.data.entities;
 import java.io.Serializable;
 import java.sql.Timestamp;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -20,6 +13,7 @@ import lombok.ToString;
 
 /**
  * Represents game history
+ *
  * @author Alexander Shirokikh
  */
 @Entity
@@ -30,38 +24,38 @@ import lombok.ToString;
 @Setter
 @ToString
 public class History implements Serializable {
-	private static final long serialVersionUID = 2L;
-	
-	@Id
-	@GeneratedValue
-	private Long id;
+    private static final long serialVersionUID = 2L;
 
-	@ManyToOne(cascade = CascadeType.ALL)
-	@JoinColumn(name = "starter_id")
-	private User starter;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private Long id;
 
-	@ManyToOne(cascade = CascadeType.ALL)
-	@JoinColumn(name = "invited_id")
-	private User invited;
+    @ManyToOne
+    @JoinColumn(name = "starter_id")
+    private User starter;
 
-	@Column(name = "begin_time")
-	private Timestamp creationDate;
+    @ManyToOne
+    @JoinColumn(name = "invited_id")
+    private User invited;
 
-	@Column(name = "duration", precision = 6)
-	private Integer duration;
+    @Column(name = "begin_time")
+    private Timestamp creationDate;
 
-	@Column(name = "words_count", precision = 6)
-	private Integer wordsCount;
+    @Column(name = "duration", precision = 6)
+    private Integer duration;
 
-	/**
-	 * 
-	 * @param sender     user who starts room
-	 * @param invited    user's opponent
-	 * @param startTime  time in millis when game started
-	 * @param duration   duration of this battle in seconds
-	 * @param wordsCount total count of words used in the battle
-	 */
-	public History(User starter, User invited, long startTime, Integer duration, Integer wordsCount) {
-		this(null, starter, invited, new Timestamp(startTime), duration, wordsCount);
-	}
+    @Column(name = "words_count", precision = 6)
+    private Integer wordsCount;
+
+    /**
+     * @param starter    user who starts room
+     * @param invited    user's opponent
+     * @param startTime  time in millis when game started
+     * @param duration   duration of this battle in seconds
+     * @param wordsCount total count of words used in the battle
+     */
+    public History(User starter, User invited, long startTime, Integer duration, Integer wordsCount) {
+        this(null, starter, invited, new Timestamp(startTime), duration, wordsCount);
+    }
 }

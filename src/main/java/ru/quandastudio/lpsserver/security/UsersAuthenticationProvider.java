@@ -1,22 +1,20 @@
 package ru.quandastudio.lpsserver.security;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
-
 import ru.quandastudio.lpsserver.Result;
 import ru.quandastudio.lpsserver.core.ServerContext;
-import ru.quandastudio.lpsserver.data.entities.User;
 
 @Component
+@RequiredArgsConstructor
 public class UsersAuthenticationProvider implements AuthenticationProvider {
 
-	@Autowired
-	private ServerContext context;
+	private final ServerContext context;
 
 	@Override
 	public Authentication authenticate(Authentication authentication) throws AuthenticationException {
@@ -29,7 +27,7 @@ public class UsersAuthenticationProvider implements AuthenticationProvider {
 		return context.getUserManager()
 				.getUserByIdAndHash(userId, accessHash)
 				.mapError((Exception e) -> new BadCredentialsException(e.getMessage()))
-				.map((User u) -> new UserAuthenticationToken(u))
+				.map(UserAuthenticationToken::new)
 				.get();
 	}
 

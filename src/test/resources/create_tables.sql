@@ -16,7 +16,7 @@ CREATE TABLE `users` (
   `last_visit` datetime DEFAULT CURRENT_TIMESTAMP,
   `sn_uid` varchar(32) DEFAULT NULL,
   `acc_id` varchar(8)  DEFAULT NULL,
-  `state` enum('unk','banned','ready','admin')  NOT NULL,
+  `role` enum('unk','banned','READY','ADMIN')  NOT NULL,
   `firebase_token` varchar(200) DEFAULT NULL,
   `avatar_hash` varchar(32) DEFAULT NULL
 );

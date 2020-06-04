@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 
 public interface OppUserNameProjection {
 
-	@Value("#{target.oppUser.userId}")
+	@Value("#{target.oppUser.id}")
 	Integer getUserId();
 
 	@Value("#{target.oppUser.name}")

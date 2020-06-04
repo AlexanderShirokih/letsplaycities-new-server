@@ -17,25 +17,24 @@ public class Bot extends Player {
 	private static final int BOT_VERSION_CODE = 133;
 
 	@Getter
-	private int min;
+	private final int min;
 
 	@Getter
-	private int max;
+	private final int max;
 
 	private boolean isFree = true;
 	private long lastTime;
 
-	private BotGameSession session;
+	private final BotGameSession session;
 
 	public Bot(ServerContext context, BotInfo info) {
 		super(context, new BotMessageChannel());
 
 		((BotMessageChannel) getChannel()).setBot(this);
 
-		User user = new User();
+		User user = new User(info.user_id);
 		user.setName(info.name);
-		user.setUserId(info.user_id);
-		setAuthType(AuthType.Native);
+		user.setAuthType(AuthType.Native);
 		setUser(user);
 //		setAvatarData(StringUtil.toBase64(info.avatar));
 		setClientBuild(BOT_VERSION_CODE);

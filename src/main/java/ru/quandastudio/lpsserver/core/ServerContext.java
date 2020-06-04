@@ -30,11 +30,11 @@ import ru.quandastudio.lpsserver.data.entities.User;
 @Slf4j
 public class ServerContext {
 
-	private ArrayBlockingQueue<Player> playersQueue = new ArrayBlockingQueue<Player>(256);
+	private final ArrayBlockingQueue<Player> playersQueue = new ArrayBlockingQueue<>(256);
 
-	private Hashtable<Player, Integer> friendsRequests = new Hashtable<>(256);
+	private final Hashtable<Player, Integer> friendsRequests = new Hashtable<>(256);
 
-	private BotManager botManager = new BotManager(this);
+	private final BotManager botManager = new BotManager(this);
 
 	private final MessageRouter messageRouter;
 
@@ -61,8 +61,8 @@ public class ServerContext {
 	}
 
 	public Optional<Player> popPlayerFromWaitingQueue(User target, User sender) {
-		int tId = target.getUserId();
-		int sId = sender.getUserId();
+		int tId = target.getId();
+		int sId = sender.getId();
 
 		Iterator<Entry<Player, Integer>> iter = friendsRequests.entrySet().iterator();
 		while (iter.hasNext()) {
@@ -73,7 +73,7 @@ public class ServerContext {
 				iter.remove();
 				continue;
 			}
-			boolean senderMatches = p.getUser().getUserId().equals(sId);
+			boolean senderMatches = p.getUser().getId().equals(sId);
 			boolean targetMatches = targetId == tId;
 			// Check that we have request with Player `sender` and target `target`
 			if (senderMatches && targetMatches) {
@@ -85,9 +85,7 @@ public class ServerContext {
 	}
 
 	public Optional<Player> getPlayer(User user) {
-		Predicate<Player> isTargetUser = (Player p) -> {
-			return p.isOnline() && p.getUser().getUserId() == user.getUserId();
-		};
+		Predicate<Player> isTargetUser = (Player p) -> p.isOnline() && p.getUser().getId().equals(user.getId());
 
 		return playersQueue.stream()
 				.filter(isTargetUser)

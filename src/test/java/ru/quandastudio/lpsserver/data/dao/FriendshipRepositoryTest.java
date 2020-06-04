@@ -42,7 +42,7 @@ public class FriendshipRepositoryTest {
 		Friendship found = rep.findBySenderAndReceiverOrReceiverAndSender(a, b).orElse(null);
 
 		assertNotNull(found);
-		assertEquals(f.getSender().getUserId(), found.getSender().getUserId());
+		assertEquals(f.getSender().getId(), found.getSender().getId());
 	}
 
 	@Test

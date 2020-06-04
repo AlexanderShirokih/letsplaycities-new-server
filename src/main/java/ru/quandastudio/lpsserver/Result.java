@@ -24,11 +24,11 @@ public class Result<T> {
 	private final Exception error;
 
 	public static <T> Result<T> success(@NonNull T data) {
-		return new Result<T>(data, null);
+		return new Result<>(data, null);
 	}
 
 	public static <T> Result<T> error(@NonNull Exception error) {
-		return new Result<T>(null, error);
+		return new Result<>(null, error);
 	}
 
 	public static <T> Result<T> error(String error) {
@@ -154,7 +154,7 @@ public class Result<T> {
 	}
 
 	public MessageWrapper<T> wrap() {
-		return new MessageWrapper<T>(data, error == null ? null : error.getMessage());
+		return new MessageWrapper<>(data, error == null ? null : error.getMessage());
 	}
 
 }

@@ -7,6 +7,8 @@ import ru.quandastudio.lpsserver.core.Player;
 import ru.quandastudio.lpsserver.core.ServerContext;
 import ru.quandastudio.lpsserver.models.LPSClientMessage.LPSAdmin;
 
+import java.util.Arrays;
+
 @Slf4j
 public class AdminMessageHandler extends MessageHandler<LPSAdmin> {
 
@@ -16,7 +18,7 @@ public class AdminMessageHandler extends MessageHandler<LPSAdmin> {
 
 	@Override
 	public void handle(Player player, LPSAdmin msg) {
-		if (player.hasAdminPrivilages()) {
+		if (player.hasAdminPrivileges()) {
 			handleAction(player, msg.getCommand().split(">"));
 		}
 	}
@@ -49,7 +51,7 @@ public class AdminMessageHandler extends MessageHandler<LPSAdmin> {
 			player.getCurrentContext().getUserManager().setBanned(userId, isOn);
 			break;
 		default:
-			spec("Receiver unknown ADMIN command [" + split + "]");
+			spec("Receiver unknown ADMIN command [" + Arrays.toString(split) + "]");
 		}
 	}
 

@@ -1,15 +1,14 @@
 package ru.quandastudio.lpsserver.handlers;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import ru.quandastudio.lpsserver.core.Player;
 import ru.quandastudio.lpsserver.core.ServerContext;
 import ru.quandastudio.lpsserver.data.FriendshipManager;
-import ru.quandastudio.lpsserver.data.entities.FriendshipProjection;
 import ru.quandastudio.lpsserver.models.FriendInfo;
 import ru.quandastudio.lpsserver.models.LPSClientMessage.LPSFriendList;
 import ru.quandastudio.lpsserver.models.LPSMessage.LPSFriendsList;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class FriendsListMessageHandler extends MessageHandler<LPSFriendList> {
 
@@ -23,7 +22,7 @@ public class FriendsListMessageHandler extends MessageHandler<LPSFriendList> {
 		final FriendshipManager friendshipManager = context.getFriendshipManager();
 		List<FriendInfo> friendInfoList = friendshipManager.getFriendsList(player.getUser())
 				.stream()
-				.map((FriendshipProjection f) -> new FriendInfo(f))
+				.map(FriendInfo::new)
 				.collect(Collectors.toList());
 		player.sendMessage(new LPSFriendsList(friendInfoList));
 	}

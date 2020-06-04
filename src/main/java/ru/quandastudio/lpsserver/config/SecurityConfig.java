@@ -20,14 +20,16 @@ import ru.quandastudio.lpsserver.security.UsersAuthenticationProvider;
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-	@Autowired
-	private DefaultBasicAuthenticationEntryPoint authenticationEntryPoint;
+	private final DefaultBasicAuthenticationEntryPoint authenticationEntryPoint;
+	private final UsersAuthenticationProvider authenticationProvider;
 
-	@Autowired
-	private UsersAuthenticationProvider authenticationProvider;
+	public SecurityConfig(DefaultBasicAuthenticationEntryPoint authenticationEntryPoint, UsersAuthenticationProvider authenticationProvider) {
+		this.authenticationEntryPoint = authenticationEntryPoint;
+		this.authenticationProvider = authenticationProvider;
+	}
 
 	@Override
-	public void configure(WebSecurity web) throws Exception {
+	public void configure(WebSecurity web) {
 		web.ignoring().antMatchers("/resources/**");
 	}
 
@@ -58,7 +60,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	}
 
 	@Autowired
-	public void conigureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+	public void configureGlobal(AuthenticationManagerBuilder auth) {
 		auth.authenticationProvider(authenticationProvider);
 	}
 

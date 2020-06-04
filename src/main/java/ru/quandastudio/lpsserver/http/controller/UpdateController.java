@@ -1,11 +1,7 @@
 package ru.quandastudio.lpsserver.http.controller;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.Optional;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -13,20 +9,21 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import ru.quandastudio.lpsserver.core.ServerContext;
 import ru.quandastudio.lpsserver.http.model.UpdateMessage;
 import ru.quandastudio.lpsserver.http.model.UpdateMessage.Dictionary;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
 @Slf4j
 public class UpdateController {
 
-	@Autowired
-	private ServerContext context;
+	private final ServerContext context;
 
 	@RequestMapping("/update")
 	public UpdateMessage updateMessage() {
@@ -48,12 +45,10 @@ public class UpdateController {
 				log.error("Error sending database file. ", e);
 			}
 			return Optional.empty();
-		}).map((ByteArrayResource resource) -> {
-			return ResponseEntity.ok()
-					.headers(headers)
-					.contentType(MediaType.parseMediaType("application/octet-stream"))
-					.contentLength(resource.contentLength())
-					.body(resource);
-		}).orElse(ResponseEntity.notFound().build());
+		}).map((ByteArrayResource resource) -> ResponseEntity.ok()
+				.headers(headers)
+				.contentType(MediaType.parseMediaType("application/octet-stream"))
+				.contentLength(resource.contentLength())
+				.body(resource)).orElse(ResponseEntity.notFound().build());
 	}
 }

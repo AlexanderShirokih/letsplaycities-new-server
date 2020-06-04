@@ -2,10 +2,10 @@ package ru.quandastudio.lpsserver.core;
 
 public class DelayedTask {
 	private long nextTime;
-	private int period;
 	private boolean cancelled;
-	private boolean periodic;
-	private RunnableTask task;
+	private final int period;
+	private final boolean periodic;
+	private final RunnableTask task;
 
 	public DelayedTask(int delay, int period, RunnableTask task) {
 		this.task = task;

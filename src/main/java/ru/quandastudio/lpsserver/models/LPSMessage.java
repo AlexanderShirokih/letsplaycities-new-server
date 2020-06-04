@@ -145,7 +145,7 @@ public class LPSMessage {
 		private final FriendModeResult result;
 
 		public LPSFriendModeRequest(User user, FriendModeResult result) {
-			this(user.getName(), user.getUserId(), result);
+			this(user.getName(), user.getId(), result);
 		}
 	}
 
@@ -166,7 +166,7 @@ public class LPSMessage {
 	}
 
 	public enum FriendRequest {
-		NEW_REQUEST, ACCEPTED, DENIED;
+		NEW_REQUEST, ACCEPTED, DENIED
 	}
 
 }

@@ -13,7 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
 public class TaskLooper extends Thread implements Runnable {
 
-	private ArrayList<DelayedTask> tasks = new ArrayList<DelayedTask>(128);
+	private final ArrayList<DelayedTask> tasks = new ArrayList<>(128);
 
 	@Override
 	public void run() {
@@ -23,14 +23,15 @@ public class TaskLooper extends Thread implements Runnable {
 					try {
 						tasks.wait();
 					} catch (InterruptedException e) {
-
+						break;
 					}
 				}
 
-				tasks.removeIf((x) -> x.updateTask());
+				tasks.removeIf(DelayedTask::updateTask);
 				try {
 					tasks.wait(100);
-				} catch (InterruptedException e) {
+				} catch (InterruptedException ignored) {
+					break;
 				}
 			}
 		}
@@ -50,12 +51,6 @@ public class TaskLooper extends Thread implements Runnable {
 
 	public void log() {
 		log.info(" TASK INFO SERVICE. task count={}", tasks.size());
-	}
-
-	private static final TaskLooper taskLooperInstance = new TaskLooper();
-
-	public static TaskLooper getInstance() {
-		return taskLooperInstance;
 	}
 
 	public void shutdown() {

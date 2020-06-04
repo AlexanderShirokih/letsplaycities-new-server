@@ -1,10 +1,10 @@
-INSERT INTO users(`auth_type`, `name`,`state`)
+INSERT INTO users(`auth_type`, `name`,`role`)
 VALUES 
-('nv', 'Joe', 'ready'),
-('nv', 'Andy', 'ready'),
-('nv', 'Mark', 'ready'),
-('nv', 'Alex', 'ready'),
-('nv', 'Foo', 'ready')
+('nv', 'Joe', 'READY'),
+('nv', 'Andy', 'READY'),
+('nv', 'Mark', 'READY'),
+('nv', 'Alex', 'READY'),
+('nv', 'Foo', 'READY')
 ;
 
 INSERT INTO friends(`sender_id`, `receiver_id`, `accepted`)

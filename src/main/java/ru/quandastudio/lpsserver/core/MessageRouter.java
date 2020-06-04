@@ -4,6 +4,6 @@ import ru.quandastudio.lpsserver.models.LPSClientMessage;
 
 public interface MessageRouter {
 
-	public void handleMessage(Player player, LPSClientMessage message);
+	void handleMessage(Player player, LPSClientMessage message);
 
 }

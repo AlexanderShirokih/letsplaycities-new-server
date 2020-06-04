@@ -1,28 +1,20 @@
 package ru.quandastudio.lpsserver.data;
 
-import java.util.List;
-import java.util.Optional;
-
-import javax.transaction.Transactional;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import ru.quandastudio.lpsserver.data.dao.PictureRepository;
 import ru.quandastudio.lpsserver.data.entities.Picture;
 import ru.quandastudio.lpsserver.data.entities.User;
 
+import javax.transaction.Transactional;
+import java.util.Optional;
+
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class PictureManagerImpl implements PictureManager {
 
-	@Autowired
-	private PictureRepository picturesDAO;
-
-	@Override
-	public List<Picture> getPicturesByUserId(List<User> users) {
-		return picturesDAO.findByOwnerIn(users);
-	}
+	private final PictureRepository picturesDAO;
 
 	@Override
 	public Optional<Picture> getPictureByUserId(User user) {

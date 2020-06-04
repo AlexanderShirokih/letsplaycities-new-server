@@ -9,19 +9,17 @@ import ru.quandastudio.lpsserver.data.entities.User;
 
 public interface FriendshipManager {
 
-	public void addNewRequest(Friendship friendship);
+	void addNewRequest(Friendship friendship);
 
-	public void deleteFriend(User first, User second);
+	void deleteFriend(User first, User second);
 
-	public Optional<Friendship> getFriendsInfo(User first, User second);
+	Optional<Friendship> getFriendsInfo(User first, User second);
 
-	public List<FriendshipProjection> getFriendsList(User user);
+	List<FriendshipProjection> getFriendsList(User user);
 
-	public List<Friendship> getFriendsListIn(User user, List<User> other);
+	void markAcceptedIfExistsOrDelete(User sender, User receiver, boolean isAccepted);
 
-	public void markAcceptedIfExistsOrDelete(User sender, User receiver, boolean isAccepted);
-
-	public void swapSenderAndReceiver(User newSender, User newReceiver);
+	void swapSenderAndReceiver(User newSender, User newReceiver);
 	
-	public boolean isFriends(User user1, User user2);
+	boolean isFriends(User user1, User user2);
 }

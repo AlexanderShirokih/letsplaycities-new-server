@@ -8,7 +8,7 @@ import ru.quandastudio.lpsserver.data.entities.User;
 
 public interface HistoryManager {
 
-	public void addHistoryItem(History item);
+	void addHistoryItem(History item);
 	
-	public List<HistoryProjection> getHistoryList(User user);
+	List<HistoryProjection> getHistoryList(User user);
 }

@@ -13,12 +13,12 @@ import ru.quandastudio.lpsserver.data.entities.User;
 @Repository
 public interface BlacklistRepository extends JpaRepository<Banlist, Long> {
 
-	public void deleteByBanerAndBanned(User baner, User banned);
+	void deleteByBanerAndBanned(User baner, User banned);
 
 	@Query("select b.banned as oppUser from Banlist b where b.baner = ?1")
-	public List<OppUserNameProjection> findBannedUsersByUser(User user);
+	List<OppUserNameProjection> findBannedUsersByUser(User user);
 
 	@Query("select case when count(b)> 0 then true else false end from Banlist b where (b.baner=?1 and b.banned=?2) or (b.baner=?2 and b.banned=?1)")
-	public boolean existsByUser(User firstUser, User secondUser);
+	boolean existsByUser(User firstUser, User secondUser);
 
 }
