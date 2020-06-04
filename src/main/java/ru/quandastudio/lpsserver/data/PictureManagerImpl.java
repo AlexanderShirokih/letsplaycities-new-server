@@ -14,21 +14,21 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class PictureManagerImpl implements PictureManager {
 
-	private final PictureRepository picturesDAO;
+    private final PictureRepository picturesDAO;
 
-	@Override
-	public Optional<Picture> getPictureByUserId(User user) {
-		return picturesDAO.findByOwner(user);
-	}
+    @Override
+    public Optional<Picture> getPictureByUserId(User user) {
+        return picturesDAO.findByOwner(user);
+    }
 
-	@Override
-	public void deletePictureByUser(User user) {
-		picturesDAO.deleteByOwner(user);
-	}
-	
-	@Override
-	public void save(Picture picture) {
-		picturesDAO.save(picture);
-	}
+    @Override
+    public void deletePictureByUser(User user) {
+        picturesDAO.deleteByOwnerId(user.getId());
+    }
+
+    @Override
+    public void save(Picture picture) {
+        picturesDAO.save(picture);
+    }
 
 }

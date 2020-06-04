@@ -80,9 +80,9 @@ public class UserManagerImpl implements UserManager {
 
         return authData.or(() -> {
             User user = createUser(login);
-            User newUser =  userDAO.save(user);
+            User newUser = userDAO.save(user);
             if (newUser.getAvatarHash() != null)
-                picturesDAO.save(new Picture(null, newUser, login.getAvatar().getBytes(), Picture.Type.BASE64));
+                picturesDAO.save(new Picture(newUser, login.getAvatar().getBytes(), Picture.Type.BASE64));
             return Optional.of(newUser);
         }).map(Result::success).orElseThrow();
     }
@@ -95,7 +95,7 @@ public class UserManagerImpl implements UserManager {
             final String hash = getHash(login);
             if (!Objects.equals(user.getAvatarHash(), hash) && hash != null) {
                 if (user.getAvatarHash() == null) {
-                    picturesDAO.save(new Picture(null, user, login.getAvatar().getBytes(), Picture.Type.BASE64));
+                    picturesDAO.save(new Picture(user, login.getAvatar().getBytes(), Picture.Type.BASE64));
                 } else
                     picturesDAO.updateByOwner(user, login.getAvatar().getBytes());
                 user.setAvatarHash(hash);

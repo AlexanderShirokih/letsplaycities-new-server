@@ -12,9 +12,9 @@ ALTER TABLE pictures ADD CONSTRAINT FK_PictureOwner
 
 -- Migration for 'Friends':
 -- delete invalid entries
-DELETE FROM friends f WHERE 
-	NOT EXISTS(SELECT * FROM users where id=f.sender_id) 
-	OR NOT EXISTS(SELECT * FROM users where id=f.receiver_id);
+DELETE FROM friends WHERE 
+	NOT EXISTS(SELECT * FROM users where users.id=friends.sender_id) 
+	OR NOT EXISTS(SELECT * FROM users where users.id=friends.receiver_id);
 
 ALTER TABLE friends DROP COLUMN id;
 ALTER TABLE friends ADD PRIMARY KEY (sender_id, receiver_id);
@@ -26,16 +26,9 @@ ALTER TABLE friends ADD CONSTRAINT FK_FriendsReceiver
 	ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- Migration for 'Banlist':
--- Delete duplicates:
-DELETE b1 FROM banlist b1
-INNER JOIN banlist b2 
-WHERE 
-    b1.id < b2.id AND 
-    b1.baner_id = b2.baner_id OR b1.banned_id = b2.banned_id;
--- Delete invalid entries:
-DELETE FROM banlist b WHERE 
-	NOT EXISTS(SELECT * FROM users where id=b.baner_id) 
-	OR NOT EXISTS(SELECT * FROM users where id=b.banned_id);
+DELETE FROM banlist WHERE 
+	NOT EXISTS(SELECT * FROM users where users.id=banlist.baner_id) 
+	OR NOT EXISTS(SELECT * FROM users where users.id=banlist.banned_id);
 
 ALTER TABLE banlist DROP COLUMN id;
 ALTER TABLE banlist ADD PRIMARY KEY (baner_id, banned_id);

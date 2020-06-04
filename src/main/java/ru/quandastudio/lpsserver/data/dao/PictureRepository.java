@@ -20,7 +20,7 @@ public interface PictureRepository extends JpaRepository<Picture, Long> {
 	void updateByOwner(@Param("owner") User owner, @Param("image") byte[] image);
 
 	@Modifying
-	void deleteByOwner(User owner);
+	void deleteByOwnerId(Integer owner);
 
 	Optional<Picture> findByOwner(User owner);
 

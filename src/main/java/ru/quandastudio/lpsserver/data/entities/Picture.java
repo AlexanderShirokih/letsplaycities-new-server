@@ -4,7 +4,6 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.Objects;
 
 /**
  * Used to store user avatar to database
@@ -37,12 +36,8 @@ public class Picture implements Serializable {
     }
 
     @Id
-    private Integer id;
-
-    @MapsId
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "owner_id", nullable = false)
-    private User owner;
+    @Column(name = "owner_id", nullable = false, insertable = false, updatable = false)
+    Integer ownerId;
 
     @Lob
     @Basic(fetch = FetchType.LAZY)
@@ -54,24 +49,27 @@ public class Picture implements Serializable {
     @Enumerated(EnumType.ORDINAL)
     private Type type;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id", referencedColumnName = "id")
+    private User owner;
+
     @Override
     public int hashCode() {
-        return owner.hashCode();
+        return 42;
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        Picture other = (Picture) obj;
-        return Objects.equals(owner, other.owner);
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Picture picture = (Picture) o;
+        return ownerId.equals(picture.ownerId) &&
+                type == picture.type &&
+                owner.equals(picture.owner);
     }
 
     public Picture(User owner, byte[] imageData, Type type) {
+        this.ownerId = owner.getId();
         this.owner = owner;
         this.imageData = imageData;
         this.type = type;

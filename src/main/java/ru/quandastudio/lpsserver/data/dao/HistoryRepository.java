@@ -15,7 +15,7 @@ public interface HistoryRepository extends JpaRepository<History, Long> {
 
     @Query(value = "SELECT \n" +
             "   CASE WHEN h.starter=?1 THEN h.invited ELSE h.starter END AS oppUser,\n" +
-            "   CASE WHEN f.isAccepted IS NOT null THEN f.isAccepted else false END AS isFriend,\n" +
+            "   COALESCE(f.isAccepted, false) AS isFriend,\n" +
             "	h.creationDate AS creationDate,\n" +
             "	h.duration AS duration,\n" +
             "	h.wordsCount AS wordsCount\n" +
