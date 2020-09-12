@@ -12,14 +12,14 @@ import lombok.RequiredArgsConstructor;
 @SpringBootApplication
 public class LpsServerApplication {
 
-	private final LPSServer lpsServer;
+    private final LPSServer lpsServer;
 
-	public static void main(String[] args) {
-		SpringApplication.run(LpsServerApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(LpsServerApplication.class, args);
+    }
 
-	@Bean
-	public ApplicationListener<ApplicationReadyEvent> readyEventApplicationListener() {
-		return applicationReadyEvent -> lpsServer.start();
-	}
+    @Bean
+    public ApplicationListener<ApplicationReadyEvent> readyEventApplicationListener() {
+        return applicationReadyEvent -> lpsServer.start();
+    }
 }

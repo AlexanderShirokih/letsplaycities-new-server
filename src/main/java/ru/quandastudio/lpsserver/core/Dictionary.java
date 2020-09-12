@@ -26,6 +26,7 @@ public class Dictionary {
     @Setter
     private boolean isCorrectionEnabled = true;
 
+    private final Object syncLock = new Object();
     private ArrayList<CityInfo> additionalData;
     private ArrayList<String> data;
 
@@ -37,16 +38,19 @@ public class Dictionary {
 
         ArrayList<String> data = null;
         ArrayList<CityInfo> additionalData = null;
-        final String database = getDatabasePath(String.valueOf(getLastDatabaseVersion()));
+        final String database = getDatabasePath(String.valueOf(getLastDatabaseVersion()), 2);
 
         log.info("Reading database file {}", database);
 
         try (DataInputStream in = new DataInputStream(new FileInputStream(database))) {
-            int count = in.readInt();
+            int magic = in.readUnsignedShort();
+            int settings = in.readUnsignedShort();
+
+            if (magic != 0xFED0) throw new IllegalStateException("Invalid magic code for LPSv3 dictionary file");
+            if (settings != 0x01) throw new IllegalStateException("Unsupported settings value:" + settings);
+
             int version = in.readInt();
-            int countTest = in.readInt();
-            if (count != countTest >> 12)
-                throw new LPSException("Invalid dictionary file! Header doesn't matches");
+            int count = in.readInt();
 
             log.info("File version: " + version);
             log.info("Found " + count + " entities");
@@ -56,14 +60,19 @@ public class Dictionary {
 
             for (int i = 0; i < count + 1; i++) {
                 int len = in.readUnsignedByte();
+
                 CityInfo city = new CityInfo();
+                city.diff = (byte) (in.readUnsignedByte() + 1);
+                city.countryCode = in.readShort();
+
                 StringBuilder sb = new StringBuilder(len);
+
                 for (int l = 0; l < len; l++) {
-                    sb.append((char) (in.readChar() - 513));
+                    int ch = in.read();
+                    int charCode = ch < 127 ? ch : (ch - 127 + 'а');
+                    sb.appendCodePoint(charCode);
                 }
                 String name = sb.toString();
-                city.diff = in.readByte();
-                city.countryCode = in.readShort();
 
                 if (i == count) {
                     if (Integer.parseInt(name.substring(0, name.length() - 6)) != count) {
@@ -87,15 +96,22 @@ public class Dictionary {
         return new DatabasePair(data, additionalData);
     }
 
-    private String getDatabasePath(String version) {
-        return "database/data-" + version + ".bin";
+    private String getDatabasePath(String version, int structVersion) {
+        switch (structVersion) {
+            case 1:
+                return "database/data-" + version + ".bin";
+            case 2:
+                return "database/data-" + version + ".db2";
+            default:
+                throw new IllegalArgumentException("Unknown struct version=" + structVersion);
+        }
     }
 
     public int getLastDatabaseVersion() {
         final File databaseFolder = new File("database");
 
         return Arrays
-                .stream(Objects.requireNonNull(databaseFolder.list((File dir, String name) -> name.matches("data-\\d+.bin"))))
+                .stream(Objects.requireNonNull(databaseFolder.list((File dir, String name) -> name.matches("data-\\d+.db2"))))
                 .mapToInt((name) -> Integer.parseInt(name.substring(5, name.length() - 4)))
                 .max()
                 .orElseThrow();
@@ -108,7 +124,7 @@ public class Dictionary {
     }
 
     public void reloadDictionary() {
-        synchronized (data) {
+        synchronized (syncLock) {
             DatabasePair dp = loadDictionary();
             ArrayList<String> newData = dp.data;
             ArrayList<String> oldData = data;
@@ -155,11 +171,11 @@ public class Dictionary {
         return data.get(index);
     }
 
-    public Optional<File> getDatabaseFile(String version) {
+    public Optional<File> getDatabaseFile(String version, int structVersion) {
         if (version.length() > 12)
             return Optional.empty();
 
-        final String dbFilename = getDatabasePath(version);
+        final String dbFilename = getDatabasePath(version, structVersion);
         final File file = new File(dbFilename);
         if (file.exists())
             return Optional.of(file);
