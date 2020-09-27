@@ -4,8 +4,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Base64;
 
-import com.google.api.client.util.Base64;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -54,7 +54,7 @@ public class UserController {
                     boolean isBase64 = p.getType() == Picture.Type.BASE64;
                     ByteArrayResource res = new ByteArrayResource(isBase64 ? decodeBase64(p.getImageData()) : p.getImageData());
                     return ResponseEntity.ok()
-                            .contentType(MediaType.parseMediaType(p.getType().getMediaType()))
+                            .contentType(MediaType.parseMediaType(isBase64 ? Picture.Type.PNG.getMediaType() : p.getType().getMediaType()))
                             .contentLength(res.contentLength())
                             .body(res);
                 })
@@ -62,7 +62,7 @@ public class UserController {
     }
 
     private static byte[] decodeBase64(byte[] data) {
-        return Base64.decodeBase64(data);
+        return Base64.getDecoder().decode(data);
     }
 
     private static final List<String> SUPPORTED_TYPES = Arrays.asList("base64", "png", "jpeg", "gif");
