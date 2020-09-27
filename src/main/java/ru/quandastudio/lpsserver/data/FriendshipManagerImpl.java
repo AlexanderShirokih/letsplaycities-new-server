@@ -16,53 +16,53 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class FriendshipManagerImpl implements FriendshipManager {
 
-	private final FriendshipRepository friendshipDAO;
-
-	@Override
-	public void addNewRequest(Friendship friendship) {
-		// Assert that we don't have any hanging request
-		deleteFriend(friendship.getSender(), friendship.getReceiver());
-
-		friendshipDAO.save(friendship);
-	}
-
-	@Override
-	public void deleteFriend(User first, User second) {
-		friendshipDAO.deleteBySenderAndReceiverOrReceiverAndSender(first, second);
-	}
-
-	@Override
-	public Optional<Friendship> getFriendsInfo(User first, User second) {
-		return friendshipDAO.findBySenderAndReceiverOrReceiverAndSender(first, second);
-	}
-
-	@Override
-	public void markAcceptedIfExistsOrDelete(User sender, User receiver, boolean isAccepted) {
-		final Optional<Friendship> friendInfo = friendshipDAO.findBySenderAndReceiverAndIsAcceptedFalse(sender, receiver);
-
-		// Check if request exists or not
-		friendInfo.ifPresent((Friendship info) -> {
-			if (isAccepted && !info.getIsAccepted()) {
-				info.setIsAccepted(true);
-			} else {
-				friendshipDAO.delete(info);
-			}
-		});
-	}
-
-	@Override
-	public List<FriendshipProjection> getFriendsList(User user) {
-		return friendshipDAO.findAllFriendsByUser(user);
-	}
+    private final FriendshipRepository friendshipDAO;
 
     @Override
-	public void swapSenderAndReceiver(User newSender, User newReceiver) {
-		friendshipDAO.swapSenderAndReceiver(newSender, newReceiver);
-	}
+    public void addNewRequest(Friendship friendship) {
+        // Assert that we are not friends yet
+        if (friendshipDAO.findBySenderAndReceiverOrReceiverAndSender(friendship.getSender(), friendship.getReceiver())
+                .isEmpty())
+            friendshipDAO.save(friendship);
+    }
 
-	@Override
-	public boolean isFriends(User user1, User user2) {
-		return getFriendsInfo(user1, user2).map(Friendship::getIsAccepted).orElse(false);
-	}
+    @Override
+    public void deleteFriend(User first, User second) {
+        friendshipDAO.deleteBySenderAndReceiverOrReceiverAndSender(first, second);
+    }
+
+    @Override
+    public Optional<Friendship> getFriendsInfo(User first, User second) {
+        return friendshipDAO.findBySenderAndReceiverOrReceiverAndSender(first, second);
+    }
+
+    @Override
+    public void markAcceptedIfExistsOrDelete(User sender, User receiver, boolean isAccepted) {
+        final Optional<Friendship> friendInfo = friendshipDAO.findBySenderAndReceiverAndIsAcceptedFalse(sender, receiver);
+
+        // Check if request exists or not
+        friendInfo.ifPresent((Friendship info) -> {
+            if (isAccepted && !info.getIsAccepted()) {
+                info.setIsAccepted(true);
+            } else {
+                friendshipDAO.delete(info);
+            }
+        });
+    }
+
+    @Override
+    public List<FriendshipProjection> getFriendsList(User user) {
+        return friendshipDAO.findAllFriendsByUser(user);
+    }
+
+    @Override
+    public void swapSenderAndReceiver(User newSender, User newReceiver) {
+        friendshipDAO.swapSenderAndReceiver(newSender, newReceiver);
+    }
+
+    @Override
+    public boolean isFriends(User user1, User user2) {
+        return getFriendsInfo(user1, user2).map(Friendship::getIsAccepted).orElse(false);
+    }
 
 }

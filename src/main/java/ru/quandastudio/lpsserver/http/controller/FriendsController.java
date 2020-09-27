@@ -7,6 +7,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import ru.quandastudio.lpsserver.core.ServerContext;
 import ru.quandastudio.lpsserver.data.FriendshipManager;
+import ru.quandastudio.lpsserver.data.entities.Friendship;
 import ru.quandastudio.lpsserver.data.entities.FriendshipProjection;
 import ru.quandastudio.lpsserver.data.entities.User;
 import ru.quandastudio.lpsserver.models.RequestType;
@@ -40,7 +41,8 @@ public class FriendsController {
                 friendshipManager.markAcceptedIfExistsOrDelete(oppUser, user, false);
                 break;
             default:
-                return ResponseEntity.badRequest().build();
+                friendshipManager.addNewRequest(new Friendship(user, oppUser));
+                break;
         }
         return ResponseEntity.ok("ok");
     }
