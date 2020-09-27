@@ -14,19 +14,21 @@ import java.util.Optional;
 @Repository
 public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
 
-	@Modifying
-	@Query("delete from Friendship f where (f.sender = ?1 and f.receiver = ?2) or (f.sender = ?2 and f.receiver = ?1)")
-	void deleteBySenderAndReceiverOrReceiverAndSender(User sender, User receiver);
+    @Modifying
+    @Query("delete from Friendship f where (f.sender = ?1 and f.receiver = ?2) or (f.sender = ?2 and f.receiver = ?1)")
+    void deleteBySenderAndReceiverOrReceiverAndSender(User sender, User receiver);
 
-	@Query("select f from Friendship f where (f.sender = ?1 and f.receiver = ?2) or (f.sender = ?2 and f.receiver = ?1)")
-	Optional<Friendship> findBySenderAndReceiverOrReceiverAndSender(User sender, User receiver);
+    @Query("select f from Friendship f where (f.sender = ?1 and f.receiver = ?2) or (f.sender = ?2 and f.receiver = ?1)")
+    Optional<Friendship> findBySenderAndReceiverOrReceiverAndSender(User sender, User receiver);
 
-	@Query("select case when f.sender=?1 then f.receiver else f.sender end as oppUser, f.isAccepted as accepted from Friendship f where f.sender = ?1 or f.receiver = ?1")
-	List<FriendshipProjection> findAllFriendsByUser(User user);
+    @Query("select case when f.sender=?1 then f.receiver else f.sender end as oppUser, " +
+            "f.sender=?1 as isSender, " +
+            "f.isAccepted as accepted from Friendship f where f.sender = ?1 or f.receiver = ?1")
+    List<FriendshipProjection> findAllFriendsByUser(User user);
 
-	@Modifying(clearAutomatically = true)
-	@Query("update Friendship f set f.sender = ?1, f.receiver = ?2 where f.sender = ?2 and f.receiver = ?1")
-	void swapSenderAndReceiver(User newSender, User newReceiver);
+    @Modifying(clearAutomatically = true)
+    @Query("update Friendship f set f.sender = ?1, f.receiver = ?2 where f.sender = ?2 and f.receiver = ?1")
+    void swapSenderAndReceiver(User newSender, User newReceiver);
 
-	Optional<Friendship> findBySenderAndReceiverAndIsAcceptedFalse(User sender, User receiver);
+    Optional<Friendship> findBySenderAndReceiverAndIsAcceptedFalse(User sender, User receiver);
 }

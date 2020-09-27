@@ -10,6 +10,7 @@ import ru.quandastudio.lpsserver.models.LPSMessage.LPSFriendsList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Deprecated(forRemoval = true)
 public class FriendsListMessageHandler extends MessageHandler<LPSFriendList> {
 
 	public FriendsListMessageHandler() {
