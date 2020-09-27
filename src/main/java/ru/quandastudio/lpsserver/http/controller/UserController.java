@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import com.google.api.client.util.Base64;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -51,15 +52,17 @@ public class UserController {
                 .flatMap((Optional<Picture> picture) -> Result.from(picture, "No picture"))
                 .map((Picture p) -> {
                     boolean isBase64 = p.getType() == Picture.Type.BASE64;
-                    ByteArrayResource res = new ByteArrayResource(p.getImageData());
+                    ByteArrayResource res = new ByteArrayResource(isBase64 ? decodeBase64(p.getImageData()) : p.getImageData());
                     return ResponseEntity.ok()
-                            .contentType(MediaType.parseMediaType(
-                                    isBase64 ? MediaType.APPLICATION_OCTET_STREAM_VALUE : p.getType().getMediaType()))
+                            .contentType(MediaType.parseMediaType(p.getType().getMediaType()))
                             .contentLength(res.contentLength())
-                            .header("Base64-Encoded", String.valueOf(isBase64))
                             .body(res);
                 })
                 .getOr(ResponseEntity.notFound().build());
+    }
+
+    private static byte[] decodeBase64(byte[] data) {
+        return Base64.decodeBase64(data);
     }
 
     private static final List<String> SUPPORTED_TYPES = Arrays.asList("base64", "png", "jpeg", "gif");
@@ -115,7 +118,6 @@ public class UserController {
     @PutMapping("/request/{id}/{type}")
     public ResponseEntity<String> handleGameRequest(@PathVariable("id") int userId,
                                                     @PathVariable("type") RequestType requestType, @AuthenticationPrincipal User user) {
-        log.info("Got a REST request result! ;type={}", requestType);
         if (requestType == RequestType.DENY) {
             handleDenyResult(user, new User(userId));
             return ResponseEntity.ok("ok");
