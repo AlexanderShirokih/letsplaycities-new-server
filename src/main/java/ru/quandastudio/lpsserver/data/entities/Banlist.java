@@ -23,12 +23,12 @@ public class Banlist implements Serializable {
 	private static final long serialVersionUID = 3L;
 
 	@Id
-	@ManyToOne(cascade = CascadeType.ALL)
+	@ManyToOne()
 	@JoinColumn(name = "baner_id", referencedColumnName = "id")
 	private User baner;
 
 	@Id
-	@ManyToOne(cascade = CascadeType.ALL)
+	@ManyToOne()
 	@JoinColumn(name = "banned_id", referencedColumnName = "id")
 	private User banned;
 

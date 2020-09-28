@@ -13,17 +13,22 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/blacklist")
 public class BlacklistController {
-	private final ServerContext context;
+    private final ServerContext context;
 
-	@DeleteMapping("/{id}")
-	public void getBlackList(@PathVariable("id") int userId, @AuthenticationPrincipal User user) {
-		context.getBanlistManager().removeFromBanlist(user, new User(userId));
-	}
+    @DeleteMapping("/{id}")
+    public void getBlackList(@PathVariable("id") int userId, @AuthenticationPrincipal User user) {
+        context.getBanlistManager().removeFromBanlist(user, new User(userId));
+    }
 
-	@GetMapping("/")
-	@ResponseBody
-	public List<OppUserNameProjection> getBlackList(@AuthenticationPrincipal User user) {
-		return context.getBanlistManager().getBannedUsers(user);
-	}
+    @GetMapping("/")
+    @ResponseBody
+    public List<OppUserNameProjection> getBlackList(@AuthenticationPrincipal User user) {
+        return context.getBanlistManager().getBannedUsers(user);
+    }
+
+    @PutMapping("/{id}")
+    public void banUser(@PathVariable("id") int userId, @AuthenticationPrincipal User user) {
+        context.getBanlistManager().addToBanlist(user, new User(userId));
+    }
 
 }
