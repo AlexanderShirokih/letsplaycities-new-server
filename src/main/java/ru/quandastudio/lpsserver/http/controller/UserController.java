@@ -1,28 +1,13 @@
 package ru.quandastudio.lpsserver.http.controller;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Base64;
-
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.*;
 import ru.quandastudio.lpsserver.Result;
 import ru.quandastudio.lpsserver.core.Player;
 import ru.quandastudio.lpsserver.core.ServerContext;
@@ -34,8 +19,11 @@ import ru.quandastudio.lpsserver.http.model.SignUpRequest;
 import ru.quandastudio.lpsserver.http.model.SignUpResponse;
 import ru.quandastudio.lpsserver.models.FriendModeResult;
 import ru.quandastudio.lpsserver.models.LPSMessage.LPSFriendModeRequest;
+import ru.quandastudio.lpsserver.models.ProfileInfo;
 import ru.quandastudio.lpsserver.models.RequestType;
 import ru.quandastudio.lpsserver.util.ValidationUtil;
+
+import java.util.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -109,6 +97,15 @@ public class UserController {
                 .toOkResponse();
     }
 
+    /**
+     * Shows info about user profile.
+     * Requires authorization.
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<ProfileInfo> showProfile(@PathVariable("id") int userId, @AuthenticationPrincipal User user) {
+        return ResponseEntity.of(context.getUserManager().getUserProfileById(userId));
+    }
+
     @PostMapping("/token/{token}")
     @ResponseStatus(HttpStatus.OK)
     public void updateToken(@AuthenticationPrincipal User user, @PathVariable("token") String token) {
@@ -136,5 +133,6 @@ public class UserController {
             }
         });
     }
+
 
 }

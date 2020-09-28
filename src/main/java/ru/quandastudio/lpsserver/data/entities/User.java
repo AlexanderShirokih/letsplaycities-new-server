@@ -1,23 +1,15 @@
 package ru.quandastudio.lpsserver.data.entities;
 
-import java.io.Serializable;
-import java.sql.Timestamp;
-import java.util.Objects;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
-
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-
 import ru.quandastudio.lpsserver.models.AuthType;
+import ru.quandastudio.lpsserver.models.Role;
+
+import javax.persistence.*;
+import java.io.Serializable;
+import java.sql.Timestamp;
+import java.util.Objects;
 
 /**
  * Main entity representing User
@@ -33,25 +25,6 @@ import ru.quandastudio.lpsserver.models.AuthType;
 @ToString
 public class User implements Serializable {
     private static final long serialVersionUID = 2L;
-
-    @RequiredArgsConstructor
-    @Getter
-    public enum Role {
-        BANNED_USER("banned"), REGULAR_USER("ready"), ADMIN("admin");
-
-        final String legacyName;
-
-        /**
-         * Checks that entity is at least in {@code state}
-         *
-         * @param role required state
-         * @return {@literal true} if entity is at least in {@code state},
-         * {@literal false} otherwise
-         */
-        public boolean isAtLeast(Role role) {
-            return ordinal() >= role.ordinal();
-        }
-    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

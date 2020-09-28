@@ -1,26 +1,25 @@
 package ru.quandastudio.lpsserver.data;
 
-import java.util.Objects;
-import java.util.Optional;
-
-import javax.transaction.Transactional;
-
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.stereotype.Service;
-
 import ru.quandastudio.lpsserver.Result;
 import ru.quandastudio.lpsserver.SnManager;
 import ru.quandastudio.lpsserver.data.dao.PictureRepository;
 import ru.quandastudio.lpsserver.data.dao.UserRepository;
 import ru.quandastudio.lpsserver.data.entities.Picture;
 import ru.quandastudio.lpsserver.data.entities.User;
-import ru.quandastudio.lpsserver.data.entities.User.Role;
 import ru.quandastudio.lpsserver.http.model.SignUpRequest;
 import ru.quandastudio.lpsserver.models.ISignInMessage;
 import ru.quandastudio.lpsserver.models.LPSClientMessage;
 import ru.quandastudio.lpsserver.models.LPSClientMessage.LPSLogIn;
+import ru.quandastudio.lpsserver.models.ProfileInfo;
+import ru.quandastudio.lpsserver.models.Role;
 import ru.quandastudio.lpsserver.util.StringUtil;
+
+import javax.transaction.Transactional;
+import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -136,6 +135,11 @@ public class UserManagerImpl implements UserManager {
     @Override
     public Optional<User> getUserById(Integer userId) {
         return userDAO.findById(userId);
+    }
+
+    @Override
+    public Optional<ProfileInfo> getUserProfileById(Integer userId) {
+        return userDAO.findProfileViewById(userId).map(ProfileInfo::new);
     }
 
     @Override

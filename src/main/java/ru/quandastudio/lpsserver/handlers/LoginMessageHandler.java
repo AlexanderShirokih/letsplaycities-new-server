@@ -6,9 +6,9 @@ import ru.quandastudio.lpsserver.Result;
 import ru.quandastudio.lpsserver.core.Player;
 import ru.quandastudio.lpsserver.core.ServerContext;
 import ru.quandastudio.lpsserver.data.entities.User;
-import ru.quandastudio.lpsserver.data.entities.User.Role;
 import ru.quandastudio.lpsserver.models.LPSClientMessage.LPSLogIn;
 import ru.quandastudio.lpsserver.models.LPSMessage;
+import ru.quandastudio.lpsserver.models.Role;
 import ru.quandastudio.lpsserver.util.StringUtil;
 import ru.quandastudio.lpsserver.util.ValidationUtil;
 

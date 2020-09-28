@@ -1,8 +1,5 @@
 package ru.quandastudio.lpsserver.handlers;
 
-import java.util.HashMap;
-import java.util.concurrent.ArrayBlockingQueue;
-
 import lombok.extern.slf4j.Slf4j;
 import ru.quandastudio.lpsserver.core.Player;
 import ru.quandastudio.lpsserver.core.RequestNotifier.NotificationData;
@@ -13,6 +10,10 @@ import ru.quandastudio.lpsserver.data.entities.User;
 import ru.quandastudio.lpsserver.models.FriendModeResult;
 import ru.quandastudio.lpsserver.models.LPSClientMessage.LPSPlay;
 import ru.quandastudio.lpsserver.models.LPSMessage.LPSFriendModeRequest;
+import ru.quandastudio.lpsserver.models.Role;
+
+import java.util.HashMap;
+import java.util.concurrent.ArrayBlockingQueue;
 
 @Slf4j
 public class PlayMessageHandler extends MessageHandler<LPSPlay> {
@@ -40,7 +41,7 @@ public class PlayMessageHandler extends MessageHandler<LPSPlay> {
         UserManager userManager = context.getUserManager();
 
         User opponent = userManager.getUserById(oppUid)
-                .filter((User u) -> u.getRole().isAtLeast(User.Role.REGULAR_USER))
+                .filter((User u) -> u.getRole().isAtLeast(Role.REGULAR_USER))
                 .orElse(null);
 
         if (opponent == null) {
