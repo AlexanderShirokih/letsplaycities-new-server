@@ -1,11 +1,11 @@
 package ru.quandastudio.lpsserver.data;
 
+import ru.quandastudio.lpsserver.data.entities.Friendship;
+import ru.quandastudio.lpsserver.data.entities.User;
+import ru.quandastudio.lpsserver.models.FriendInfo;
+
 import java.util.List;
 import java.util.Optional;
-
-import ru.quandastudio.lpsserver.data.entities.Friendship;
-import ru.quandastudio.lpsserver.data.entities.FriendshipProjection;
-import ru.quandastudio.lpsserver.data.entities.User;
 
 public interface FriendshipManager {
 
@@ -15,7 +15,7 @@ public interface FriendshipManager {
 
 	Optional<Friendship> getFriendsInfo(User first, User second);
 
-	List<FriendshipProjection> getFriendsList(User user);
+	List<FriendInfo> getFriendsList(User user);
 
 	void markAcceptedIfExistsOrDelete(User sender, User receiver, boolean isAccepted);
 

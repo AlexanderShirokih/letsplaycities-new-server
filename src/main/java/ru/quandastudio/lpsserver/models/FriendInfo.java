@@ -11,12 +11,13 @@ import ru.quandastudio.lpsserver.data.entities.FriendshipProjection;
 @NonNull
 @EqualsAndHashCode
 public class FriendInfo {
-	private final int userId;
-	private final String login;
-	private final boolean accepted;
-	private final String pictureHash;
+    private final int userId;
+    private final String login;
+    private final boolean accepted;
+    private final boolean isSender;
+    private final String pictureHash;
 
-	public FriendInfo(FriendshipProjection f) {
-		this(f.getUserId(), f.getLogin(), f.getAccepted(), f.getPictureHash());
-	}
+    public FriendInfo(FriendshipProjection f) {
+        this(f.getUserId(), f.getLogin(), f.getAccepted(), f.getIsSender(), f.getPictureHash());
+    }
 }

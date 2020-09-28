@@ -4,12 +4,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.quandastudio.lpsserver.data.dao.FriendshipRepository;
 import ru.quandastudio.lpsserver.data.entities.Friendship;
-import ru.quandastudio.lpsserver.data.entities.FriendshipProjection;
 import ru.quandastudio.lpsserver.data.entities.User;
+import ru.quandastudio.lpsserver.models.FriendInfo;
 
 import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -51,8 +52,11 @@ public class FriendshipManagerImpl implements FriendshipManager {
     }
 
     @Override
-    public List<FriendshipProjection> getFriendsList(User user) {
-        return friendshipDAO.findAllFriendsByUser(user);
+    public List<FriendInfo> getFriendsList(User user) {
+        return friendshipDAO.findAllFriendsByUser(user)
+                .stream()
+                .map(FriendInfo::new)
+                .collect(Collectors.toList());
     }
 
     @Override

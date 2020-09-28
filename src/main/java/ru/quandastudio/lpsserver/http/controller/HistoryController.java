@@ -7,8 +7,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import ru.quandastudio.lpsserver.core.ServerContext;
-import ru.quandastudio.lpsserver.data.entities.HistoryProjection;
 import ru.quandastudio.lpsserver.data.entities.User;
+import ru.quandastudio.lpsserver.models.HistoryInfo;
 
 import java.util.List;
 
@@ -17,11 +17,11 @@ import java.util.List;
 @RequestMapping("/history")
 public class HistoryController {
 
-	private final ServerContext context;
+    private final ServerContext context;
 
-	@GetMapping("/")
-	@ResponseBody
-	public List<HistoryProjection> getHistory(@AuthenticationPrincipal User user) {
-		return context.getHistoryManager().getHistoryList(user);
-	}
+    @GetMapping("/")
+    @ResponseBody
+    public List<HistoryInfo> getHistory(@AuthenticationPrincipal User user) {
+        return context.getHistoryManager().getHistoryList(user);
+    }
 }

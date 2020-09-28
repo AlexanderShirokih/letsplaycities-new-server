@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.*;
 import ru.quandastudio.lpsserver.core.ServerContext;
 import ru.quandastudio.lpsserver.data.FriendshipManager;
 import ru.quandastudio.lpsserver.data.entities.Friendship;
-import ru.quandastudio.lpsserver.data.entities.FriendshipProjection;
 import ru.quandastudio.lpsserver.data.entities.User;
+import ru.quandastudio.lpsserver.models.FriendInfo;
 import ru.quandastudio.lpsserver.models.RequestType;
 
 import java.util.List;
@@ -49,7 +49,7 @@ public class FriendsController {
 
     @GetMapping("/")
     @ResponseBody
-    public List<FriendshipProjection> getFriendInfo(@AuthenticationPrincipal User user) {
+    public List<FriendInfo> getFriendInfo(@AuthenticationPrincipal User user) {
         return context.getFriendshipManager().getFriendsList(user);
     }
 
