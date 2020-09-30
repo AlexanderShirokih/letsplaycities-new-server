@@ -9,13 +9,28 @@ import java.sql.Timestamp;
  */
 public interface ProfileView {
 
+    /**
+     * User owner id
+     */
     int getId();
 
+    /**
+     * User name
+     */
     String getName();
 
+    /**
+     * Users last visit date
+     */
     Timestamp getLastVisitDate();
 
+    /**
+     * Users avatar path
+     */
     String getAvatarHash();
 
+    /**
+     * Users role on the server
+     */
     Role getRole();
 }

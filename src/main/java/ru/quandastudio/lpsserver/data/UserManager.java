@@ -1,7 +1,6 @@
 package ru.quandastudio.lpsserver.data;
 
 import ru.quandastudio.lpsserver.Result;
-import ru.quandastudio.lpsserver.data.entities.ProfileView;
 import ru.quandastudio.lpsserver.data.entities.User;
 import ru.quandastudio.lpsserver.http.model.SignUpRequest;
 import ru.quandastudio.lpsserver.models.LPSClientMessage.LPSLogIn;
@@ -26,6 +25,8 @@ public interface UserManager {
      * @return Optional data containing user profile info
      */
     Optional<ProfileInfo> getUserProfileById(Integer userId);
+
+    Optional<ProfileInfo> getUserProfileByIdFromSpectator(Integer userId, Integer spectatorId);
 
     void setBanned(Integer userId, boolean isOn);
 

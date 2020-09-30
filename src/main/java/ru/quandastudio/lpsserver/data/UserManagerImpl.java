@@ -143,6 +143,11 @@ public class UserManagerImpl implements UserManager {
     }
 
     @Override
+    public Optional<ProfileInfo> getUserProfileByIdFromSpectator(Integer userId, Integer spectatorId) {
+        return userDAO.findProfileViewFromSpectator(new User(userId), new User(spectatorId)).map(ProfileInfo::new);
+    }
+
+    @Override
     public void setBanned(Integer userId, boolean isOn) {
         userDAO.findById(userId).ifPresent((user) -> user.setRole(isOn ? Role.BANNED_USER : Role.REGULAR_USER));
     }

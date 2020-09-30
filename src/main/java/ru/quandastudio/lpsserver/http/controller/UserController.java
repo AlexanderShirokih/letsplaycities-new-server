@@ -103,7 +103,12 @@ public class UserController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<ProfileInfo> showProfile(@PathVariable("id") int userId, @AuthenticationPrincipal User user) {
-        return ResponseEntity.of(context.getUserManager().getUserProfileById(userId));
+        return ResponseEntity.of(
+                userId == user.getId()
+                        ? context.getUserManager().getUserProfileById(userId)
+                        : context.getUserManager().getUserProfileByIdFromSpectator(userId, user.getId()
+                )
+        );
     }
 
     @PostMapping("/token/{token}")
