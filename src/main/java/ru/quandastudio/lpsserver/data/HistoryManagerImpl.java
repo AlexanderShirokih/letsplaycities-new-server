@@ -32,4 +32,13 @@ public class HistoryManagerImpl implements HistoryManager {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<HistoryInfo> getHistoryListWithFriend(User user, User opp) {
+        return historyDAO
+                .findHistoryWithOpp(user, opp)
+                .limit(100)
+                .map(HistoryInfo::new)
+                .collect(Collectors.toList());
+    }
+
 }

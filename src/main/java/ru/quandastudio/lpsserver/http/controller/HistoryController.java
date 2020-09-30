@@ -2,10 +2,7 @@ package ru.quandastudio.lpsserver.http.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.quandastudio.lpsserver.core.ServerContext;
 import ru.quandastudio.lpsserver.data.entities.User;
 import ru.quandastudio.lpsserver.models.HistoryInfo;
@@ -23,5 +20,11 @@ public class HistoryController {
     @ResponseBody
     public List<HistoryInfo> getHistory(@AuthenticationPrincipal User user) {
         return context.getHistoryManager().getHistoryList(user);
+    }
+
+    @GetMapping("/{id}")
+    @ResponseBody
+    public List<HistoryInfo> getHistoryWithUser(@AuthenticationPrincipal User user, @PathVariable("id") int oppId) {
+        return context.getHistoryManager().getHistoryListWithFriend(user, new User(oppId));
     }
 }
