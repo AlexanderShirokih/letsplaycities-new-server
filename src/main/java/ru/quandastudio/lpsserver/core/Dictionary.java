@@ -20,6 +20,7 @@ import ru.quandastudio.lpsserver.LPSException;
 @Scope("singleton")
 public class Dictionary {
 
+    private static final String DATABASE_ROOT = "data/database";
     private static final Random rand = new Random();
 
     @Getter
@@ -99,16 +100,16 @@ public class Dictionary {
     private String getDatabasePath(String version, int structVersion) {
         switch (structVersion) {
             case 1:
-                return "database/data-" + version + ".bin";
+                return DATABASE_ROOT + "/data-" + version + ".bin";
             case 2:
-                return "database/data-" + version + ".db2";
+                return DATABASE_ROOT + "/data-" + version + ".db2";
             default:
                 throw new IllegalArgumentException("Unknown struct version=" + structVersion);
         }
     }
 
     public int getLastDatabaseVersion() {
-        final File databaseFolder = new File("database");
+        final File databaseFolder = new File(DATABASE_ROOT);
 
         return Arrays
                 .stream(Objects.requireNonNull(databaseFolder.list((File dir, String name) -> name.matches("data-\\d+.db2"))))
