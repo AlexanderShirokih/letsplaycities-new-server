@@ -2,6 +2,8 @@ fcm:
   service-account-file: letsplaycities-firebase-adminsdk-rac3a-2a2b1d2475.json
 
 spring:
+  config:
+      import: "classpath:config.yml"
   jmx:
     enabled: true
   datasource:

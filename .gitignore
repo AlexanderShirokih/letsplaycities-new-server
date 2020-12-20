@@ -34,3 +34,6 @@ logs/
 .directory
 /lps_srv_pass.txt
 run.sh
+
+### Config file ###
+/src/main/resources/config.yml
