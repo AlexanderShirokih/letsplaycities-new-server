@@ -23,7 +23,6 @@ public class ProfileInfo {
     private final String pictureHash;
     private final FriendshipStatus friendshipStatus;
 
-
     /**
      * Creates ProfileInfo from ProfileView
      */
