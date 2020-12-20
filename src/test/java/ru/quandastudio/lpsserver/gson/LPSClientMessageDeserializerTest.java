@@ -1,34 +1,34 @@
 package ru.quandastudio.lpsserver.gson;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import org.junit.jupiter.api.BeforeEach;
 import ru.quandastudio.lpsserver.models.LPSClientMessage;
 
 public class LPSClientMessageDeserializerTest {
 
-	private Gson gson;
+    private Gson gson;
 
-	@Before
-	public void setUp() {
-		gson = new GsonBuilder().registerTypeAdapter(LPSClientMessage.class, new LPSClientMessageDeserializer())
-								.create();
-	}
+    @BeforeEach
+    public void setUp() {
+        gson = new GsonBuilder().registerTypeAdapter(LPSClientMessage.class, new LPSClientMessageDeserializer())
+                .create();
+    }
 
-	@Test
-	public void testDeserializeMessage() {
-		String msg = "{\"word\":\"test\",\"action\":\"word\"}";
+    @Test
+    public void testDeserializeMessage() {
+        String msg = "{\"word\":\"test\",\"action\":\"word\"}";
 
-		LPSClientMessage output = gson.fromJson(msg, LPSClientMessage.class);
+        LPSClientMessage output = gson.fromJson(msg, LPSClientMessage.class);
 
-		assertTrue(output instanceof LPSClientMessage.LPSWord);
-		assertEquals("word", output.getAction());
-	}
+        assertTrue(output instanceof LPSClientMessage.LPSWord);
+        assertEquals("word", output.getAction());
+    }
 
 }

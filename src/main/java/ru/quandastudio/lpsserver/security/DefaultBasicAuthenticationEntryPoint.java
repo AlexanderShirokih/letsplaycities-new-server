@@ -11,19 +11,19 @@ import java.io.IOException;
 @Component
 public class DefaultBasicAuthenticationEntryPoint extends BasicAuthenticationEntryPoint {
 
-	@Override
-	public void afterPropertiesSet() throws Exception {
-		setRealmName("LPSRealm");
-		super.afterPropertiesSet();
-	}
+    @Override
+    public void afterPropertiesSet() {
+        setRealmName("LPSRealm");
+        super.afterPropertiesSet();
+    }
 
-	@Override
-	public void commence(HttpServletRequest request, HttpServletResponse response,
-			AuthenticationException authException) throws IOException {
-		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-		response.setContentType("text/plain");
-		response.addHeader("WWW-Authenticate", "Basic realm=" + getRealmName() + "");
-		response.getWriter().write(authException.getMessage());
-	}
+    @Override
+    public void commence(HttpServletRequest request, HttpServletResponse response,
+                         AuthenticationException authException) throws IOException {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("text/plain");
+        response.addHeader("WWW-Authenticate", "Basic realm=" + getRealmName() + "");
+        response.getWriter().write(authException.getMessage());
+    }
 
 }
