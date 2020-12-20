@@ -9,7 +9,7 @@ You can get docker image using `spring-boot:build-image` target
 To create container use the following snippet:
 
 ```
-docker run --network="host" -v ~/Workspaces/workspace-spring-tool-suite/LPSServer/data:/workspace/data --name lps_server lpsserver:1.4.6
+docker create --network="host" -v ~/Workspaces/workspace-spring-tool-suite/LPSServer/data:/workspace/data --name lps_server lpsserver:1.4.6
 ```
 
 Replace `~/Workspaces/workspace-spring-tool-suite/LPSServer/data` with host machine path containing real program data
