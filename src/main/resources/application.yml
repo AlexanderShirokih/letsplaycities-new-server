@@ -9,3 +9,15 @@ spring:
     url: jdbc:mysql://localhost/lps_data?useUnicode=true&characterEncoding=UTF-8&allowPublicKeyRetrieval=true&verifyServerCertificate=false&useSSL=false&requireSSL=false&useLegacyDatetimeCode=false&serverTimezone=UTC
     username: ${db.user}
     password: ${db.pass}
+
+server:
+  port: 8443
+  ssl:
+    enabled: true
+    key-store-type: PKCS12
+    key-store: classpath:keystore/lps.p12
+    key-store-password: ${ks.password}
+    key-alias: letsplaycities
+  http:
+    port:
+      8080
