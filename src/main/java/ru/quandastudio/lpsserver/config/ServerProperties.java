@@ -18,52 +18,54 @@ import ru.quandastudio.lpsserver.LPSException;
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
 public class ServerProperties {
 
-	private static final String CONFIG_FILE = "env.config.properties";
+    private static final String CONFIG_FILE = "data/env.config.properties";
 
-	private final Properties props = new Properties();
+    private final Properties props = new Properties();
 
-	public ServerProperties() {
-		loadConfig();
-	}
+    public ServerProperties() {
+        loadConfig();
+    }
 
-	public void loadConfig() {
-		try (InputStream is = new FileInputStream(new File(CONFIG_FILE))) {
-			props.load(is);
-		} catch (IOException e) {
-			log.warn("Error loading config file");
-			log.warn(e.toString());
-		}
-	}
+    public void loadConfig() {
+        log.info("Searching config in path: {}", new File(CONFIG_FILE).getAbsolutePath());
 
-	public int getNewerBuild() {
-		return getIntOrThrow("client.newer_build");
-	}
+        try (InputStream is = new FileInputStream(CONFIG_FILE)) {
+            props.load(is);
+        } catch (IOException e) {
+            log.warn("Error loading config file");
+            log.warn(e.toString());
+        }
+    }
 
-	public boolean isLoggingMsgsEnabled() {
-		return getBoolOrThrow("server.msg_on_log");
-	}
+    public int getNewerBuild() {
+        return getIntOrThrow("client.newer_build");
+    }
 
-	public boolean isBotsEnabled() {
-		return getBoolOrThrow("server.bots_enabled");
-	}
+    public boolean isLoggingMsgsEnabled() {
+        return getBoolOrThrow("server.msg_on_log");
+    }
 
-	private int getIntOrThrow(String key) {
-		String ret = props.getProperty(key);
-		if (ret == null)
-			throw new LPSException("Requested property \"" + key + "\" not found!");
-		int retVal;
-		try {
-			retVal = Integer.parseInt(ret);
-		} catch (NumberFormatException e) {
-			throw new LPSException("Property \"" + key + "\" value is not an integer!");
-		}
-		return retVal;
-	}
+    public boolean isBotsEnabled() {
+        return getBoolOrThrow("server.bots_enabled");
+    }
 
-	private boolean getBoolOrThrow(String key) {
-		String ret = props.getProperty(key);
-		if (ret == null)
-			throw new LPSException("Requested property \"" + key + "\" not found!");
-		return Boolean.parseBoolean(ret);
-	}
+    private int getIntOrThrow(String key) {
+        String ret = props.getProperty(key);
+        if (ret == null)
+            throw new LPSException("Requested property \"" + key + "\" not found!");
+        int retVal;
+        try {
+            retVal = Integer.parseInt(ret);
+        } catch (NumberFormatException e) {
+            throw new LPSException("Property \"" + key + "\" value is not an integer!");
+        }
+        return retVal;
+    }
+
+    private boolean getBoolOrThrow(String key) {
+        String ret = props.getProperty(key);
+        if (ret == null)
+            throw new LPSException("Requested property \"" + key + "\" not found!");
+        return Boolean.parseBoolean(ret);
+    }
 }
