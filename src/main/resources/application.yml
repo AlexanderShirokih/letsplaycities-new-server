@@ -23,3 +23,13 @@ server:
   http:
     port:
       8080
+  tomcat:
+    threads:
+      max: 25
+
+org:
+  springframework:
+    cloud:
+      bindings:
+        boot:
+          enable: false
