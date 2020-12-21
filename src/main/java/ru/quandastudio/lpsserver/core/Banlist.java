@@ -10,7 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Banlist {
 
-	private static final File banLoginFile = new File("database/login.ban");
+	private static final File banLoginFile = new File("data/database/login.ban");
 
 	private static ArrayList<String> bannedLogin = new ArrayList<>(1);
 
