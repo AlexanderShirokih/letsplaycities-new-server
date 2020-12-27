@@ -8,6 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import ru.quandastudio.lpsserver.Result;
 import ru.quandastudio.lpsserver.core.Player;
 import ru.quandastudio.lpsserver.core.ServerContext;
@@ -23,6 +24,7 @@ import ru.quandastudio.lpsserver.models.ProfileInfo;
 import ru.quandastudio.lpsserver.models.RequestType;
 import ru.quandastudio.lpsserver.util.ValidationUtil;
 
+import java.io.IOException;
 import java.util.*;
 
 @RestController
@@ -55,6 +57,7 @@ public class UserController {
 
     private static final List<String> SUPPORTED_TYPES = Arrays.asList("base64", "png", "jpeg", "gif");
 
+    // Deprecated since 1.4.8
     @PostMapping("/picture")
     public ResponseEntity<MessageWrapper<String>> updatePicture(@AuthenticationPrincipal User user,
                                                                 @RequestParam("t") String type, @RequestParam("hash") String hash, @RequestBody byte[] body) {
@@ -64,18 +67,43 @@ public class UserController {
                 .check(() -> body.length < 64 * 1024, "Image is too big")
                 .apply((String imageData) -> {
                     final Picture.Type t = Picture.Type.valueOf(type.toUpperCase());
-                    PictureManager pics = context.getPictureManager();
-                    if (!Objects.equals(hash, user.getAvatarHash())) {
-                        var response = pics.getPictureByUserId(user);
-                        Picture pic = response.orElse(new Picture(user, body, t));
-                        pic.setImageData(body);
-                        pic.setType(t);
-                        pics.save(pic);
-                        context.getUserManager().updateAvatarHash(user, hash);
+                    updatePicture(user, t, hash, body);
+                })
+                .wrap()
+                .toResponse();
+    }
+
+    @PostMapping("/picture/upload")
+    public ResponseEntity<MessageWrapper<String>> updatePicture(@AuthenticationPrincipal User user, @RequestParam("imageFile") MultipartFile file, @RequestParam("hash") String hash) {
+        return Result.success("ok")
+                .check(() -> hash.length() == 32, "Invalid hash code")
+                .check(() -> file.getSize() < 64 * 1024, "Image is too big")
+                .flatMap((String imageData) -> {
+                    final Picture.Type t = Picture.Type.fromMimeType(file.getContentType());
+                    if (t == null)
+                        return Result.error("Unsupported image type: " + file.getContentType());
+
+                    try {
+                        updatePicture(user, t, hash, file.getBytes());
+                        return Result.success("ok");
+                    } catch (IOException e) {
+                        return Result.error(e);
                     }
                 })
                 .wrap()
                 .toResponse();
+    }
+
+    private void updatePicture(User user, Picture.Type t, String hash, byte[] body) {
+        PictureManager pics = context.getPictureManager();
+        if (!Objects.equals(hash, user.getAvatarHash())) {
+            var response = pics.getPictureByUserId(user);
+            Picture pic = response.orElse(new Picture(user, body, t));
+            pic.setImageData(body);
+            pic.setType(t);
+            pics.save(pic);
+            context.getUserManager().updateAvatarHash(user, hash);
+        }
     }
 
     @DeleteMapping("/picture")
