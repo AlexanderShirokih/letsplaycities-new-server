@@ -4,6 +4,7 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.Arrays;
 
 /**
  * Used to store user avatar to database
@@ -32,6 +33,11 @@ public class Picture implements Serializable {
 
         public String getMediaType() {
             return name;
+        }
+
+        public static Type fromMimeType(String type) {
+            return Arrays.stream(values()).filter(baseType -> type.equals(baseType.name))
+                    .findFirst().orElse(null);
         }
     }
 
