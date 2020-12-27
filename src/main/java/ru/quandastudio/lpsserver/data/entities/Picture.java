@@ -49,7 +49,7 @@ public class Picture implements Serializable {
     @Enumerated(EnumType.ORDINAL)
     private Type type;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "owner_id", referencedColumnName = "id")
     private User owner;
 
