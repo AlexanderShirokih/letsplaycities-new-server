@@ -12,7 +12,7 @@
     <groupId>ru.quandastudio</groupId>
     <artifactId>lpsserver</artifactId>
     <packaging>jar</packaging>
-    <version>1.4.6</version>
+    <version>1.4.7</version>
     <name>LPSSever</name>
     <description>LPS game server</description>
 
@@ -133,13 +133,6 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <image>
-                        <env>
-                            <java_opts>-Xms256m -Xmx512m</java_opts>
-                        </env>
-                    </image>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
