@@ -21,6 +21,7 @@ public class ProfileInfo {
     private final long lastVisitDate;
     private final Role role;
     private final String pictureHash;
+    private final BanStatus banStatus;
     private final FriendshipStatus friendshipStatus;
 
     /**
@@ -28,23 +29,14 @@ public class ProfileInfo {
      */
     public ProfileInfo(ProfileView p) {
         this(p.getId(), p.getName(), p.getLastVisitDate().toInstant().toEpochMilli(), p.getRole(), p.getAvatarHash(),
-                FriendshipStatus.owner);
+                BanStatus.owner, FriendshipStatus.owner);
     }
 
     public ProfileInfo(SpectatedProfileView p) {
         this(p.getId(), p.getName(), p.getLastVisitDate().toInstant().toEpochMilli(), p.getRole(), p.getAvatarHash(),
-                getFriendshipStatus(p.getIsSender(), p.getIsAccepted()));
+                p.getBanType(), p.getFriendshipType());
     }
 
-    private static FriendshipStatus getFriendshipStatus(Boolean isSender, Boolean isAccepted) {
-        if (isSender == null || isAccepted == null)
-            return FriendshipStatus.notFriends;
-        if (isAccepted)
-            return FriendshipStatus.friends;
-
-        return isSender ?
-                FriendshipStatus.outputRequest : FriendshipStatus.inputRequest;
-    }
 }
 
 

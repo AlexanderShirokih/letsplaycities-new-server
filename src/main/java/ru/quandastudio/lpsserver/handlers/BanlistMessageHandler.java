@@ -10,40 +10,41 @@ import ru.quandastudio.lpsserver.models.BlacklistWrapper;
 import ru.quandastudio.lpsserver.models.LPSClientMessage.LPSBanList;
 import ru.quandastudio.lpsserver.models.LPSMessage;
 
+@Deprecated(forRemoval = true, since = "1.5.0")
 public class BanlistMessageHandler extends MessageHandler<LPSBanList> {
 
-	public BanlistMessageHandler() {
-		super(LPSBanList.class);
-	}
+    public BanlistMessageHandler() {
+        super(LPSBanList.class);
+    }
 
-	@Override
-	public void handle(Player player, LPSBanList msg) {
-		switch (msg.getType()) {
-		case QUERY_LIST:
-			handleQueryList(player);
-			break;
-		case DELETE:
-			handleDeleteAction(player, new User(msg.getFriendUid()));
-			break;
-		default:
-			throw new IllegalStateException("Unsupported request type for ban message! type=" + msg.getType());
+    @Override
+    public void handle(Player player, LPSBanList msg) {
+        switch (msg.getType()) {
+            case QUERY_LIST:
+                handleQueryList(player);
+                break;
+            case DELETE:
+                handleDeleteAction(player, new User(msg.getFriendUid()));
+                break;
+            default:
+                throw new IllegalStateException("Unsupported request type for ban message! type=" + msg.getType());
 
-		}
-	}
+        }
+    }
 
-	private void handleQueryList(Player player) {
-		final List<BlacklistWrapper> blacklistItems = player.getCurrentContext()
-				.getBanlistManager()
-				.getBannedUsers(player.getUser())
-				.stream()
-				.map(BlacklistWrapper::new)
-				.collect(Collectors.toList());
+    private void handleQueryList(Player player) {
+        final List<BlacklistWrapper> blacklistItems = player.getCurrentContext()
+                .getBanlistManager()
+                .getBannedUsers(player.getUser())
+                .stream()
+                .map(BlacklistWrapper::new)
+                .collect(Collectors.toList());
 
-		player.sendMessage(new LPSMessage.LPSBannedListMessage(blacklistItems));
-	}
+        player.sendMessage(new LPSMessage.LPSBannedListMessage(blacklistItems));
+    }
 
-	private void handleDeleteAction(Player player, User banned) {
-		player.getCurrentContext().getBanlistManager().removeFromBanlist(player.getUser(), banned);
-	}
+    private void handleDeleteAction(Player player, User banned) {
+        player.getCurrentContext().getBanlistManager().removeFromBanlist(player.getUser(), banned);
+    }
 
 }
