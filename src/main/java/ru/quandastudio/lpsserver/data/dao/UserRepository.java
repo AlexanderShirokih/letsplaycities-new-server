@@ -26,21 +26,35 @@ public interface UserRepository extends JpaRepository<User, Integer> {
      */
     Optional<ProfileView> findProfileViewById(Integer userId);
 
-    @Query(value = "SELECT \n" +
-            "u.id as id,\n" +
-            "u.name as name,\n" +
-            "u.lastVisitDate as lastVisitDate,\n" +
+    /**
+     * Finds profile view from another origin
+     *
+     * @param user      target user id
+     * @param spectator origin user
+     * @return profile view if user exists
+     */
+    @Query(value = "SELECT u.id          as id,\n" +
+            "u.name        as name,\n" +
+            "u.lastVisitDate  as lastVisitDate,\n" +
             "u.avatarHash as avatarHash,\n" +
-            "u.role as role,\n" +
-            "u.id = f.sender as isSender, \n" +
-            "f.isAccepted as isAccepted\n" +
-            "FROM User u \n" +
-            "LEFT JOIN Friendship f\n" +
-            "ON \n" +
-            "(u = f.sender and f.receiver = ?2) \n" +
-            "OR  (u = f.receiver and f.sender = ?2)\n" +
-            "WHERE\n" +
-            "u = ?1")
+            "u.role        as role,\n" +
+            "case when f.isAccepted is null then 0\n" +
+            " when f.isAccepted = true then 1\n" +
+            " when u = f.receiver then 2\n" +
+            " else 3 end as friendshipType,\n" +
+            "case when b.baner is null then 0\n" +
+            " when u = b.baner then 1\n" +
+            " else 2 end as banType\n" +
+            "FROM User u\n" +
+            "         LEFT JOIN Friendship f\n" +
+            "                   ON\n" +
+            "                           (u = f.sender and f.receiver = ?2)\n" +
+            "                           OR (u = f.receiver and f.sender = ?2)\n" +
+            "         LEFT JOIN Banlist b\n" +
+            "                   ON\n" +
+            "                           (u = b.baner and b.banned = ?2)\n" +
+            "                           OR (u = b.banned and b.baner = ?2)\n" +
+            "WHERE u = ?1")
     Optional<SpectatedProfileView> findProfileViewFromSpectator(User user, User spectator);
 
     @Modifying(clearAutomatically = true)
