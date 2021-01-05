@@ -20,6 +20,7 @@ public class ProfileInfo {
     private final String login;
     private final long lastVisitDate;
     private final Role role;
+    private final AuthType authType;
     private final String pictureHash;
     private final BanStatus banStatus;
     private final FriendshipStatus friendshipStatus;
@@ -28,12 +29,12 @@ public class ProfileInfo {
      * Creates ProfileInfo from ProfileView
      */
     public ProfileInfo(ProfileView p) {
-        this(p.getId(), p.getName(), p.getLastVisitDate().toInstant().toEpochMilli(), p.getRole(), p.getAvatarHash(),
+        this(p.getId(), p.getName(), p.getLastVisitDate().toInstant().toEpochMilli(), p.getRole(), p.getAuthType(), p.getAvatarHash(),
                 BanStatus.owner, FriendshipStatus.owner);
     }
 
     public ProfileInfo(SpectatedProfileView p) {
-        this(p.getId(), p.getName(), p.getLastVisitDate().toInstant().toEpochMilli(), p.getRole(), p.getAvatarHash(),
+        this(p.getId(), p.getName(), p.getLastVisitDate().toInstant().toEpochMilli(), p.getRole(), p.getAuthType(), p.getAvatarHash(),
                 p.getBanType(), p.getFriendshipType());
     }
 

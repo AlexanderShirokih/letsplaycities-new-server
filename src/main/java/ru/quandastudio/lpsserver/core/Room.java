@@ -6,10 +6,10 @@ import java.util.Optional;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import ru.quandastudio.lpsserver.data.entities.Friendship;
 import ru.quandastudio.lpsserver.data.entities.History;
 import ru.quandastudio.lpsserver.data.entities.Picture;
 import ru.quandastudio.lpsserver.data.entities.User;
+import ru.quandastudio.lpsserver.models.FriendshipStatus;
 import ru.quandastudio.lpsserver.models.LPSMessage;
 import ru.quandastudio.lpsserver.models.WordResult;
 
@@ -36,13 +36,13 @@ public class Room {
         dictionary = context.getDictionary();
         current = starter;
 
-        boolean isFriends = context.getFriendshipManager()
-                .getFriendsInfo(starter.getUser(), invited.getUser())
-                .map(Friendship::getIsAccepted)
-                .orElse(false);
+        final FriendshipStatus friendshipStatus = context.getFriendshipManager()
+                .getFriendshipStatus(starter.getUser(), invited.getUser());
+
         boolean isBanned = context.getBanlistManager().isBanned(starter.getUser(), invited.getUser());
-        sendPlayMessage(starter, true, isFriends, isBanned, invited);
-        sendPlayMessage(invited, false, isFriends, isBanned, starter);
+
+        sendPlayMessage(starter, true, friendshipStatus, isBanned, invited);
+        sendPlayMessage(invited, false, friendshipStatus, isBanned, starter);
 
         if (isBanned)
             return false;
@@ -91,12 +91,13 @@ public class Room {
     }
 
     @SuppressWarnings("deprecation")
-    private void sendPlayMessage(Player player, boolean isStarter, boolean isFriend, boolean isBanned, Player other) {
+    private void sendPlayMessage(Player player, boolean isStarter, FriendshipStatus friendshipStatus, boolean isBanned, Player other) {
         final User oppUser = other.getUser();
         final String login = oppUser.getName();
         final String avatar = getAvatarForOlderVersions(player, other.getUser());
+        boolean isFriend = friendshipStatus == FriendshipStatus.friends;
         final LPSMessage.LPSPlayMessage play = new LPSMessage.LPSPlayMessage(other.getUser().getAuthType(), login, oppUser.getId(),
-                other.getClientVersion(), other.getClientBuild(), other.getCanReceiveMessages(), isFriend, isStarter,
+                other.getClientVersion(), other.getClientBuild(), other.getCanReceiveMessages(), isFriend, friendshipStatus, isStarter,
                 isBanned, oppUser.getAvatarHash(), false);
 
         if (avatar != null && !avatar.isEmpty()) {

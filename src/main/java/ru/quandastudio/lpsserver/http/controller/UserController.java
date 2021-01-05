@@ -19,6 +19,7 @@ import ru.quandastudio.lpsserver.http.model.MessageWrapper;
 import ru.quandastudio.lpsserver.http.model.SignUpRequest;
 import ru.quandastudio.lpsserver.http.model.SignUpResponse;
 import ru.quandastudio.lpsserver.models.FriendModeResult;
+import ru.quandastudio.lpsserver.models.FriendshipStatus;
 import ru.quandastudio.lpsserver.models.LPSMessage.LPSFriendModeRequest;
 import ru.quandastudio.lpsserver.models.ProfileInfo;
 import ru.quandastudio.lpsserver.models.RequestType;
@@ -159,7 +160,7 @@ public class UserController {
         final Optional<Player> sender = context.popPlayerFromWaitingQueue(current, oppUser);
 
         sender.ifPresent((Player player) -> {
-            if (context.getFriendshipManager().isFriends(current, oppUser)) {
+            if (context.getFriendshipManager().getFriendshipStatus(current, oppUser) == FriendshipStatus.friends) {
                 player.sendMessage(new LPSFriendModeRequest(current, FriendModeResult.DENIED));
             } else {
                 player.sendMessage(new LPSFriendModeRequest(current, FriendModeResult.NOT_FRIEND));

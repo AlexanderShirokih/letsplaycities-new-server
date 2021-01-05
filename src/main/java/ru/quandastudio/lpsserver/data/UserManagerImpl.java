@@ -88,7 +88,10 @@ public class UserManagerImpl implements UserManager {
 
     private void updateDataIfPresent(User user, LPSLogIn login) {
         // Update login, fbToken and avatar hash code
-        user.setName(login.getLogin());
+        if (login.getLogin() != null) {
+            user.setName(login.getLogin());
+        }
+
         user.setFirebaseToken(login.getFirebaseToken());
         if (login.getClientBuild() < 270) {
             final String hash = getHash(login);

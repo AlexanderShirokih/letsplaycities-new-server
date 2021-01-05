@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import ru.quandastudio.lpsserver.data.entities.User;
 
+import javax.validation.constraints.NotNull;
+
 public class LPSMessage {
 
 	@Getter
@@ -51,6 +53,7 @@ public class LPSMessage {
 		private final String login;
 		@Deprecated
 		private String avatar = null;
+		@Deprecated
 		private String snUID = null;
 		@NonNull
 		private final Integer oppUid;
@@ -60,13 +63,17 @@ public class LPSMessage {
 		private final Integer clientBuild;
 		@NonNull
 		private final Boolean canReceiveMessages;
+		@Deprecated
 		private final boolean isFriend;
+		@NotNull
+		private final FriendshipStatus friendshipStatus;
 		@NonNull
 		private final Boolean youStarter;
+		@Deprecated
 		private final boolean banned;
 
 		private final String pictureHash;
-
+		@Deprecated
 		private transient final boolean allowSendSnUid;
 	}
 

@@ -34,15 +34,6 @@ public class LPSClientMessage {
         private int version;
 
         @NotNull
-        @Size(min = 2, max = 64, message = "Login must be between 2 and 64 characters")
-        @CheckInBanlist
-        @Setter
-        private String login;
-
-        @Deprecated
-        private AuthType authType = null;
-
-        @NotNull
         private int clientBuild;
         @NotNull
         @Size(max = 20, message = "Client version value is too long!")
@@ -57,6 +48,15 @@ public class LPSClientMessage {
 
         @Size(max = 11, message = "Access hash value is too long!")
         private String hash = null;
+
+        @Deprecated(since = "1.5.0")
+        @Size(min = 2, max = 64, message = "Login must be between 2 and 64 characters")
+        @CheckInBanlist
+        @Setter
+        private String login;
+
+        @Deprecated
+        private AuthType authType = null;
 
         @Deprecated
         @Size(max = 64 * 1024)
