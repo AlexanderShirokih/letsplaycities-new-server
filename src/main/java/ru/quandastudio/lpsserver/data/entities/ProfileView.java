@@ -1,5 +1,6 @@
 package ru.quandastudio.lpsserver.data.entities;
 
+import ru.quandastudio.lpsserver.models.AuthType;
 import ru.quandastudio.lpsserver.models.Role;
 
 import java.sql.Timestamp;
@@ -33,4 +34,9 @@ public interface ProfileView {
      * Users role on the server
      */
     Role getRole();
+
+    /**
+     * User account origin
+     */
+    AuthType getAuthType();
 }

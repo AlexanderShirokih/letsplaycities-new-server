@@ -6,6 +6,7 @@ import ru.quandastudio.lpsserver.data.dao.FriendshipRepository;
 import ru.quandastudio.lpsserver.data.entities.Friendship;
 import ru.quandastudio.lpsserver.data.entities.User;
 import ru.quandastudio.lpsserver.models.FriendInfo;
+import ru.quandastudio.lpsserver.models.FriendshipStatus;
 
 import javax.transaction.Transactional;
 import java.util.List;
@@ -65,8 +66,12 @@ public class FriendshipManagerImpl implements FriendshipManager {
     }
 
     @Override
-    public boolean isFriends(User user1, User user2) {
-        return getFriendsInfo(user1, user2).map(Friendship::getIsAccepted).orElse(false);
+    public FriendshipStatus getFriendshipStatus(User user1, User user2) {
+        return getFriendsInfo(user1, user2).map(friendship -> {
+            if (friendship.getIsAccepted()) return FriendshipStatus.friends;
+            if (friendship.getSender().getId().equals(user1.getId())) return FriendshipStatus.outputRequest;
+            else return FriendshipStatus.inputRequest;
+        }).orElse(FriendshipStatus.notFriends);
     }
 
 }

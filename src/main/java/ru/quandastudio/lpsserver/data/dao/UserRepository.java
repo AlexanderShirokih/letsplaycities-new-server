@@ -38,6 +38,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
             "u.lastVisitDate  as lastVisitDate,\n" +
             "u.avatarHash as avatarHash,\n" +
             "u.role        as role,\n" +
+            "u.authType as authType,\n" +
             "case when f.isAccepted is null then 0\n" +
             " when f.isAccepted = true then 1\n" +
             " when u = f.receiver then 2\n" +

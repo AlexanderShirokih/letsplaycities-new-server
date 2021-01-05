@@ -5,6 +5,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import ru.quandastudio.lpsserver.data.entities.User;
+import ru.quandastudio.lpsserver.models.FriendshipStatus;
 import ru.quandastudio.lpsserver.models.LPSClientMessage;
 import ru.quandastudio.lpsserver.models.LPSMessage;
 import ru.quandastudio.lpsserver.models.LPSMessage.LPSLeaveMessage;
@@ -69,7 +70,9 @@ public class Player {
     }
 
     public boolean isFriend(Integer userId) {
-        return getCurrentContext().getFriendshipManager().isFriends(getUser(), new User(userId));
+        return getCurrentContext()
+                .getFriendshipManager()
+                .getFriendshipStatus(getUser(), new User(userId)) == FriendshipStatus.friends;
     }
 
     public Optional<Player> getOppositePlayer() {

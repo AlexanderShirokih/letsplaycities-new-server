@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import ru.quandastudio.lpsserver.core.Player;
-import ru.quandastudio.lpsserver.data.entities.OppUserNameProjection;
 import ru.quandastudio.lpsserver.data.entities.User;
 import ru.quandastudio.lpsserver.models.BlacklistWrapper;
 import ru.quandastudio.lpsserver.models.LPSClientMessage.LPSBanList;

@@ -37,7 +37,10 @@ public class LoginMessageHandler extends MessageHandler<LPSLogIn> {
             return;
         }
 
-        login.setLogin(StringUtil.formatName(login.getLogin()));
+        if (login.getLogin() != null) {
+            login.setLogin(StringUtil.formatName(login.getLogin()));
+        }
+
         login.setSnUID(StringEscapeUtils.escapeJava(login.getSnUID()));
 
         final ServerContext context = player.getCurrentContext();
