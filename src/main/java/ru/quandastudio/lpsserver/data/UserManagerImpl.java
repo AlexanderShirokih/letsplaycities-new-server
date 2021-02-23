@@ -18,6 +18,8 @@ import ru.quandastudio.lpsserver.models.Role;
 import ru.quandastudio.lpsserver.util.StringUtil;
 
 import javax.transaction.Transactional;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -36,6 +38,7 @@ public class UserManagerImpl implements UserManager {
                     request.getAuthType());
 
             user.ifPresent((u) -> {
+                u.setLastVisitDate(Timestamp.from(Instant.now()));
                 u.setName(request.getLogin());
                 u.setFirebaseToken(request.getFirebaseToken());
             });
