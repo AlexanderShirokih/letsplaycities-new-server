@@ -1,5 +1,5 @@
 Privacy Policy
-Effective date: July 14, 2018
+Effective date: September 21, 2021
 
 Сыграем в Города ("us", "we", or "our") operates the website and the Сыграем в Города mobile application (the "Service").
 
@@ -13,6 +13,10 @@ We collect several different types of information for various purposes to provid
 Types of Data Collected
 Personal Data
 While using our Service, we may ask you to provide us with certain personally identifiable information that can be used to contact or identify you ("Personal Data"). Personally identifiable information may include, but is not limited to:
+
+Deleting User Data
+To delete all data about your account stored on our server, you must contact us by email specified in this user privacy policy.
+All your data will be completely deleted in case of termination of this service.
 
 First name and last name
 Cookies and Usage Data
