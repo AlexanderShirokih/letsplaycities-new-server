@@ -36,3 +36,5 @@ run.sh
 
 ### Config file ###
 /src/main/resources/config.yml
+/init.sql
+/.jpb/jpb-settings.xml

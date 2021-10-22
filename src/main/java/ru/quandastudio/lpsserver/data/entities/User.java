@@ -1,6 +1,5 @@
 package ru.quandastudio.lpsserver.data.entities;
 
-import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import ru.quandastudio.lpsserver.models.AuthType;
@@ -18,11 +17,6 @@ import java.util.Objects;
  */
 @Entity
 @Table
-@NoArgsConstructor
-@AllArgsConstructor
-@Getter
-@Setter
-@ToString
 public class User implements Serializable {
     private static final long serialVersionUID = 2L;
 
@@ -62,6 +56,22 @@ public class User implements Serializable {
     @Enumerated(EnumType.ORDINAL)
     private AuthType authType;
 
+    public User(Integer id, String name, Timestamp lastVisitDate, String avatarHash, Role role, String snUid, String accessHash, String firebaseToken, Timestamp regDate, AuthType authType) {
+        this.id = id;
+        this.name = name;
+        this.lastVisitDate = lastVisitDate;
+        this.avatarHash = avatarHash;
+        this.role = role;
+        this.snUid = snUid;
+        this.accessHash = accessHash;
+        this.firebaseToken = firebaseToken;
+        this.regDate = regDate;
+        this.authType = authType;
+    }
+
+    public User() {
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(lastVisitDate, name, id, role);
@@ -84,4 +94,87 @@ public class User implements Serializable {
         setId(id);
     }
 
+    public Integer getId() {
+        return this.id;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public Timestamp getLastVisitDate() {
+        return this.lastVisitDate;
+    }
+
+    public String getAvatarHash() {
+        return this.avatarHash;
+    }
+
+    public Role getRole() {
+        return this.role;
+    }
+
+    public String getSnUid() {
+        return this.snUid;
+    }
+
+    public String getAccessHash() {
+        return this.accessHash;
+    }
+
+    public String getFirebaseToken() {
+        return this.firebaseToken;
+    }
+
+    public Timestamp getRegDate() {
+        return this.regDate;
+    }
+
+    public AuthType getAuthType() {
+        return this.authType;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setLastVisitDate(Timestamp lastVisitDate) {
+        this.lastVisitDate = lastVisitDate;
+    }
+
+    public void setAvatarHash(String avatarHash) {
+        this.avatarHash = avatarHash;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
+
+    public void setSnUid(String snUid) {
+        this.snUid = snUid;
+    }
+
+    public void setAccessHash(String accessHash) {
+        this.accessHash = accessHash;
+    }
+
+    public void setFirebaseToken(String firebaseToken) {
+        this.firebaseToken = firebaseToken;
+    }
+
+    public void setRegDate(Timestamp regDate) {
+        this.regDate = regDate;
+    }
+
+    public void setAuthType(AuthType authType) {
+        this.authType = authType;
+    }
+
+    public String toString() {
+        return "User(id=" + this.getId() + ", name=" + this.getName() + ", lastVisitDate=" + this.getLastVisitDate() + ", avatarHash=" + this.getAvatarHash() + ", role=" + this.getRole() + ", snUid=" + this.getSnUid() + ", accessHash=" + this.getAccessHash() + ", firebaseToken=" + this.getFirebaseToken() + ", regDate=" + this.getRegDate() + ", authType=" + this.getAuthType() + ")";
+    }
 }
