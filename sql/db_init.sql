@@ -5,10 +5,10 @@
 /* Replace `password` with your real password */
 CREATE DATABASE lps_data;
 CREATE USER 'lps'@'localhost' IDENTIFIED BY 'password';
-GRANT ALL PRIVILEGES ON * . * TO 'lps'@'localhost';
+GRANT ALL PRIVILEGES ON *.* TO 'lps'@'localhost';
 GRANT ALL ON lps_data.* TO 'lps'@'localhost' IDENTIFIED BY 'password' WITH GRANT OPTION;
 FLUSH PRIVILEGES;
-CONNECT lps_data;
+USE lps_data;
 
 CREATE TABLE IF NOT EXISTS `User`
 (
@@ -79,5 +79,22 @@ CREATE TABLE IF NOT EXISTS `Picture`
     `type`     TINYINT(1) NOT NULL DEFAULT 0,
     PRIMARY KEY (`owner_id`),
     CONSTRAINT FK_PictureOwner FOREIGN KEY (`owner_id`)
+        REFERENCES User (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS `CityEditRequest`
+(
+    `id`           INT      NOT NULL AUTO_INCREMENT,
+    `owner_id`     INT      NOT NULL,
+    `country_code` SMALLINT NOT NULL,
+    `old_name`     VARCHAR(64) DEFAULT NULL,
+    `new_name`     VARCHAR(64) DEFAULT NULL,
+    `reason`       VARCHAR(64) DEFAULT NULL,
+    `verdict`      VARCHAR(64) DEFAULT NULL,
+    `status`       ENUM ('NEW', 'APPROVED', 'DECLINED'),
+
+    PRIMARY KEY (`id`),
+    CONSTRAINT CHK_CountryCodeValid CHECK (country_code >= 0),
+    CONSTRAINT FK_CityEditRequestOwner FOREIGN KEY (`owner_id`)
         REFERENCES User (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 );
