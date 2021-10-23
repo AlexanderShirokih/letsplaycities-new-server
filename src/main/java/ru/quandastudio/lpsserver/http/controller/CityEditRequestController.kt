@@ -33,11 +33,26 @@ class CityEditRequestController(
             .toResponse()
     }
 
+    /**
+     * Gets a list of requests created by specified user
+     */
     @GetMapping
     fun getRequestsList(
         @AuthenticationPrincipal user: User,
-    ): List<CityEditResult> {
-        return cityEditRequestManager.getRequestList(user)
+    ): List<CityEditResult> = cityEditRequestManager.getRequestList(user)
+
+    /**
+     * Gets a list of all opened requests.
+     * @param user user who has admin privileges
+     */
+    @GetMapping("/opened")
+    fun getOpenedRequests(
+        @AuthenticationPrincipal user: User,
+    ): ResponseEntity<MessageWrapper<List<CityEditResult>>> {
+        return cityEditRequestManager
+            .getOpenedRequests(user)
+            .wrap()
+            .toResponse()
     }
 
     /**
