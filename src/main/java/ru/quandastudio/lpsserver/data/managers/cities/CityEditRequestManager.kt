@@ -1,4 +1,4 @@
-package ru.quandastudio.lpsserver.data
+package ru.quandastudio.lpsserver.data.managers.cities
 
 import ru.quandastudio.lpsserver.Result
 import ru.quandastudio.lpsserver.data.entities.User

@@ -3,7 +3,7 @@ package ru.quandastudio.lpsserver.http.controller
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
-import ru.quandastudio.lpsserver.data.CityEditRequestManager
+import ru.quandastudio.lpsserver.data.managers.cities.CityEditRequestManager
 import ru.quandastudio.lpsserver.data.entities.User
 import ru.quandastudio.lpsserver.http.model.MessageWrapper
 import ru.quandastudio.lpsserver.models.cities.CityEditRequest

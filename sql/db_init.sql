@@ -64,6 +64,53 @@ CREATE TABLE IF NOT EXISTS `History`
             ON DELETE CASCADE ON UPDATE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS `Country`
+(
+    `id`   INT         NOT NULL,
+    `name` VARCHAR(64) NOT NULL,
+
+    PRIMARY KEY (`id`)
+);
+
+CREATE TABLE IF NOT EXISTS `CountryGroup`
+(
+    `id`   INT         NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(28) NOT NULL,
+
+    PRIMARY KEY (`id`)
+);
+
+CREATE TABLE IF NOT EXISTS `CountryGroupAssignments`
+(
+    `group_id`   INT NOT NULL,
+    `country_id` INT NOT NULL,
+
+    PRIMARY KEY (`group_id`, `country_id`),
+    CONSTRAINT FK_CountryGroup
+        FOREIGN KEY (`group_id`) REFERENCES CountryGroup (`id`)
+            ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT FK_Country
+        FOREIGN KEY (`country_id`) REFERENCES Country (`id`)
+            ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS `RoomRequest`
+(
+    `id`               INT       NOT NULL AUTO_INCREMENT,
+    `requester_id`     INT       NOT NULL,
+    `country_group_id` INT                DEFAULT NULL,
+    `creation_date`    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `status`           ENUM ('NEW', 'COMPLETED'),
+
+    PRIMARY KEY (`id`),
+    CONSTRAINT FK_RoomRequester
+        FOREIGN KEY (`requester_id`) REFERENCES User (`id`)
+            ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT FK_RoomCountryGroup
+        FOREIGN KEY (`country_group_id`) REFERENCES CountryGroup (`id`)
+            ON DELETE CASCADE ON UPDATE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS `Banlist`
 (
     `baner_id`  INT(6) NOT NULL, /*User which sends ban*/

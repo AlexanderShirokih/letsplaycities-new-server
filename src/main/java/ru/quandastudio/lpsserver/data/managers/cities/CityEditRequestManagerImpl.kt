@@ -1,11 +1,11 @@
-package ru.quandastudio.lpsserver.data
+package ru.quandastudio.lpsserver.data.managers.cities
 
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import ru.quandastudio.lpsserver.Result
-import ru.quandastudio.lpsserver.data.dao.CityEditRequestRepository
-import ru.quandastudio.lpsserver.data.entities.CityEditRequestEntity
-import ru.quandastudio.lpsserver.data.entities.CityEditRequestStatusEntity
+import ru.quandastudio.lpsserver.data.dao.cities.CityEditRequestRepository
+import ru.quandastudio.lpsserver.data.entities.cities.CityEditRequestEntity
+import ru.quandastudio.lpsserver.data.entities.cities.CityEditRequestStatusEntity
 import ru.quandastudio.lpsserver.data.entities.User
 import ru.quandastudio.lpsserver.models.Role
 import ru.quandastudio.lpsserver.models.cities.CityEditRequest

@@ -1,5 +1,6 @@
-package ru.quandastudio.lpsserver.data.entities
+package ru.quandastudio.lpsserver.data.entities.cities
 
+import ru.quandastudio.lpsserver.data.entities.User
 import javax.persistence.*
 
 @Table(name = "CityEditRequest")
