@@ -98,3 +98,26 @@ CREATE TABLE IF NOT EXISTS `CityEditRequest`
     CONSTRAINT FK_CityEditRequestOwner FOREIGN KEY (`owner_id`)
         REFERENCES User (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS `Notification`
+(
+    `id`            INT         NOT NULL AUTO_INCREMENT,
+    `target_id`     INT         NOT NULL,
+    `title`         VARCHAR(30)          DEFAULT NULL,
+    `content`       VARCHAR(64) NOT NULL,
+    `creation_date` TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (`id`),
+    CONSTRAINT FK_NotificationOwner FOREIGN KEY (`target_id`)
+        REFERENCES User (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS `LastReadNotification`
+(
+    `user_id`      INT NOT NULL,
+    `last_read_id` INT NOT NULL,
+
+    PRIMARY KEY (`user_id`),
+    CONSTRAINT FK_User FOREIGN KEY (`user_id`)
+        REFERENCES User (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+);

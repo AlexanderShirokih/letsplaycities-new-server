@@ -1,0 +1,22 @@
+### Creates new notifcation. Requires admin privileges
+POST http://localhost:8080/notifications/
+Authorization: Basic MjMxMDc6U0lHWiU5Qjg=
+Content-Type: application/json
+
+{
+  "targetId": 39387,
+  "title": "Test notification 3",
+  "content": "This is the sample of targeted notifications"
+}
+
+### Deletes notification by id. Requires admin privileges.
+DELETE http://localhost:8080/notifications/1
+Authorization: Basic MjMxMDc6U0lHWiU5Qjg=
+
+### Gets incoming notifications for current user
+GET http://localhost:8080/notifications/
+Authorization: Basic MzkzODc6bjBVMnlzTTc=
+
+### Gets count of unread notifications for current user
+GET http://localhost:8080/notifications/unread
+Authorization: Basic MzkzODc6bjBVMnlzTTc=
