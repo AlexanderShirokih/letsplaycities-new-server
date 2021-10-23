@@ -1,10 +1,11 @@
-package ru.quandastudio.lpsserver.data.dao;
+package ru.quandastudio.lpsserver.data.dao
 
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 import ru.quandastudio.lpsserver.data.entities.CityEditRequestEntity
 import ru.quandastudio.lpsserver.data.entities.CityEditRequestStatusEntity
 import ru.quandastudio.lpsserver.data.entities.User
+import ru.quandastudio.lpsserver.models.cities.CityEditResult
 
 @Repository
 interface CityEditRequestRepository : JpaRepository<CityEditRequestEntity, Int> {
@@ -19,7 +20,13 @@ interface CityEditRequestRepository : JpaRepository<CityEditRequestEntity, Int> 
     fun findTop50ByOwnerOrderByStatusAsc(owner: User): List<CityEditRequestEntity>
 
     /**
+     * Gets all requests by certain status
+     */
+    fun findAllByStatus(status: CityEditRequestStatusEntity): List<CityEditRequestEntity>
+
+    /**
      * Deletes request by its ID and owner
      */
     fun deleteByIdAndOwner(id: Int, owner: User)
+
 }

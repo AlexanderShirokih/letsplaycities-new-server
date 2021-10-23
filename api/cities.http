@@ -25,3 +25,7 @@ Authorization: Basic MjMxMDc6U0lHWiU5Qjg=
 ### Gets a list of requests for specified user
 GET http://localhost:8080/cities/edit
 Authorization: Basic MzkzODc6bjBVMnlzTTc=
+
+### Gets a list of all opened requests
+GET http://localhost:8080/cities/edit/opened
+Authorization: Basic MjMxMDc6U0lHWiU5Qjg=

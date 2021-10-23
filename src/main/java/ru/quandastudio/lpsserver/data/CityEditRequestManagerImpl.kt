@@ -23,7 +23,7 @@ open class CityEditRequestManagerImpl(
         val currentLimit = cityEditRequestRepository.countAllByOwnerAndStatus(owner, CityEditRequestStatusEntity.NEW)
 
         if (currentLimit > ACTIVE_REQUESTS_LIMIT) {
-            return Result.error("Превышен лими открытых заявок. Подождите пока текущие заявки будут отратботаны")
+            return Result.error("Превышен лимит открытых заявок. Подождите пока текущие заявки будут обработаны")
         }
 
         cityEditRequestRepository.save(
@@ -46,17 +46,18 @@ open class CityEditRequestManagerImpl(
     override fun getRequestList(owner: User): List<CityEditResult> {
         return cityEditRequestRepository
             .findTop50ByOwnerOrderByStatusAsc(owner)
-            .map {
-                CityEditResult(
-                    id = requireNotNull(it.id),
-                    countryCode = it.countryCode,
-                    oldName = it.oldName,
-                    newName = it.newName,
-                    reason = it.reason,
-                    verdict = it.verdict,
-                    status = it.status.toModel(),
-                )
-            }
+            .map { it.toModel() }
+    }
+
+    override fun getOpenedRequests(actor: User): Result<List<CityEditResult>> {
+        return if (actor.role == Role.ADMIN) {
+            cityEditRequestRepository
+                .findAllByStatus(status = CityEditRequestStatusEntity.NEW)
+                .map { it.toModel() }
+                .let { Result.success(it) }
+        } else {
+            Result.error("Permission denied!")
+        }
     }
 
     override fun updateStatus(requestId: Int, actor: User, status: CityEditRequestStatus): Result<String> {
@@ -83,6 +84,16 @@ open class CityEditRequestManagerImpl(
         CityEditRequestStatusEntity.APPROVED -> CityEditRequestStatus.APPROVED
         CityEditRequestStatusEntity.DECLINED -> CityEditRequestStatus.DECLINED
     }
+
+    private fun CityEditRequestEntity.toModel() = CityEditResult(
+        id = requireNotNull(id),
+        countryCode = countryCode,
+        oldName = oldName,
+        newName = newName,
+        reason = reason,
+        verdict = verdict,
+        status = status.toModel(),
+    )
 
     companion object {
         private const val ACTIVE_REQUESTS_LIMIT = 50

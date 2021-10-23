@@ -24,6 +24,11 @@ interface CityEditRequestManager {
     fun getRequestList(owner: User): List<CityEditResult>
 
     /**
+     * Gets all opened requests
+     */
+    fun getOpenedRequests(user: User): Result<List<CityEditResult>>
+
+    /**
      * Updates city edit request status
      */
     fun updateStatus(requestId: Int, actor: User, status: CityEditRequestStatus): Result<String>
