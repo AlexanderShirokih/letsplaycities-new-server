@@ -3,8 +3,8 @@ package ru.quandastudio.lpsserver.handlers;
 import java.util.Optional;
 
 import lombok.extern.slf4j.Slf4j;
-import ru.quandastudio.lpsserver.core.Player;
-import ru.quandastudio.lpsserver.core.Room;
+import ru.quandastudio.lpsserver.core.game.Player;
+import ru.quandastudio.lpsserver.core.game.Room;
 import ru.quandastudio.lpsserver.models.WordResult;
 import ru.quandastudio.lpsserver.models.LPSClientMessage.LPSWord;
 import ru.quandastudio.lpsserver.models.LPSMessage.LPSMsgMessage;

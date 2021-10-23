@@ -8,13 +8,8 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
-import ru.quandastudio.lpsserver.handlers.AdminMessageHandler;
-import ru.quandastudio.lpsserver.handlers.BanMessageHandler;
-import ru.quandastudio.lpsserver.handlers.BanlistMessageHandler;
-import ru.quandastudio.lpsserver.handlers.FriendMessageHandler;
+import ru.quandastudio.lpsserver.core.game.Player;
 import ru.quandastudio.lpsserver.handlers.FriendModeRequestMessageHandler;
-import ru.quandastudio.lpsserver.handlers.FriendsListMessageHandler;
-import ru.quandastudio.lpsserver.handlers.HistoryMessageHandler;
 import ru.quandastudio.lpsserver.handlers.LeaveMessageHandler;
 import ru.quandastudio.lpsserver.handlers.LoginMessageHandler;
 import ru.quandastudio.lpsserver.handlers.MessageHandler;
@@ -35,16 +30,10 @@ public class MessageRouterImpl implements MessageRouter {
 
 		registerTypeHandler(new LoginMessageHandler());
 		registerTypeHandler(new PlayMessageHandler());
-		registerTypeHandler(new AdminMessageHandler());
 		registerTypeHandler(new LeaveMessageHandler());
-		registerTypeHandler(new BanMessageHandler());
-		registerTypeHandler(new BanlistMessageHandler());
 		registerTypeHandler(new UserMsgMessageHandler());
 		registerTypeHandler(new WordMessageHandler());
-		registerTypeHandler(new FriendMessageHandler());
-		registerTypeHandler(new FriendsListMessageHandler());
 		registerTypeHandler(new FriendModeRequestMessageHandler());
-		registerTypeHandler(new HistoryMessageHandler());
 	}
 
 	private void registerTypeHandler(MessageHandler<?> handler) {

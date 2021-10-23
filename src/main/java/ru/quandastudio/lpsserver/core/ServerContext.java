@@ -1,5 +1,17 @@
 package ru.quandastudio.lpsserver.core;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+import ru.quandastudio.lpsserver.bots.BotManager;
+import ru.quandastudio.lpsserver.config.ServerProperties;
+import ru.quandastudio.lpsserver.core.game.Dictionary;
+import ru.quandastudio.lpsserver.core.game.Player;
+import ru.quandastudio.lpsserver.data.*;
+import ru.quandastudio.lpsserver.data.entities.User;
+
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map.Entry;
@@ -7,23 +19,6 @@ import java.util.Optional;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.function.Predicate;
 
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import ru.quandastudio.lpsserver.bots.BotManager;
-import ru.quandastudio.lpsserver.config.ServerProperties;
-import ru.quandastudio.lpsserver.data.BlacklistManager;
-import ru.quandastudio.lpsserver.data.FriendshipManager;
-import ru.quandastudio.lpsserver.data.HistoryManager;
-import ru.quandastudio.lpsserver.data.PictureManager;
-import ru.quandastudio.lpsserver.data.UserManager;
-import ru.quandastudio.lpsserver.data.entities.User;
-
-@Getter
 @RequiredArgsConstructor
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
@@ -93,4 +88,55 @@ public class ServerContext {
 				.or(() -> friendsRequests.keySet().stream().filter(isTargetUser).findFirst());
 	}
 
+	public ArrayBlockingQueue<Player> getPlayersQueue() {
+		return this.playersQueue;
+	}
+
+	public Hashtable<Player, Integer> getFriendsRequests() {
+		return this.friendsRequests;
+	}
+
+	public BotManager getBotManager() {
+		return this.botManager;
+	}
+
+	public MessageRouter getMessageRouter() {
+		return this.messageRouter;
+	}
+
+	public UserManager getUserManager() {
+		return this.userManager;
+	}
+
+	public BlacklistManager getBanlistManager() {
+		return this.banlistManager;
+	}
+
+	public FriendshipManager getFriendshipManager() {
+		return this.friendshipManager;
+	}
+
+	public HistoryManager getHistoryManager() {
+		return this.historyManager;
+	}
+
+	public PictureManager getPictureManager() {
+		return this.pictureManager;
+	}
+
+	public RequestNotifier getRequestNotifier() {
+		return this.requestNotifier;
+	}
+
+	public ServerProperties getServerProperties() {
+		return this.serverProperties;
+	}
+
+	public Dictionary getDictionary() {
+		return this.dictionary;
+	}
+
+	public TaskLooper getTaskLooper() {
+		return taskLooper;
+	}
 }

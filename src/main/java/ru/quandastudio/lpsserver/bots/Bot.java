@@ -2,8 +2,8 @@ package ru.quandastudio.lpsserver.bots;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import ru.quandastudio.lpsserver.core.Player;
-import ru.quandastudio.lpsserver.core.Room;
+import ru.quandastudio.lpsserver.core.game.Player;
+import ru.quandastudio.lpsserver.core.game.Room;
 import ru.quandastudio.lpsserver.core.ServerContext;
 import ru.quandastudio.lpsserver.data.entities.User;
 import ru.quandastudio.lpsserver.models.AuthType;

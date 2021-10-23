@@ -1,9 +1,11 @@
-package ru.quandastudio.lpsserver.core;
+package ru.quandastudio.lpsserver.core.game;
 
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import ru.quandastudio.lpsserver.core.MessageChannel;
+import ru.quandastudio.lpsserver.core.ServerContext;
 import ru.quandastudio.lpsserver.data.entities.User;
 import ru.quandastudio.lpsserver.models.FriendshipStatus;
 import ru.quandastudio.lpsserver.models.LPSClientMessage;

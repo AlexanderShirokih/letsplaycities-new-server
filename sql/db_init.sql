@@ -25,6 +25,12 @@ CREATE TABLE IF NOT EXISTS `User`
     PRIMARY KEY (`id`)
 );
 
+CREATE TABLE IF NOT EXISTS `ForbiddenLogin`
+(
+    `value` VARCHAR(64) NOT NULL,
+    PRIMARY KEY (`value`)
+);
+
 CREATE TABLE IF NOT EXISTS `Friendship`
 (
     `sender_id`     INT(6)    NOT NULL,

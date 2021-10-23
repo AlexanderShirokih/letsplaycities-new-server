@@ -5,7 +5,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import ru.quandastudio.lpsserver.core.Room;
+import ru.quandastudio.lpsserver.core.game.Room;
 
 @Slf4j
 @RequiredArgsConstructor
