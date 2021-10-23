@@ -1,11 +1,10 @@
-package ru.quandastudio.lpsserver.data.dao
+package ru.quandastudio.lpsserver.data.dao.cities
 
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
-import ru.quandastudio.lpsserver.data.entities.CityEditRequestEntity
-import ru.quandastudio.lpsserver.data.entities.CityEditRequestStatusEntity
+import ru.quandastudio.lpsserver.data.entities.cities.CityEditRequestEntity
+import ru.quandastudio.lpsserver.data.entities.cities.CityEditRequestStatusEntity
 import ru.quandastudio.lpsserver.data.entities.User
-import ru.quandastudio.lpsserver.models.cities.CityEditResult
 
 @Repository
 interface CityEditRequestRepository : JpaRepository<CityEditRequestEntity, Int> {
