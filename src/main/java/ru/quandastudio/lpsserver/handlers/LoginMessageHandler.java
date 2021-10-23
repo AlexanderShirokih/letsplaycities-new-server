@@ -3,7 +3,7 @@ package ru.quandastudio.lpsserver.handlers;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.text.StringEscapeUtils;
 import ru.quandastudio.lpsserver.Result;
-import ru.quandastudio.lpsserver.core.Player;
+import ru.quandastudio.lpsserver.core.game.Player;
 import ru.quandastudio.lpsserver.core.ServerContext;
 import ru.quandastudio.lpsserver.data.entities.User;
 import ru.quandastudio.lpsserver.models.LPSClientMessage.LPSLogIn;

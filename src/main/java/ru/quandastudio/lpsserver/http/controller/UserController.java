@@ -10,7 +10,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import ru.quandastudio.lpsserver.Result;
-import ru.quandastudio.lpsserver.core.Player;
+import ru.quandastudio.lpsserver.core.game.Player;
 import ru.quandastudio.lpsserver.core.ServerContext;
 import ru.quandastudio.lpsserver.data.PictureManager;
 import ru.quandastudio.lpsserver.data.entities.Picture;

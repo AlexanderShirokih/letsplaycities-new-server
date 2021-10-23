@@ -1,17 +1,18 @@
-package ru.quandastudio.lpsserver.core;
-
-import java.util.ArrayList;
-import java.util.Optional;
+package ru.quandastudio.lpsserver.core.game;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import ru.quandastudio.lpsserver.core.*;
 import ru.quandastudio.lpsserver.data.entities.History;
 import ru.quandastudio.lpsserver.data.entities.Picture;
 import ru.quandastudio.lpsserver.data.entities.User;
 import ru.quandastudio.lpsserver.models.FriendshipStatus;
 import ru.quandastudio.lpsserver.models.LPSMessage;
 import ru.quandastudio.lpsserver.models.WordResult;
+
+import java.util.ArrayList;
+import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor

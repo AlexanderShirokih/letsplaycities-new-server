@@ -1,4 +1,4 @@
-package ru.quandastudio.lpsserver.core;
+package ru.quandastudio.lpsserver.core.game;
 
 import java.io.DataInputStream;
 import java.io.File;

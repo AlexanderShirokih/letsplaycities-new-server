@@ -2,7 +2,7 @@ package ru.quandastudio.lpsserver.handlers;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import ru.quandastudio.lpsserver.core.Player;
+import ru.quandastudio.lpsserver.core.game.Player;
 import ru.quandastudio.lpsserver.models.LPSClientMessage;
 
 @RequiredArgsConstructor

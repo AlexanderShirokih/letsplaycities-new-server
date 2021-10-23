@@ -1,7 +1,7 @@
 package ru.quandastudio.lpsserver.handlers;
 
-import ru.quandastudio.lpsserver.core.Player;
-import ru.quandastudio.lpsserver.core.Room;
+import ru.quandastudio.lpsserver.core.game.Player;
+import ru.quandastudio.lpsserver.core.game.Room;
 import ru.quandastudio.lpsserver.models.LPSMessage;
 import ru.quandastudio.lpsserver.models.LPSClientMessage.LPSMsg;
 
