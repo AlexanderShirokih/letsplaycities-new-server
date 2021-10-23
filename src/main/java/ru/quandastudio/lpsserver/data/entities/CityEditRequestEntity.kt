@@ -4,7 +4,7 @@ import javax.persistence.*
 
 @Table(name = "CityEditRequest")
 @Entity
-data class CityEditRequestEntity(
+class CityEditRequestEntity(
     @Id
     @Column(name = "id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)

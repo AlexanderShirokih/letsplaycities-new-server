@@ -1,0 +1,12 @@
+### Registers new user or returns existing account
+POST http://localhost:8080/user/
+Content-Type: application/json
+
+{
+  "version": 5,
+  "login": "Hello moto",
+  "authType": "Vkontakte",
+  "accToken": "LP1x^1ye",
+  "firebaseToken": "",
+  "snUID": "562123687156"
+}

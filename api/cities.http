@@ -1,0 +1,27 @@
+### Creates new cities request
+POST http://localhost:8080/cities/edit
+Authorization: Basic MzkzODc6bjBVMnlzTTc=
+Content-Type: application/json
+
+{
+  "countryCode": 23,
+  "oldName": "from",
+  "newName": "to",
+  "reason": "reason"
+}
+
+### Deletes created cities request
+DELETE http://localhost:8080/cities/edit/1
+Authorization: Basic MzkzODc6bjBVMnlzTTc=
+
+### Approves creates cities request. Requries admin account
+PUT http://localhost:8080/cities/edit/2/approve
+Authorization: Basic MjMxMDc6U0lHWiU5Qjg=
+
+### Deletes creates cities request. Requries admin account
+PUT http://localhost:8080/cities/edit/2/decline
+Authorization: Basic MjMxMDc6U0lHWiU5Qjg=
+
+### Gets a list of requests for specified user
+GET http://localhost:8080/cities/edit
+Authorization: Basic MzkzODc6bjBVMnlzTTc=

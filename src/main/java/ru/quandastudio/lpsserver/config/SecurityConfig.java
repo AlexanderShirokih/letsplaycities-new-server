@@ -41,7 +41,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .permitAll()
                 .antMatchers(HttpMethod.POST, "/user/picture")
                 .authenticated()
-                .antMatchers("/picture/**", "/friends/**", "/history/**", "/blacklist/**", "/cities/**")
+                .antMatchers("/picture/**", "/friends/**", "/history/**", "/blacklist/**", "/cities/**", "/notifications/**")
                 .authenticated()
                 .antMatchers("/**")
                 .permitAll()
