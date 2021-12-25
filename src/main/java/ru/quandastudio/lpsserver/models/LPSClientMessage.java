@@ -30,7 +30,7 @@ public class LPSClientMessage {
     public static final class LPSLogIn extends LPSClientMessage implements ISignInMessage {
         @NotNull
         @Min(value = 3, message = "Unsupported protocol version")
-        @Max(value = 5, message = "Unsupported protocol version")
+        @Max(value = 6, message = "Unsupported protocol version")
         private int version;
 
         @NotNull
@@ -78,7 +78,7 @@ public class LPSClientMessage {
     }
 
     public enum PlayMode {
-        RANDOM_PAIR, FRIEND
+        RANDOM_PAIR, FRIEND, REFERAL,
     }
 
     @Action("play")
@@ -87,46 +87,15 @@ public class LPSClientMessage {
     public static final class LPSPlay extends LPSClientMessage {
         @NonNull
         private final PlayMode mode;
+
+        /**
+         * Used in friend game mode
+         */
         private final int oppUid;
-    }
-
-    @Action("banlist")
-    @Builder
-    @Getter
-    public static final class LPSBanList extends LPSClientMessage {
-        @NonNull
-        private final RequestType type;
-        @Builder.Default
-        private final int friendUid = 0;
-    }
-
-    @Action("friends_list")
-    public static final class LPSFriendList extends LPSClientMessage {
-    }
-
-    @Action("history")
-    public static final class LPSHistoryList extends LPSClientMessage {
-    }
-
-    @Action("friend")
-    @RequiredArgsConstructor
-    @Getter
-    public static final class LPSFriendAction extends LPSClientMessage {
-        @NonNull
-        private final RequestType type;
-        private final int oppUid;
-    }
-
-    @Action("ban")
-    @RequiredArgsConstructor
-    @Getter
-    public static final class LPSBan extends LPSClientMessage {
-        private final String type;
-        private final int targetId = 0;
-
-        public LPSBan() {
-            this("report");
-        }
+        /**
+         * Used in referal game mode
+         */
+        private final long roomId;
     }
 
     @Action("word")
@@ -159,19 +128,5 @@ public class LPSClientMessage {
     @Getter
     public static final class LPSLeave extends LPSClientMessage {
         private final String reason;
-    }
-
-    @Action("ADMIN")
-    @RequiredArgsConstructor
-    @Getter
-    public static final class LPSAdmin extends LPSClientMessage {
-        @NonNull
-        private final String command;
-    }
-
-    @RequiredArgsConstructor
-    @Getter
-    public static final class LPSUnknown extends LPSClientMessage {
-        private final String description;
     }
 }

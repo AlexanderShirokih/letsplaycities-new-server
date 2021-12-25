@@ -1,10 +1,10 @@
 package ru.quandastudio.lpsserver.handlers;
 
 import lombok.extern.slf4j.Slf4j;
-import ru.quandastudio.lpsserver.core.game.Player;
 import ru.quandastudio.lpsserver.core.RequestNotifier.NotificationData;
-import ru.quandastudio.lpsserver.core.game.Room;
 import ru.quandastudio.lpsserver.core.ServerContext;
+import ru.quandastudio.lpsserver.core.game.Player;
+import ru.quandastudio.lpsserver.core.game.Room;
 import ru.quandastudio.lpsserver.data.UserManager;
 import ru.quandastudio.lpsserver.data.entities.User;
 import ru.quandastudio.lpsserver.models.FriendModeResult;
@@ -30,6 +30,9 @@ public class PlayMessageHandler extends MessageHandler<LPSPlay> {
                 break;
             case RANDOM_PAIR:
                 handleAsRandomPlayRequest(player);
+                break;
+            case REFERAL:
+                handleAsReferalRequest(player, msg.getRoomId());
                 break;
             default:
                 throw new IllegalStateException("Unknown play mode " + msg.getMode().name());
@@ -67,6 +70,14 @@ public class PlayMessageHandler extends MessageHandler<LPSPlay> {
             }
         } else {
             player.sendMessage(new LPSFriendModeRequest(opponent, FriendModeResult.NOT_FRIEND));
+        }
+    }
+
+    private void handleAsReferalRequest(Player player, long roomId) {
+        if (roomId <= 0) {
+            log.warn("# Room ID was not passed, but required. user={}", player.getUser());
+
+            // TODO: Create in memory rooms
         }
     }
 

@@ -14,6 +14,9 @@ class RoomRequestEntity(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Int? = null,
 
+    @Column(name = "hash", nullable = true)
+    var hash: String? = null,
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "requester_id", nullable = false)
     var requester: User? = null,

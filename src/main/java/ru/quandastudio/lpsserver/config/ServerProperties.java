@@ -1,17 +1,16 @@
 package ru.quandastudio.lpsserver.config;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+import ru.quandastudio.lpsserver.LPSException;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
-
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-
-import lombok.extern.slf4j.Slf4j;
-import ru.quandastudio.lpsserver.LPSException;
 
 @Slf4j
 @Component
@@ -49,6 +48,10 @@ public class ServerProperties {
         return getBoolOrThrow("server.bots_enabled");
     }
 
+    public String getHost() {
+        return getStringOrThrow("server.host");
+    }
+
     private int getIntOrThrow(String key) {
         String ret = props.getProperty(key);
         if (ret == null)
@@ -67,5 +70,12 @@ public class ServerProperties {
         if (ret == null)
             throw new LPSException("Requested property \"" + key + "\" not found!");
         return Boolean.parseBoolean(ret);
+    }
+
+    private String getStringOrThrow(String key) {
+        String value = props.getProperty(key);
+        if (value == null)
+            throw new LPSException("Requested property \"" + key + "\" not found!");
+        return value;
     }
 }

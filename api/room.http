@@ -1,0 +1,9 @@
+
+### Creates new room request
+POST http://localhost:8080/room/create
+Authorization: Basic MzkzODc6bjBVMnlzTTc=
+Content-Type: application/json
+
+{
+  "countryGroupId": null
+}
