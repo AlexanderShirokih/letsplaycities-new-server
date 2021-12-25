@@ -3,8 +3,8 @@ package ru.quandastudio.lpsserver.data.managers.country
 import org.springframework.stereotype.Service
 import ru.quandastudio.lpsserver.data.dao.country.CountryGroupRepository
 import ru.quandastudio.lpsserver.data.dao.country.CountryRepository
-import ru.quandastudio.lpsserver.data.entities.cities.CountryEntity
-import ru.quandastudio.lpsserver.data.entities.cities.CountryGroupEntity
+import ru.quandastudio.lpsserver.data.mappers.country.CountryGroupMapper
+import ru.quandastudio.lpsserver.data.mappers.country.CountryMapper
 import ru.quandastudio.lpsserver.models.country.Country
 import ru.quandastudio.lpsserver.models.country.CountryGroup
 
@@ -12,24 +12,15 @@ import ru.quandastudio.lpsserver.models.country.CountryGroup
 class CountryManagerImpl(
     private val countryRepository: CountryRepository,
     private val countryGroupRepository: CountryGroupRepository,
+    private val countryGroupMapper: CountryGroupMapper,
+    private val countryMapper: CountryMapper,
 ) : CountryManager {
 
     override fun getCountryList(): List<Country> {
-        return countryRepository.findAll().map { it.toModel() }
+        return countryRepository.findAll().map { countryMapper.toModel(it) }
     }
 
     override fun getCountryGroup(): List<CountryGroup> {
-        return countryGroupRepository.findAll().map { it.toModel() }
+        return countryGroupRepository.findAll().map { countryGroupMapper.toModel(it) }
     }
-
-    private fun CountryEntity.toModel() = Country(
-        id = requireNotNull(id),
-        name = requireNotNull(name),
-    )
-
-    private fun CountryGroupEntity.toModel() = CountryGroup(
-        id = requireNotNull(id),
-        name = requireNotNull(name),
-        countries = countries.map { it.toModel() }
-    )
 }

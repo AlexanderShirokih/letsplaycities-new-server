@@ -97,10 +97,11 @@ CREATE TABLE IF NOT EXISTS `CountryGroupAssignments`
 CREATE TABLE IF NOT EXISTS `RoomRequest`
 (
     `id`               INT       NOT NULL AUTO_INCREMENT,
+    `hash`             INT                DEFAULT NULL,
     `requester_id`     INT       NOT NULL,
     `country_group_id` INT                DEFAULT NULL,
     `creation_date`    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `status`           ENUM ('NEW', 'COMPLETED'),
+    `status`           ENUM ('NEW', 'ACCEPTED', 'DECLINED'),
 
     PRIMARY KEY (`id`),
     CONSTRAINT FK_RoomRequester
