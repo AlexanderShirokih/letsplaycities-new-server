@@ -84,13 +84,13 @@
         <dependency>
             <groupId>com.google.firebase</groupId>
             <artifactId>firebase-admin</artifactId>
-            <version>6.3.0</version>
+            <version>8.1.0</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
-            <version>1.8</version>
+            <version>1.9</version>
         </dependency>
 
         <dependency>
@@ -105,9 +105,9 @@
         </dependency>
 
         <dependency>
-            <groupId>org.hibernate</groupId>
+            <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
-            <version>6.1.7.Final</version>
+            <version>7.0.1.Final</version>
         </dependency>
 
         <dependency>
@@ -118,25 +118,31 @@
         <dependency>
             <groupId>javax.el</groupId>
             <artifactId>javax.el-api</artifactId>
-            <version>2.2.4</version>
+            <version>3.0.0</version>
         </dependency>
 
         <dependency>
             <groupId>org.glassfish.web</groupId>
             <artifactId>javax.el</artifactId>
-            <version>2.2.4</version>
+            <version>2.2.6</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20211205</version>
         </dependency>
 
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-stdlib-jdk8</artifactId>
-            <version>1.5.31</version>
+            <version>1.6.0</version>
         </dependency>
 
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-reflect</artifactId>
-            <version>1.5.31</version>
+            <version>1.6.0</version>
         </dependency>
     </dependencies>
 
@@ -158,16 +164,28 @@
             <plugin>
                 <artifactId>kotlin-maven-plugin</artifactId>
                 <groupId>org.jetbrains.kotlin</groupId>
-                <version>${kotlin.version}</version>
+                <version>1.6.0</version>
                 <configuration>
                     <compilerPlugins>
-                        <plugin>jpa</plugin>
-                    </compilerPlugins>
-                    <compilerPlugins>
+                        <plugin>all-open</plugin>
                         <plugin>spring</plugin>
+                        <plugin>no-arg</plugin>
+                        <plugin>jpa</plugin>
                     </compilerPlugins>
                     <jvmTarget>1.8</jvmTarget>
                 </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.jetbrains.kotlin</groupId>
+                        <artifactId>kotlin-maven-allopen</artifactId>
+                        <version>1.6.0</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.jetbrains.kotlin</groupId>
+                        <artifactId>kotlin-maven-noarg</artifactId>
+                        <version>1.6.0</version>
+                    </dependency>
+                </dependencies>
                 <executions>
                     <execution>
                         <id>compile</id>
@@ -184,15 +202,7 @@
                         </goals>
                     </execution>
                 </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.jetbrains.kotlin</groupId>
-                        <artifactId>kotlin-maven-allopen</artifactId>
-                        <version>1.1.2</version>
-                    </dependency>
-                </dependencies>
             </plugin>
-
         </plugins>
     </build>
 

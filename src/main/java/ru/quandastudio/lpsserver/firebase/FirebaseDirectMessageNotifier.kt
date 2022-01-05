@@ -28,7 +28,12 @@ class FirebaseDirectMessageNotifier(
                     "senderId" to notification.senderId.toString(),
                 )
             )
-            .setNotification(Notification(title, notification.shortContent))
+            .setNotification(
+                Notification.builder()
+                    .setTitle(title)
+                    .setBody(notification.shortContent)
+                    .build()
+            )
             .setAndroidConfig(
                 AndroidConfig.builder()
                     .setPriority(AndroidConfig.Priority.HIGH)
