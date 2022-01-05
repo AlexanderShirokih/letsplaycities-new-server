@@ -49,8 +49,8 @@ open class CityEditRequestManagerImpl(
             .map { it.toModel() }
     }
 
-    override fun getOpenedRequests(actor: User): Result<List<CityEditResult>> {
-        return if (actor.role == Role.ADMIN) {
+    override fun getOpenedRequests(user: User): Result<List<CityEditResult>> {
+        return if (user.role == Role.ADMIN) {
             cityEditRequestRepository
                 .findAllByStatus(status = CityEditRequestStatusEntity.NEW)
                 .map { it.toModel() }

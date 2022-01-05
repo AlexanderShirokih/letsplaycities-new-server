@@ -1,4 +1,4 @@
-package ru.quandastudio.lpsserver.core;
+package ru.quandastudio.lpsserver.core.notifications;
 
 import java.util.HashMap;
 

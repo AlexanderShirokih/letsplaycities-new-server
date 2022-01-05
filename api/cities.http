@@ -1,6 +1,6 @@
-### Creates new cities request
+### Creates new request to rename the city
 POST http://localhost:8080/cities/edit
-Authorization: Basic MzkzODc6bjBVMnlzTTc=
+Authorization: Basic MzkzODc6bjBVMnlzTTk=
 Content-Type: application/json
 
 {
@@ -12,20 +12,20 @@ Content-Type: application/json
 
 ### Deletes created cities request
 DELETE http://localhost:8080/cities/edit/1
-Authorization: Basic MzkzODc6bjBVMnlzTTc=
+Authorization: Basic MzkzODc6bjBVMnlzTTk=
 
 ### Approves creates cities request. Requries admin account
 PUT http://localhost:8080/cities/edit/2/approve
-Authorization: Basic MjMxMDc6U0lHWiU5Qjg=
+Authorization: Basic MzkzODc6bjBVMnlzTTk=
 
 ### Deletes creates cities request. Requries admin account
 PUT http://localhost:8080/cities/edit/2/decline
-Authorization: Basic MjMxMDc6U0lHWiU5Qjg=
+Authorization: Basic MzkzODc6bjBVMnlzTTk=
 
 ### Gets a list of requests for specified user
 GET http://localhost:8080/cities/edit
-Authorization: Basic MzkzODc6bjBVMnlzTTc=
+Authorization: Basic MzkzODc6bjBVMnlzTTk=
 
 ### Gets a list of all opened requests
 GET http://localhost:8080/cities/edit/opened
-Authorization: Basic MjMxMDc6U0lHWiU5Qjg=
+Authorization: Basic MzkzODc6bjBVMnlzTTk=

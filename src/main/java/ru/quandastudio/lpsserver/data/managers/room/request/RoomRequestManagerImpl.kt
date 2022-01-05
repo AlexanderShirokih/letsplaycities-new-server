@@ -3,7 +3,6 @@ package ru.quandastudio.lpsserver.data.managers.room.request
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import ru.quandastudio.lpsserver.Result
-import ru.quandastudio.lpsserver.config.ServerProperties
 import ru.quandastudio.lpsserver.core.game.id.GameIdFactory
 import ru.quandastudio.lpsserver.data.dao.country.CountryGroupRepository
 import ru.quandastudio.lpsserver.data.dao.room.RoomRequestRepository
@@ -19,7 +18,6 @@ class RoomRequestManagerImpl(
     private val roomRequestRepository: RoomRequestRepository,
     private val countryGroupRepository: CountryGroupRepository,
     private val countryGroupMapper: CountryGroupMapper,
-    private val serverProperties: ServerProperties,
     private val gameIdFactory: GameIdFactory,
 ) : RoomRequestManager {
 

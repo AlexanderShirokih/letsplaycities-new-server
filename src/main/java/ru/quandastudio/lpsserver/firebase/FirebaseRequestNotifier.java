@@ -10,29 +10,33 @@ import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.Notification;
 
 import lombok.RequiredArgsConstructor;
-import ru.quandastudio.lpsserver.core.RequestNotifier;
+import ru.quandastudio.lpsserver.core.notifications.RequestNotifier;
 import ru.quandastudio.lpsserver.data.entities.User;
 
 @Service
 @RequiredArgsConstructor
 public class FirebaseRequestNotifier implements RequestNotifier {
 
-	private final FirebaseMessaging firebaseMessaging;
+    private final FirebaseMessaging firebaseMessaging;
 
-	@Override
-	public void sendNotification(User receiver, NotificationData data) {
-		Message msg = Message.builder()
-				.putAllData(data.getParams())
-				.setNotification(new Notification("Сыграем в Города", data.getTitle()))
-				.setAndroidConfig(AndroidConfig.builder()
-						.setPriority(Priority.HIGH)
-						.setTtl(0)
-						.setRestrictedPackageName("ru.aleshi.letsplaycities")
-						.setNotification(AndroidNotification.builder().setSound("default").build())
-						.build())
-				.setToken(receiver.getFirebaseToken())
-				.build();
-		firebaseMessaging.sendAsync(msg);
-	}
+    @Override
+    public void sendNotification(User receiver, NotificationData data) {
+        if (receiver.getFirebaseToken() == null || receiver.getFirebaseToken().isEmpty()) {
+            return;
+        }
+
+        Message msg = Message.builder()
+                .putAllData(data.getParams())
+                .setNotification(new Notification("Сыграем в Города", data.getTitle()))
+                .setAndroidConfig(AndroidConfig.builder()
+                        .setPriority(Priority.HIGH)
+                        .setTtl(0)
+                        .setRestrictedPackageName("ru.aleshi.letsplaycities")
+                        .setNotification(AndroidNotification.builder().setSound("default").build())
+                        .build())
+                .setToken(receiver.getFirebaseToken())
+                .build();
+        firebaseMessaging.sendAsync(msg);
+    }
 
 }
