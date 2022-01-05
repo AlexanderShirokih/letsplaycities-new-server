@@ -25,106 +25,106 @@ import ru.quandastudio.lpsserver.models.LPSClientMessage.PlayMode;
 @RequiredArgsConstructor
 public class BotManager {
 
-	private final ServerContext context;
+    private final ServerContext context;
 
-	private boolean botsEnabled;
+    private boolean botsEnabled;
 
-	private Bot[] bots;
+    private Bot[] bots;
 
-	private ScheduledExecutorService executor;
-	private ScheduledExecutorService botUpdaterExecutor;
+    private ScheduledExecutorService executor;
+    private ScheduledExecutorService botUpdaterExecutor;
 
-	public void init() {
-		botsEnabled = context.getServerProperties().isBotsEnabled();
+    public void init() {
+        botsEnabled = context.getServerProperties().isBotsEnabled();
 
-		if (!botsEnabled)
-			return;
+        if (!botsEnabled)
+            return;
 
-		BotInfo[] infos = loadBotConfiguration();
+        BotInfo[] infos = loadBotConfiguration();
 
-		bots = new Bot[infos.length];
+        bots = new Bot[infos.length];
 
-		for (int i = 0; i < bots.length; i++) {
-			bots[i] = new Bot(context, infos[i]);
-		}
+        for (int i = 0; i < bots.length; i++) {
+            bots[i] = new Bot(context, infos[i]);
+        }
 
-		executor = Executors.newSingleThreadScheduledExecutor();
-		botUpdaterExecutor = Executors.newSingleThreadScheduledExecutor();
+        executor = Executors.newSingleThreadScheduledExecutor();
+        botUpdaterExecutor = Executors.newSingleThreadScheduledExecutor();
 
-		log.info("Initialized {} bots", bots.length);
+        log.info("Initialized {} bots", bots.length);
 
-		scheduleUpdate();
-	}
+        scheduleUpdate();
+    }
 
-	private void scheduleUpdate() {
-		Runnable task = () -> {
-			try {
-				update();
-			} catch (Exception e) {
-				log.error("Error in BOT update():", e);
-			}
-		};
-		botUpdaterExecutor.scheduleWithFixedDelay(task, 10, 10, TimeUnit.SECONDS);
-	}
+    private void scheduleUpdate() {
+        Runnable task = () -> {
+            try {
+                update();
+            } catch (Exception e) {
+                log.error("Error in BOT update():", e);
+            }
+        };
+        botUpdaterExecutor.scheduleWithFixedDelay(task, 10, 10, TimeUnit.SECONDS);
+    }
 
-	public void update() {
-		if (!botsEnabled)
-			return;
-		if (!isQueueEmpty()) {
-			boolean chance = ThreadLocalRandom.current().nextBoolean();
-			if (chance) {
-				getFreeBot().ifPresent((bot) -> bot.onMessage(new LPSPlay(PlayMode.RANDOM_PAIR, 0)));
-			}
-		}
-	}
+    public void update() {
+        if (!botsEnabled)
+            return;
+        if (!isQueueEmpty()) {
+            boolean chance = ThreadLocalRandom.current().nextBoolean();
+            if (chance) {
+                getFreeBot().ifPresent((bot) -> bot.onMessage(new LPSPlay(PlayMode.RANDOM_PAIR, 0, 0)));
+            }
+        }
+    }
 
-	private boolean isQueueEmpty() {
-		final Queue<?> playersQueue = context.getPlayersQueue();
-		return playersQueue.isEmpty() || playersQueue.peek() instanceof Bot;
-	}
+    private boolean isQueueEmpty() {
+        final Queue<?> playersQueue = context.getPlayersQueue();
+        return playersQueue.isEmpty() || playersQueue.peek() instanceof Bot;
+    }
 
-	public void shutdown() {
-		log.info("Shutting down BOT executor service...");
-		if (executor != null)
-			executor.shutdown();
-		if (botUpdaterExecutor != null)
-			botUpdaterExecutor.shutdown();
-	}
+    public void shutdown() {
+        log.info("Shutting down BOT executor service...");
+        if (executor != null)
+            executor.shutdown();
+        if (botUpdaterExecutor != null)
+            botUpdaterExecutor.shutdown();
+    }
 
-	private BotInfo[] loadBotConfiguration() {
-		BotInfo[] infos;
-		try {
-			final File file = new ClassPathResource("bots.json").getFile();
-			infos = new BotConfigParser().parseBotsList(file);
-			log.info("Bot list parsed");
-		} catch (IOException e) {
-			infos = new BotInfo[0];
-			e.printStackTrace();
-			log.info("Error parsing bot list!");
-		}
-		return infos;
-	}
+    private BotInfo[] loadBotConfiguration() {
+        BotInfo[] infos;
+        try {
+            final File file = new ClassPathResource("bots.json").getFile();
+            infos = new BotConfigParser().parseBotsList(file);
+            log.info("Bot list parsed");
+        } catch (IOException e) {
+            infos = new BotInfo[0];
+            e.printStackTrace();
+            log.info("Error parsing bot list!");
+        }
+        return infos;
+    }
 
-	public void shedule(BotGameSession bgs, int delay, Runnable task) {
-		ScheduledFuture<?> futureTask = executor.schedule(task, delay, TimeUnit.MILLISECONDS);
-		bgs.setFutureTask(futureTask);
-	}
+    public void shedule(BotGameSession bgs, int delay, Runnable task) {
+        ScheduledFuture<?> futureTask = executor.schedule(task, delay, TimeUnit.MILLISECONDS);
+        bgs.setFutureTask(futureTask);
+    }
 
-	public void log() {
-		if (!botsEnabled)
-			return;
-		log.info("BOT stat: free {} of {}", getFreeBotList().size(), bots.length);
-	}
+    public void log() {
+        if (!botsEnabled)
+            return;
+        log.info("BOT stat: free {} of {}", getFreeBotList().size(), bots.length);
+    }
 
-	private List<Bot> getFreeBotList() {
-		return Arrays.stream(bots).filter((b) -> b.isFree() || b.checkHangingTasks()).collect(Collectors.toList());
-	}
+    private List<Bot> getFreeBotList() {
+        return Arrays.stream(bots).filter((b) -> b.isFree() || b.checkHangingTasks()).collect(Collectors.toList());
+    }
 
-	private Optional<Bot> getFreeBot() {
-		List<Bot> freeBots = getFreeBotList();
-		if (freeBots == null)
-			return Optional.empty();
-		return Optional
-				.ofNullable(freeBots.get(ThreadLocalRandom.current().ints(0, freeBots.size()).findFirst().getAsInt()));
-	}
+    private Optional<Bot> getFreeBot() {
+        List<Bot> freeBots = getFreeBotList();
+        if (freeBots == null)
+            return Optional.empty();
+        return Optional
+                .ofNullable(freeBots.get(ThreadLocalRandom.current().ints(0, freeBots.size()).findFirst().getAsInt()));
+    }
 }

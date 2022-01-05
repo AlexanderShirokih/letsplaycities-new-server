@@ -175,3 +175,43 @@ CREATE TABLE IF NOT EXISTS `LastReadNotification`
     CONSTRAINT FK_User FOREIGN KEY (`user_id`)
         REFERENCES User (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS `Chat`
+(
+    `id` INT NOT NULL AUTO_INCREMENT,
+    `type` ENUM('direct', 'multi') NOT NULL,
+    `name` VARCHAR(64) NULL DEFAULT NULL,
+
+    PRIMARY KEY (`id`)
+);
+
+CREATE TABLE IF NOT EXISTS `Message`
+(
+    `id` INT NOT NULL AUTO_INCREMENT,
+    `chat_id` INT NOT NULL,
+    `author_id` INT NOT NULL,
+    `content` varchar(240) CHARACTER SET utf8 DEFAULT NULL,
+    `created_at` TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+     PRIMARY KEY (`id`),
+     CONSTRAINT FK_Chat   FOREIGN KEY (`chat_id`)
+            REFERENCES Chat (`id`) ON DELETE CASCADE,
+     CONSTRAINT FK_Author FOREIGN KEY (`author_id`)
+            REFERENCES User (`id`) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS `ChatParticipant`
+(
+    `chat_id`        INT NOT NULL,
+    `participant_id` INT NOT NULL,
+    `permission_level` ENUM('creator', 'admin', 'regular') NOT NULL,
+    `last_read_message_id` INT NULL DEFAULT NULL,
+
+    PRIMARY KEY (`chat_id`, `participant_id`),
+    CONSTRAINT FK_OwningChat   FOREIGN KEY (`chat_id`)
+                REFERENCES Chat (`id`) ON DELETE CASCADE,
+    CONSTRAINT FK_Participant FOREIGN KEY (`participant_id`)
+                REFERENCES User (`id`) ON DELETE CASCADE,
+    CONSTRAINT FK_LastMessage FOREIGN KEY (`last_read_message_id`)
+                REFERENCES Message (`id`) ON DELETE CASCADE
+);

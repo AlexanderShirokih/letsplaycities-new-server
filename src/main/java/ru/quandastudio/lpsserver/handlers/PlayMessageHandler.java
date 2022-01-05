@@ -1,7 +1,7 @@
 package ru.quandastudio.lpsserver.handlers;
 
 import lombok.extern.slf4j.Slf4j;
-import ru.quandastudio.lpsserver.core.RequestNotifier.NotificationData;
+import ru.quandastudio.lpsserver.core.notifications.RequestNotifier.NotificationData;
 import ru.quandastudio.lpsserver.core.ServerContext;
 import ru.quandastudio.lpsserver.core.game.Player;
 import ru.quandastudio.lpsserver.core.game.Room;

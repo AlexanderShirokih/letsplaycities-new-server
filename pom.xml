@@ -158,7 +158,7 @@
             <plugin>
                 <artifactId>kotlin-maven-plugin</artifactId>
                 <groupId>org.jetbrains.kotlin</groupId>
-                <version>1.5.10</version>
+                <version>${kotlin.version}</version>
                 <configuration>
                     <compilerPlugins>
                         <plugin>jpa</plugin>

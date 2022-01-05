@@ -1,0 +1,16 @@
+Deployment steps:
+
+install sudo
+install java (openjdk-11-headless)
+
+useradd lps
+usermod -a -G lps lps
+
+apt install mysql-server
+mysql_secure_installation
+
+import scripts
+
+copy executables
+
+chown -R lps:lps /home/lps/

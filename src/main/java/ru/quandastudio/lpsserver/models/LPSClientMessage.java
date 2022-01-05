@@ -92,6 +92,7 @@ public class LPSClientMessage {
          * Used in friend game mode
          */
         private final int oppUid;
+
         /**
          * Used in referal game mode
          */

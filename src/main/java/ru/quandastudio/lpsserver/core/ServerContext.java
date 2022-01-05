@@ -9,6 +9,7 @@ import ru.quandastudio.lpsserver.bots.BotManager;
 import ru.quandastudio.lpsserver.config.ServerProperties;
 import ru.quandastudio.lpsserver.core.game.Dictionary;
 import ru.quandastudio.lpsserver.core.game.Player;
+import ru.quandastudio.lpsserver.core.notifications.RequestNotifier;
 import ru.quandastudio.lpsserver.data.*;
 import ru.quandastudio.lpsserver.data.entities.User;
 
