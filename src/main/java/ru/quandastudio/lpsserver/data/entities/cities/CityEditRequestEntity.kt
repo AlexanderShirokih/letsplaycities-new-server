@@ -15,8 +15,11 @@ class CityEditRequestEntity(
     @JoinColumn(name = "owner_id", nullable = false)
     var owner: User,
 
-    @Column(name = "country_code", nullable = false)
-    var countryCode: Int,
+    @Column(name = "old_country_code", nullable = false)
+    var oldCountryCode: Int = 0,
+
+    @Column(name = "new_country_code", nullable = false)
+    var newCountryCode: Int = 0,
 
     @Column(name = "old_name", nullable = true)
     var oldName: String? = null,

@@ -136,19 +136,33 @@ CREATE TABLE IF NOT EXISTS `Picture`
         REFERENCES User (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS `City`
+(
+    `id`         INT         NOT NULL AUTO_INCREMENT,
+    `name`       VARCHAR(64) NOT NULL,
+    `country_id` INT         NOT NULL,
+
+    UNIQUE (`name`, `country_id`),
+    PRIMARY KEY (`id`),
+    CONSTRAINT FK_CountryCodeForCity FOREIGN KEY (`country_id`)
+        REFERENCES Country (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS `CityEditRequest`
 (
-    `id`           INT      NOT NULL AUTO_INCREMENT,
-    `owner_id`     INT      NOT NULL,
-    `country_code` SMALLINT NOT NULL,
-    `old_name`     VARCHAR(64) DEFAULT NULL,
-    `new_name`     VARCHAR(64) DEFAULT NULL,
-    `reason`       VARCHAR(64) DEFAULT NULL,
-    `verdict`      VARCHAR(64) DEFAULT NULL,
-    `status`       ENUM ('NEW', 'APPROVED', 'DECLINED'),
+    `id`               INT      NOT NULL AUTO_INCREMENT,
+    `owner_id`         INT      NOT NULL,
+    `old_country_code` SMALLINT NOT NULL DEFAULT 0,
+    `new_country_code` SMALLINT NOT NULL DEFAULT 0,
+    `old_name`         VARCHAR(64)       DEFAULT NULL,
+    `new_name`         VARCHAR(64)       DEFAULT NULL,
+    `reason`           VARCHAR(64)       DEFAULT NULL,
+    `verdict`          VARCHAR(64)       DEFAULT NULL,
+    `status`           ENUM ('NEW', 'APPROVED', 'DECLINED'),
 
     PRIMARY KEY (`id`),
-    CONSTRAINT CHK_CountryCodeValid CHECK (country_code >= 0),
+    CONSTRAINT CHK_OldCountryCodeValid CHECK (old_country_code >= 0),
+    CONSTRAINT CHK_NewCountryCodeValid CHECK (new_country_code >= 0),
     CONSTRAINT FK_CityEditRequestOwner FOREIGN KEY (`owner_id`)
         REFERENCES User (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 );
@@ -178,40 +192,40 @@ CREATE TABLE IF NOT EXISTS `LastReadNotification`
 
 CREATE TABLE IF NOT EXISTS `Chat`
 (
-    `id` INT NOT NULL AUTO_INCREMENT,
-    `type` ENUM('direct', 'multi') NOT NULL,
-    `name` VARCHAR(64) NULL DEFAULT NULL,
+    `id`   INT                      NOT NULL AUTO_INCREMENT,
+    `type` ENUM ('direct', 'multi') NOT NULL,
+    `name` VARCHAR(64)              NULL DEFAULT NULL,
 
     PRIMARY KEY (`id`)
 );
 
 CREATE TABLE IF NOT EXISTS `Message`
 (
-    `id` INT NOT NULL AUTO_INCREMENT,
-    `chat_id` INT NOT NULL,
-    `author_id` INT NOT NULL,
-    `content` varchar(240) CHARACTER SET utf8 DEFAULT NULL,
-    `created_at` TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `id`         INT       NOT NULL AUTO_INCREMENT,
+    `chat_id`    INT       NOT NULL,
+    `author_id`  INT       NOT NULL,
+    `content`    varchar(240) CHARACTER SET utf8 DEFAULT NULL,
+    `created_at` TIMESTAMP NOT NULL              DEFAULT CURRENT_TIMESTAMP,
 
-     PRIMARY KEY (`id`),
-     CONSTRAINT FK_Chat   FOREIGN KEY (`chat_id`)
-            REFERENCES Chat (`id`) ON DELETE CASCADE,
-     CONSTRAINT FK_Author FOREIGN KEY (`author_id`)
-            REFERENCES User (`id`) ON DELETE CASCADE
+    PRIMARY KEY (`id`),
+    CONSTRAINT FK_Chat FOREIGN KEY (`chat_id`)
+        REFERENCES Chat (`id`) ON DELETE CASCADE,
+    CONSTRAINT FK_Author FOREIGN KEY (`author_id`)
+        REFERENCES User (`id`) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS `ChatParticipant`
 (
-    `chat_id`        INT NOT NULL,
-    `participant_id` INT NOT NULL,
-    `permission_level` ENUM('creator', 'admin', 'regular') NOT NULL,
-    `last_read_message_id` INT NULL DEFAULT NULL,
+    `chat_id`              INT                                  NOT NULL,
+    `participant_id`       INT                                  NOT NULL,
+    `permission_level`     ENUM ('creator', 'admin', 'regular') NOT NULL,
+    `last_read_message_id` INT                                  NULL DEFAULT NULL,
 
     PRIMARY KEY (`chat_id`, `participant_id`),
-    CONSTRAINT FK_OwningChat   FOREIGN KEY (`chat_id`)
-                REFERENCES Chat (`id`) ON DELETE CASCADE,
+    CONSTRAINT FK_OwningChat FOREIGN KEY (`chat_id`)
+        REFERENCES Chat (`id`) ON DELETE CASCADE,
     CONSTRAINT FK_Participant FOREIGN KEY (`participant_id`)
-                REFERENCES User (`id`) ON DELETE CASCADE,
+        REFERENCES User (`id`) ON DELETE CASCADE,
     CONSTRAINT FK_LastMessage FOREIGN KEY (`last_read_message_id`)
-                REFERENCES Message (`id`) ON DELETE CASCADE
+        REFERENCES Message (`id`) ON DELETE CASCADE
 );

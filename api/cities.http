@@ -1,13 +1,49 @@
-### Creates new request to rename the city
+### Creates new request to rename the city (Change country name)
 POST http://localhost:8080/cities/edit
 Authorization: Basic MzkzODc6bjBVMnlzTTk=
 Content-Type: application/json
 
 {
-  "countryCode": 23,
-  "oldName": "from",
-  "newName": "to",
+  "oldCountryCode": 23,
+  "newCountryCode": 44,
+  "oldName": "City Name",
+  "newName": "City Name",
   "reason": "reason"
+}
+
+### Creates new request to rename the city (Change country code)
+POST http://localhost:8080/cities/edit
+Authorization: Basic MzkzODc6bjBVMnlzTTk=
+Content-Type: application/json
+
+{
+  "oldCountryCode": 44,
+  "newCountryCode": 44,
+  "oldName": "City Name",
+  "newName": "New City Name",
+  "reason": "reason"
+}
+
+### Creates new request to rename the city (Remove city)
+POST http://localhost:8080/cities/edit
+Authorization: Basic MzkzODc6bjBVMnlzTTk=
+Content-Type: application/json
+
+{
+  "oldCountryCode": 44,
+  "oldName": "City Name",
+  "reason": "Remove the city"
+}
+
+### Creates new request to rename the city (Insert city)
+POST http://localhost:8080/cities/edit
+Authorization: Basic MzkzODc6bjBVMnlzTTk=
+Content-Type: application/json
+
+{
+  "newCountryCode": 44,
+  "newName": "City Name",
+  "reason": "Insert the city"
 }
 
 ### Deletes created cities request
@@ -15,14 +51,14 @@ DELETE http://localhost:8080/cities/edit/1
 Authorization: Basic MzkzODc6bjBVMnlzTTk=
 
 ### Approves creates cities request. Requries admin account
-PUT http://localhost:8080/cities/edit/2/approve
-Authorization: Basic MzkzODc6bjBVMnlzTTk=
+PUT http://localhost:8080/cities/edit/3/approve
+Authorization: Basic MjMxMDc6QzA5ajNxN2Q=
 
 ### Deletes creates cities request. Requries admin account
-PUT http://localhost:8080/cities/edit/2/decline
-Authorization: Basic MzkzODc6bjBVMnlzTTk=
+PUT http://localhost:8080/cities/edit/4/decline
+Authorization: Basic MjMxMDc6QzA5ajNxN2Q=
 
-### Gets a list of requests for specified user
+### Gets a requests list for authorized user
 GET http://localhost:8080/cities/edit
 Authorization: Basic MzkzODc6bjBVMnlzTTk=
 

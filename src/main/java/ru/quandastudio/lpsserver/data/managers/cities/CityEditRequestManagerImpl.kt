@@ -15,7 +15,7 @@ import javax.transaction.Transactional
 
 @Service
 @Transactional
-open class CityEditRequestManagerImpl(
+class CityEditRequestManagerImpl(
     private val cityEditRequestRepository: CityEditRequestRepository,
 ) : CityEditRequestManager {
 
@@ -29,7 +29,8 @@ open class CityEditRequestManagerImpl(
         cityEditRequestRepository.save(
             CityEditRequestEntity(
                 owner = owner,
-                countryCode = request.countryCode,
+                oldCountryCode = request.oldCountryCode,
+                newCountryCode = request.newCountryCode,
                 oldName = request.oldName,
                 newName = request.newName,
                 reason = request.reason,
@@ -87,7 +88,8 @@ open class CityEditRequestManagerImpl(
 
     private fun CityEditRequestEntity.toModel() = CityEditResult(
         id = requireNotNull(id),
-        countryCode = countryCode,
+        newCountryCode = newCountryCode,
+        oldCountryCode = oldCountryCode,
         oldName = oldName,
         newName = newName,
         reason = reason,
