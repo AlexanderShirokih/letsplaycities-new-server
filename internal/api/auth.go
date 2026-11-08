@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"errors"
+	"log"
 	"net/http"
 	"strings"
 	"unicode/utf8"
@@ -85,7 +86,7 @@ func (s *Server) login(w http.ResponseWriter, r *http.Request, provider, uid, na
 }
 
 func (s *Server) handleAuthNative(w http.ResponseWriter, r *http.Request) {
-	if s.d.NativeLimiter != nil && !s.d.NativeLimiter.Allow(clientIP(r)) {
+	if !s.d.NativeLimiter.Allow(clientIP(r)) {
 		writeError(w, http.StatusTooManyRequests, "too_many_requests", "Слишком много запросов, попробуйте позже")
 
 		return
@@ -133,6 +134,8 @@ func (s *Server) handleAuthSocial(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err != nil {
+		log.Printf("api: %s verify: %v", req.Provider, err)
+
 		writeError(w, http.StatusBadGateway, "provider_unavailable", "Соцсеть временно недоступна")
 
 		return

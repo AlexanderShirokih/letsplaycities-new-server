@@ -1,8 +1,20 @@
 package api
 
 import (
+	"bytes"
+	"context"
 	"encoding/json"
+	"errors"
+	"io"
+	"log"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"strings"
 	"testing"
+	"time"
+
+	"github.com/AlexanderShirokih/letsplaycities-new-server/internal/auth"
 )
 
 func TestNativeCreatesThenFinds(t *testing.T) {
@@ -107,4 +119,52 @@ func TestLogout(t *testing.T) {
 
 	resp, data := e.do("GET", "/v1/me", a.Token, nil)
 	e.wantError(resp, data, 401, "unauthorized")
+}
+
+func TestNewServerRequiresLimiter(t *testing.T) {
+	defer func() {
+		if recover() == nil {
+			t.Fatal("expected panic for nil NativeLimiter")
+		}
+	}()
+
+	NewServer(Deps{})
+}
+
+type failingVerifier struct{}
+
+func (failingVerifier) Verify(context.Context, string) (string, error) {
+	return "", errors.New("dial tcp secret-host: refused")
+}
+
+func TestSocialProviderUnavailableIsLogged(t *testing.T) {
+	e := newTestServer(t)
+	srv := NewServer(Deps{
+		Store:         e.store,
+		Verifiers:     map[string]auth.Verifier{"vk": failingVerifier{}},
+		Pepper:        []byte("p"),
+		NativeLimiter: auth.NewLimiter(10, time.Minute, time.Now),
+	})
+	ts := httptest.NewServer(srv.Handler())
+	defer ts.Close()
+
+	var buf bytes.Buffer
+	log.SetOutput(&buf)
+	defer log.SetOutput(os.Stderr)
+
+	resp, err := http.Post(ts.URL+"/v1/auth/social", "application/json",
+		strings.NewReader(`{"provider":"vk","token":"x","name":"Вася"}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resp.Body.Close()
+	body, _ := io.ReadAll(resp.Body)
+
+	e.wantError(resp, body, 502, "provider_unavailable")
+	if strings.Contains(string(body), "secret-host") {
+		t.Fatalf("provider error leaked to client: %s", body)
+	}
+	if !strings.Contains(buf.String(), "vk verify") || !strings.Contains(buf.String(), "secret-host") {
+		t.Fatalf("error not logged: %q", buf.String())
+	}
 }

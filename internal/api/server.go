@@ -36,7 +36,12 @@ type Server struct {
 	mux *http.ServeMux
 }
 
+// NewServer panics if d.NativeLimiter is nil: the auth/native rate limit is mandatory.
 func NewServer(d Deps) *Server {
+	if d.NativeLimiter == nil {
+		panic("api: Deps.NativeLimiter is required")
+	}
+
 	if d.Now == nil {
 		d.Now = time.Now
 	}
