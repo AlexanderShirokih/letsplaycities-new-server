@@ -558,7 +558,11 @@ func TestMigrateMissingInput(t *testing.T) {
 func TestMigrateRealDump(t *testing.T) {
 	in := os.Getenv("LPS_TEST_DUMP")
 	if in == "" {
-		t.Skip("LPS_TEST_DUMP not set")
+		t.Skip("LPS_TEST_DUMP not set: give the absolute path to backup.sql.gz")
+	}
+
+	if !filepath.IsAbs(in) {
+		t.Fatal("LPS_TEST_DUMP must be an absolute path: go test runs in the package directory")
 	}
 
 	o := options(in, filepath.Join(t.TempDir(), "lps.db"))
