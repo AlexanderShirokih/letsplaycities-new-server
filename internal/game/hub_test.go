@@ -25,9 +25,16 @@ var errStore = errors.New("store is down")
 type fakeConn struct {
 	msgs   [][]byte
 	closed []string
+	onSend func(msg []byte)
 }
 
-func (c *fakeConn) Send(msg []byte) { c.msgs = append(c.msgs, msg) }
+func (c *fakeConn) Send(msg []byte) {
+	c.msgs = append(c.msgs, msg)
+
+	if c.onSend != nil {
+		c.onSend(msg)
+	}
+}
 
 func (c *fakeConn) Close(code string) { c.closed = append(c.closed, code) }
 
@@ -639,6 +646,32 @@ func TestDisconnectInGame(t *testing.T) {
 	f.send(userB, ClientMsg{Type: TypeFind})
 
 	wantType(t, cb, TypeQueued)
+}
+
+func TestGameRecordedBeforeGameOver(t *testing.T) {
+	f := newHubFixture(t)
+	ca, cb := f.play(userA, userB)
+	f.send(userA, ClientMsg{Type: TypeWord, Text: "москва"})
+	f.send(userB, ClientMsg{Type: TypeWord, Text: "анапа"})
+
+	recorded := map[string]int{}
+	watch := func(name string, c *fakeConn) {
+		c.onSend = func(msg []byte) {
+			if toMap(t, msg)["type"] == TypeGameOver {
+				f.st.mu.Lock()
+				recorded[name] = len(f.st.games)
+				f.st.mu.Unlock()
+			}
+		}
+	}
+
+	watch("a", ca)
+	watch("b", cb)
+	f.send(userA, ClientMsg{Type: TypeLeave})
+
+	if recorded["a"] != 1 || recorded["b"] != 1 {
+		t.Fatalf("games recorded when gameOver was sent: %v, want 1 for both", recorded)
+	}
 }
 
 func TestGameWithoutWordsNotRecorded(t *testing.T) {

@@ -20,6 +20,10 @@ type Seat interface {
 type Room struct {
 	ID int64
 
+	// OnFinish, if set, is called once when the game ends, before gameOver
+	// is sent, with the value of Result.
+	OnFinish func(g store.Game, record bool)
+
 	seats    [2]Seat // 0 is the starter, 1 is the invited player
 	seenBy   [2]Opponent
 	dict     *dict.Dictionary
@@ -189,6 +193,10 @@ func (r *Room) finish(reason string, loser int64) {
 
 	if r.stopTimer != nil {
 		r.stopTimer()
+	}
+
+	if r.OnFinish != nil {
+		r.OnFinish(r.Result())
 	}
 
 	msg := GameOver(reason, loser, r.words, int(r.duration/time.Second))

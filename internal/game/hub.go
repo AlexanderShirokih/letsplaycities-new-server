@@ -384,6 +384,7 @@ func (h *Hub) startGame(a, b *session, ab, ba store.Relation) {
 	g := &activeGame{players: [2]*session{a, b}}
 	g.room = NewRoom(h.lastRoom, a, b, opponent(a.user, ba), opponent(b.user, ab),
 		h.dict, h.cfg.MoveTime, h.clk, h.onRoomTimer)
+	g.room.OnFinish = h.recordGame
 	h.rooms[g.room.ID] = g
 
 	for _, p := range g.players {
@@ -405,7 +406,7 @@ func (h *Hub) roomTimer(roomID int64, move int) {
 }
 
 // finishGame is called after the room has sent gameOver: it frees both
-// players and records the game in the history.
+// players. The game is already recorded by recordGame.
 func (h *Hub) finishGame(g *activeGame) {
 	delete(h.rooms, g.room.ID)
 
@@ -416,9 +417,12 @@ func (h *Hub) finishGame(g *activeGame) {
 			p.state = stateIdle
 		}
 	}
+}
 
-	res, ok := g.room.Result()
-	if !ok {
+// recordGame is the room's finish hook: it runs before gameOver is sent, so
+// a client that has seen gameOver finds the game in its history.
+func (h *Hub) recordGame(res store.Game, record bool) {
+	if !record {
 		return
 	}
 
