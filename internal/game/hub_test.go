@@ -710,3 +710,45 @@ func TestChatRules(t *testing.T) {
 		t.Fatalf("word after block: %v", m)
 	}
 }
+
+// chanConn delivers messages to a channel so that a test can wait for a
+// hub that runs in its own goroutine.
+type chanConn struct{ ch chan []byte }
+
+func (c *chanConn) Send(msg []byte) { c.ch <- msg }
+
+func (c *chanConn) Close(string) {}
+
+func TestHubRunProcessesEventsUntilCancelled(t *testing.T) {
+	f := newHubFixture(t)
+	ctx, cancel := context.WithCancel(context.Background())
+	finished := make(chan struct{})
+
+	go func() {
+		f.hub.Run(ctx)
+		close(finished)
+	}()
+
+	c := &chanConn{ch: make(chan []byte, 4)}
+	f.hub.Connect(f.st.users[userA], c)
+	f.hub.Message(userA, ClientMsg{Type: TypeHello, Protocol: 1, Client: "test"})
+
+	select {
+	case msg := <-c.ch:
+		if got := toMap(t, msg); got["type"] != TypeWelcome {
+			t.Fatalf("want welcome, got %v", got)
+		}
+	case <-time.After(5 * time.Second):
+		t.Fatal("hub did not process events")
+	}
+
+	cancel()
+
+	select {
+	case <-finished:
+	case <-time.After(5 * time.Second):
+		t.Fatal("Run did not exit after cancel")
+	}
+
+	f.hub.Message(userA, ClientMsg{Type: TypeFind}) // must not block after Run exited
+}
