@@ -7,3 +7,4 @@ lps.db*
 .idea/
 .vscode/
 logs/
+!internal/store/schema.sql
