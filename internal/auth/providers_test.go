@@ -12,6 +12,7 @@ import (
 	"math/big"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -253,5 +254,33 @@ func TestProvider4xxIsRejection(t *testing.T) {
 	_, err := (&FB{BaseURL: srv.URL, AppID: "a", AppSecret: "s", HTTP: srv.Client()}).Verify(context.Background(), "t")
 	if !errors.Is(err, ErrInvalidToken) {
 		t.Fatalf("err = %v", err)
+	}
+}
+
+func TestProviderErrorsDoNotLeakSecrets(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
+	url, hc := srv.URL, srv.Client()
+	srv.Close() // connection refused
+	cancelled, cancel := context.WithCancel(context.Background())
+	cancel()
+	const user, secret = "USERTOKEN123", "SECRET456"
+	vs := map[string]Verifier{
+		"vk": &VK{BaseURL: url, ServiceToken: secret, HTTP: hc},
+		"ok": &OK{BaseURL: url, AppKey: "key", AppSecret: secret, HTTP: hc},
+		"fb": &FB{BaseURL: url, AppID: "app", AppSecret: secret, HTTP: hc},
+	}
+	for name, v := range vs {
+		for cname, ctx := range map[string]context.Context{"closed": context.Background(), "cancelled": cancelled} {
+			_, err := v.Verify(ctx, user)
+			if err == nil || errors.Is(err, ErrInvalidToken) {
+				t.Fatalf("%s/%s: err = %v", name, cname, err)
+			}
+			if msg := err.Error(); strings.Contains(msg, secret) || strings.Contains(msg, user) || strings.Contains(msg, "access_token") {
+				t.Errorf("%s/%s leaks: %s", name, cname, msg)
+			}
+			if cname == "cancelled" && !errors.Is(err, context.Canceled) {
+				t.Errorf("%s: lost context.Canceled: %v", name, err)
+			}
+		}
 	}
 }

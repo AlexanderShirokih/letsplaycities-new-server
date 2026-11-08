@@ -71,17 +71,27 @@ func rejection(err error) error {
 	return err
 }
 
+// stripURL drops the request URL (it carries tokens in its query) from a
+// *url.Error, keeping the underlying cause for errors.Is.
+func stripURL(err error) error {
+	var ue *url.Error
+	if errors.As(err, &ue) {
+		return ue.Err
+	}
+	return err
+}
+
 // getJSON performs a GET and decodes a 200 JSON body into out.
 // Transport errors, non-200 statuses and undecodable bodies are returned
 // wrapped and never as ErrInvalidToken.
 func getJSON(ctx context.Context, hc *http.Client, u string, out any) (http.Header, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
 	if err != nil {
-		return nil, fmt.Errorf("build request: %w", err)
+		return nil, fmt.Errorf("build request: %w", stripURL(err))
 	}
 	resp, err := hc.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("provider request: %w", err)
+		return nil, fmt.Errorf("provider request to %s: %w", req.URL.Host, stripURL(err))
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
