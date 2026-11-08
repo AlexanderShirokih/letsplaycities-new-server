@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/AlexanderShirokih/letsplaycities-new-server/internal/dict"
+	"lps/internal/dict"
 )
 
 const (

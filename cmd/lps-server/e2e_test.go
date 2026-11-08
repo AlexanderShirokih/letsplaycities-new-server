@@ -15,8 +15,8 @@ import (
 
 	"github.com/coder/websocket"
 
-	"github.com/AlexanderShirokih/letsplaycities-new-server/internal/config"
-	"github.com/AlexanderShirokih/letsplaycities-new-server/internal/game"
+	"lps/internal/config"
+	"lps/internal/game"
 )
 
 const ioTimeout = 5 * time.Second

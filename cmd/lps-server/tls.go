@@ -13,7 +13,7 @@ import (
 
 	"golang.org/x/crypto/acme/autocert"
 
-	"github.com/AlexanderShirokih/letsplaycities-new-server/internal/config"
+	"lps/internal/config"
 )
 
 const acmeAddr = ":80"

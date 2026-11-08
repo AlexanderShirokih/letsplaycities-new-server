@@ -13,9 +13,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/AlexanderShirokih/letsplaycities-new-server/internal/auth"
-	"github.com/AlexanderShirokih/letsplaycities-new-server/internal/dict"
-	"github.com/AlexanderShirokih/letsplaycities-new-server/internal/store"
+	"lps/internal/auth"
+	"lps/internal/dict"
+	"lps/internal/store"
 )
 
 //go:embed static/*

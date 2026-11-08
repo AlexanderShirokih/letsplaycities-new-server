@@ -8,7 +8,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/AlexanderShirokih/letsplaycities-new-server/internal/dict"
+	"lps/internal/dict"
 )
 
 // BotSpec describes one bot in the bots file. Level is the highest city

@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/AlexanderShirokih/letsplaycities-new-server/internal/store"
+	"lps/internal/store"
 )
 
 type friendRow struct {

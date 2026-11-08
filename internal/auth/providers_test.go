@@ -17,8 +17,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/AlexanderShirokih/letsplaycities-new-server/internal/config"
 	"github.com/golang-jwt/jwt/v5"
+	"lps/internal/config"
 )
 
 func jwk(kid string, k *rsa.PublicKey) map[string]string {

@@ -8,8 +8,8 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/AlexanderShirokih/letsplaycities-new-server/internal/auth"
-	"github.com/AlexanderShirokih/letsplaycities-new-server/internal/store"
+	"lps/internal/auth"
+	"lps/internal/store"
 )
 
 type authResponse struct {

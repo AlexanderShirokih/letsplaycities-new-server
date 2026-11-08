@@ -20,8 +20,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/AlexanderShirokih/letsplaycities-new-server/internal/config"
 	"github.com/golang-jwt/jwt/v5"
+	"lps/internal/config"
 )
 
 // ErrInvalidToken means the provider explicitly rejected the token.

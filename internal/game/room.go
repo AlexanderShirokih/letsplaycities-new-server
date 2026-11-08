@@ -3,8 +3,8 @@ package game
 import (
 	"time"
 
-	"github.com/AlexanderShirokih/letsplaycities-new-server/internal/dict"
-	"github.com/AlexanderShirokih/letsplaycities-new-server/internal/store"
+	"lps/internal/dict"
+	"lps/internal/store"
 )
 
 // Seat is one player's connection as seen by a room. Send to a

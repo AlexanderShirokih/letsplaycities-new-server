@@ -1,4 +1,4 @@
-module github.com/AlexanderShirokih/letsplaycities-new-server
+module lps
 
 go 1.26.0
 

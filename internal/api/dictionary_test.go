@@ -8,7 +8,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/AlexanderShirokih/letsplaycities-new-server/internal/dict"
+	"lps/internal/dict"
 )
 
 const testDictPath = "../../testdata/dict/data-80.db2"

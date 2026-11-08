@@ -7,9 +7,9 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/AlexanderShirokih/letsplaycities-new-server/internal/dict"
-	"github.com/AlexanderShirokih/letsplaycities-new-server/internal/fcm"
-	"github.com/AlexanderShirokih/letsplaycities-new-server/internal/store"
+	"lps/internal/dict"
+	"lps/internal/fcm"
+	"lps/internal/store"
 )
 
 const (

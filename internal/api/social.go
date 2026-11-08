@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/AlexanderShirokih/letsplaycities-new-server/internal/store"
+	"lps/internal/store"
 )
 
 const historyPage = 50

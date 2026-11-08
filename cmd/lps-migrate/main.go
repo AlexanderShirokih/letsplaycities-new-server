@@ -14,7 +14,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/AlexanderShirokih/letsplaycities-new-server/internal/migrate"
+	"lps/internal/migrate"
 )
 
 const (

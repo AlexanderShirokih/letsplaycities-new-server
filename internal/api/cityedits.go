@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"unicode/utf8"
 
-	"github.com/AlexanderShirokih/letsplaycities-new-server/internal/store"
+	"lps/internal/store"
 )
 
 const (

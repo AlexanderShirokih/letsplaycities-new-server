@@ -12,13 +12,13 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/AlexanderShirokih/letsplaycities-new-server/internal/api"
-	"github.com/AlexanderShirokih/letsplaycities-new-server/internal/auth"
-	"github.com/AlexanderShirokih/letsplaycities-new-server/internal/config"
-	"github.com/AlexanderShirokih/letsplaycities-new-server/internal/dict"
-	"github.com/AlexanderShirokih/letsplaycities-new-server/internal/fcm"
-	"github.com/AlexanderShirokih/letsplaycities-new-server/internal/game"
-	"github.com/AlexanderShirokih/letsplaycities-new-server/internal/store"
+	"lps/internal/api"
+	"lps/internal/auth"
+	"lps/internal/config"
+	"lps/internal/dict"
+	"lps/internal/fcm"
+	"lps/internal/game"
+	"lps/internal/store"
 )
 
 const (

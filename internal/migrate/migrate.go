@@ -24,9 +24,9 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"github.com/AlexanderShirokih/letsplaycities-new-server/internal/auth"
-	"github.com/AlexanderShirokih/letsplaycities-new-server/internal/mysqldump"
-	"github.com/AlexanderShirokih/letsplaycities-new-server/internal/store"
+	"lps/internal/auth"
+	"lps/internal/mysqldump"
+	"lps/internal/store"
 )
 
 // Options configures Run.

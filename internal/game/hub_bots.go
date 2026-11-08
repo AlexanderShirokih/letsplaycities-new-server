@@ -4,7 +4,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/AlexanderShirokih/letsplaycities-new-server/internal/store"
+	"lps/internal/store"
 )
 
 func (h *Hub) addBot(b *Bot) {

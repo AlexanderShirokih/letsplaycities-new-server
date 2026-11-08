@@ -4,7 +4,7 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/AlexanderShirokih/letsplaycities-new-server/internal/store"
+	"lps/internal/store"
 )
 
 // invite is an outstanding invitation, keyed by the inviter.

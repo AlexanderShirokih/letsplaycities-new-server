@@ -13,8 +13,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/AlexanderShirokih/letsplaycities-new-server/internal/auth"
-	"github.com/AlexanderShirokih/letsplaycities-new-server/internal/store"
+	"lps/internal/auth"
+	"lps/internal/store"
 )
 
 // fakeVerifier accepts tokens of the form "good-<uid>".

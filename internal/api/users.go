@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/AlexanderShirokih/letsplaycities-new-server/internal/store"
+	"lps/internal/store"
 )
 
 func (s *Server) handleGetUser(w http.ResponseWriter, r *http.Request) {

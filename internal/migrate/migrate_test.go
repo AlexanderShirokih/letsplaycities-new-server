@@ -22,7 +22,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/AlexanderShirokih/letsplaycities-new-server/internal/auth"
+	"lps/internal/auth"
 )
 
 const testPepper = "test-pepper"

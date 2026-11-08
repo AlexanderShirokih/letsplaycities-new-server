@@ -8,8 +8,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/AlexanderShirokih/letsplaycities-new-server/internal/config"
-	"github.com/AlexanderShirokih/letsplaycities-new-server/internal/game"
+	"lps/internal/config"
+	"lps/internal/game"
 )
 
 func main() {
