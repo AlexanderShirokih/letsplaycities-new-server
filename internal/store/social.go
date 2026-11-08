@@ -63,37 +63,37 @@ func (s *Store) friendshipBetween(ctx context.Context, viewer, other int64) (Fri
 	if err != nil {
 		return f, err
 	}
+	defer func() { _ = rows.Close() }()
 
 	for rows.Next() {
 		var (
 			sender   int64
 			accepted bool
 		)
+
 		if err := rows.Scan(&sender, &accepted); err != nil {
-			_ = rows.Close()
 			return f, err
 		}
 
-		switch {
-		case accepted:
-			f = FriendFriends
-		case f == FriendFriends:
-		case sender == viewer:
-			f = FriendOutgoing
-		default:
-			f = FriendIncoming
-		}
+		f = mergeFriendship(f, sender == viewer, accepted)
 	}
 
-	if err := rows.Close(); err != nil {
-		return f, err
-	}
+	return f, rows.Err()
+}
 
-	if err := rows.Err(); err != nil {
-		return f, err
+// mergeFriendship folds one friendship row into the state found so far;
+// an accepted row wins over a pending one.
+func mergeFriendship(cur Friendship, fromViewer, accepted bool) Friendship {
+	switch {
+	case accepted:
+		return FriendFriends
+	case cur == FriendFriends:
+		return cur
+	case fromViewer:
+		return FriendOutgoing
+	default:
+		return FriendIncoming
 	}
-
-	return f, nil
 }
 
 func (s *Store) blockedBetween(ctx context.Context, viewer, other int64) (Blocked, error) {
@@ -203,7 +203,16 @@ func (s *Store) RequestOrAcceptFriend(ctx context.Context, from, to int64, now t
 
 // RemoveFriendship deletes the friendship or request between a and b in any direction.
 func (s *Store) RemoveFriendship(ctx context.Context, a, b int64) error {
-	_, err := s.db.ExecContext(ctx,
+	return deleteFriendship(ctx, s.db, a, b)
+}
+
+// execer is implemented by *sql.DB and *sql.Tx.
+type execer interface {
+	ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error)
+}
+
+func deleteFriendship(ctx context.Context, db execer, a, b int64) error {
+	_, err := db.ExecContext(ctx,
 		`DELETE FROM friendships WHERE (sender_id = ?1 AND receiver_id = ?2) OR (sender_id = ?2 AND receiver_id = ?1)`, a, b)
 
 	return err
@@ -217,11 +226,7 @@ func (s *Store) Block(ctx context.Context, blocker, blocked int64) error {
 			return err
 		}
 
-		_, err := tx.ExecContext(ctx,
-			`DELETE FROM friendships WHERE (sender_id = ?1 AND receiver_id = ?2) OR (sender_id = ?2 AND receiver_id = ?1)`,
-			blocker, blocked)
-
-		return err
+		return deleteFriendship(ctx, tx, blocker, blocked)
 	})
 }
 

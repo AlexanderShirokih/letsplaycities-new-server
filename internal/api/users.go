@@ -3,16 +3,13 @@ package api
 import (
 	"errors"
 	"net/http"
-	"strconv"
 
 	"github.com/AlexanderShirokih/letsplaycities-new-server/internal/store"
 )
 
 func (s *Server) handleGetUser(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
-	if err != nil {
-		writeError(w, http.StatusNotFound, "not_found", "Пользователь не найден")
-
+	id, ok := pathID(w, r, userNotFound)
+	if !ok {
 		return
 	}
 
@@ -20,7 +17,7 @@ func (s *Server) handleGetUser(w http.ResponseWriter, r *http.Request) {
 
 	u, err := s.d.Store.User(ctx, id)
 	if errors.Is(err, store.ErrNotFound) {
-		writeError(w, http.StatusNotFound, "not_found", "Пользователь не найден")
+		writeNotFound(w, userNotFound)
 
 		return
 	}

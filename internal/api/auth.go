@@ -100,7 +100,7 @@ func (s *Server) handleAuthNative(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if req.DeviceID == "" {
-		writeError(w, http.StatusBadRequest, "bad_request", "Некорректный запрос")
+		writeBadRequest(w)
 
 		return
 	}
@@ -115,7 +115,7 @@ func (s *Server) handleAuthSocial(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if req.Provider == "" || req.Token == "" {
-		writeError(w, http.StatusBadRequest, "bad_request", "Некорректный запрос")
+		writeBadRequest(w)
 
 		return
 	}

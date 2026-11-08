@@ -13,10 +13,8 @@ const historyPage = 50
 // peerID parses the {id} path value and checks that the user exists.
 // On failure it has already written the response.
 func (s *Server) peerID(w http.ResponseWriter, r *http.Request) (int64, bool) {
-	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
-	if err != nil {
-		writeError(w, http.StatusNotFound, "not_found", "Пользователь не найден")
-
+	id, ok := pathID(w, r, userNotFound)
+	if !ok {
 		return 0, false
 	}
 
@@ -28,7 +26,7 @@ func (s *Server) peerID(w http.ResponseWriter, r *http.Request) (int64, bool) {
 
 	if _, err := s.d.Store.User(r.Context(), id); err != nil {
 		if errors.Is(err, store.ErrNotFound) {
-			writeError(w, http.StatusNotFound, "not_found", "Пользователь не найден")
+			writeNotFound(w, userNotFound)
 		} else {
 			writeInternal(w, err)
 		}
@@ -87,20 +85,12 @@ func (s *Server) handlePutFriend(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleDeleteFriend(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
-	if err != nil {
-		writeError(w, http.StatusNotFound, "not_found", "Пользователь не найден")
-
+	id, ok := pathID(w, r, userNotFound)
+	if !ok {
 		return
 	}
 
-	if err := s.d.Store.RemoveFriendship(r.Context(), userFrom(r).ID, id); err != nil {
-		writeInternal(w, err)
-
-		return
-	}
-
-	w.WriteHeader(http.StatusNoContent)
+	writeDone(w, s.d.Store.RemoveFriendship(r.Context(), userFrom(r).ID, id))
 }
 
 func (s *Server) handleListBlocks(w http.ResponseWriter, r *http.Request) {
@@ -125,30 +115,16 @@ func (s *Server) handlePutBlock(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := s.d.Store.Block(r.Context(), userFrom(r).ID, id); err != nil {
-		writeInternal(w, err)
-
-		return
-	}
-
-	w.WriteHeader(http.StatusNoContent)
+	writeDone(w, s.d.Store.Block(r.Context(), userFrom(r).ID, id))
 }
 
 func (s *Server) handleDeleteBlock(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
-	if err != nil {
-		writeError(w, http.StatusNotFound, "not_found", "Пользователь не найден")
-
+	id, ok := pathID(w, r, userNotFound)
+	if !ok {
 		return
 	}
 
-	if err := s.d.Store.Unblock(r.Context(), userFrom(r).ID, id); err != nil {
-		writeInternal(w, err)
-
-		return
-	}
-
-	w.WriteHeader(http.StatusNoContent)
+	writeDone(w, s.d.Store.Unblock(r.Context(), userFrom(r).ID, id))
 }
 
 type historyGameJSON struct {
@@ -177,7 +153,7 @@ func (s *Server) handleHistory(w http.ResponseWriter, r *http.Request) {
 	before, ok2 := queryInt64(r, "before")
 
 	if !ok1 || !ok2 {
-		writeError(w, http.StatusBadRequest, "bad_request", "Некорректный запрос")
+		writeBadRequest(w)
 
 		return
 	}

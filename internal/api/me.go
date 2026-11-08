@@ -76,7 +76,7 @@ func (s *Server) handlePutAvatar(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		writeError(w, http.StatusBadRequest, "bad_request", "Некорректный запрос")
+		writeBadRequest(w)
 
 		return
 	}
@@ -115,16 +115,14 @@ func (s *Server) handleDeleteAvatar(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleGetAvatar(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
-	if err != nil {
-		writeError(w, http.StatusNotFound, "not_found", "Аватарка не найдена")
-
+	id, ok := pathID(w, r, "Аватарка не найдена")
+	if !ok {
 		return
 	}
 
 	av, hash, err := s.d.Store.Avatar(r.Context(), id)
 	if errors.Is(err, store.ErrNotFound) {
-		writeError(w, http.StatusNotFound, "not_found", "Аватарка не найдена")
+		writeNotFound(w, "Аватарка не найдена")
 
 		return
 	}

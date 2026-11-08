@@ -9,6 +9,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -86,7 +87,7 @@ func (s *Server) routes() {
 	m.HandleFunc("GET /legal-mobile.txt", staticPage("static/legal-mobile.txt", "text/plain; charset=utf-8"))
 
 	m.HandleFunc("/v1/", func(w http.ResponseWriter, r *http.Request) {
-		writeError(w, http.StatusNotFound, "not_found", "Не найдено")
+		writeNotFound(w, "Не найдено")
 	})
 }
 
@@ -94,7 +95,7 @@ func staticPage(name, ctype string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		data, err := staticFS.ReadFile(name)
 		if err != nil {
-			writeError(w, http.StatusNotFound, "not_found", "Не найдено")
+			writeNotFound(w, "Не найдено")
 
 			return
 		}
@@ -116,6 +117,40 @@ func writeError(w http.ResponseWriter, status int, code, message string) {
 	writeJSON(w, status, map[string]any{"error": map[string]string{"code": code, "message": message}})
 }
 
+func writeBadRequest(w http.ResponseWriter) {
+	writeError(w, http.StatusBadRequest, "bad_request", "Некорректный запрос")
+}
+
+func writeNotFound(w http.ResponseWriter, message string) {
+	writeError(w, http.StatusNotFound, "not_found", message)
+}
+
+const userNotFound = "Пользователь не найден"
+
+// pathID parses the {id} path value. On failure it has already written
+// 404 with the given message.
+func pathID(w http.ResponseWriter, r *http.Request, notFound string) (int64, bool) {
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		writeNotFound(w, notFound)
+
+		return 0, false
+	}
+
+	return id, true
+}
+
+// writeDone answers 204, or 500 when err is set.
+func writeDone(w http.ResponseWriter, err error) {
+	if err != nil {
+		writeInternal(w, err)
+
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
 func writeInternal(w http.ResponseWriter, err error) {
 	log.Printf("api: internal error: %v", err)
 	writeError(w, http.StatusInternalServerError, "internal", "Внутренняя ошибка сервера")
@@ -127,7 +162,7 @@ const maxJSONBody = 64 << 10
 func decodeJSON(w http.ResponseWriter, r *http.Request, v any) bool {
 	r.Body = http.MaxBytesReader(w, r.Body, maxJSONBody)
 	if err := json.NewDecoder(r.Body).Decode(v); err != nil {
-		writeError(w, http.StatusBadRequest, "bad_request", "Некорректный запрос")
+		writeBadRequest(w)
 
 		return false
 	}

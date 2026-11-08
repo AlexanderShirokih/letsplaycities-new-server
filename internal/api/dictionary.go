@@ -55,7 +55,7 @@ func (c *dictCache) meta(path string) (dictMeta, error) {
 
 func (s *Server) handleDictionary(w http.ResponseWriter, _ *http.Request) {
 	if s.d.Dict == nil || s.d.DictPath == nil {
-		writeError(w, http.StatusNotFound, "not_found", "Словарь не загружен")
+		writeNotFound(w, "Словарь не загружен")
 
 		return
 	}
@@ -75,7 +75,7 @@ func (s *Server) handleDictionaryFile(w http.ResponseWriter, r *http.Request) {
 	v, err := strconv.Atoi(name)
 
 	if !ok || err != nil || s.d.Dict == nil || s.d.DictPath == nil || v != s.d.Dict().Version {
-		writeError(w, http.StatusNotFound, "not_found", "Версия словаря не найдена")
+		writeNotFound(w, "Версия словаря не найдена")
 
 		return
 	}
