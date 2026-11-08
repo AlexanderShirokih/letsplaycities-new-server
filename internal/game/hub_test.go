@@ -180,7 +180,7 @@ func (f *hubFixture) connect(id int64) *fakeConn {
 }
 
 func (f *hubFixture) send(id int64, m ClientMsg) {
-	f.hub.Message(id, m)
+	f.hub.Message(id, f.conns[id], m)
 	f.hub.drain()
 }
 
@@ -731,7 +731,7 @@ func TestHubRunProcessesEventsUntilCancelled(t *testing.T) {
 
 	c := &chanConn{ch: make(chan []byte, 4)}
 	f.hub.Connect(f.st.users[userA], c)
-	f.hub.Message(userA, ClientMsg{Type: TypeHello, Protocol: 1, Client: "test"})
+	f.hub.Message(userA, c, ClientMsg{Type: TypeHello, Protocol: 1, Client: "test"})
 
 	select {
 	case msg := <-c.ch:
@@ -750,5 +750,29 @@ func TestHubRunProcessesEventsUntilCancelled(t *testing.T) {
 		t.Fatal("Run did not exit after cancel")
 	}
 
-	f.hub.Message(userA, ClientMsg{Type: TypeFind}) // must not block after Run exited
+	f.hub.Message(userA, c, ClientMsg{Type: TypeFind}) // must not block after Run exited
+}
+
+func TestMessageFromReplacedConnectionIgnored(t *testing.T) {
+	f := newHubFixture(t)
+	u := f.st.users[userA]
+	old, fresh := &fakeConn{}, &fakeConn{}
+
+	f.hub.Connect(u, old)
+	f.hub.Connect(u, fresh)
+	f.hub.drain()
+
+	f.hub.Message(userA, old, ClientMsg{Type: TypeHello, Protocol: 1, Client: "test"})
+	f.hub.drain()
+
+	if fresh.count(TypeWelcome) != 0 || old.count(TypeWelcome) != 0 {
+		t.Fatalf("message from replaced conn was handled: fresh=%v old=%v", fresh.msgs, old.msgs)
+	}
+
+	f.hub.Message(userA, fresh, ClientMsg{Type: TypeHello, Protocol: 1, Client: "test"})
+	f.hub.drain()
+
+	if fresh.count(TypeWelcome) != 1 {
+		t.Fatalf("fresh hello not handled: %v", fresh.msgs)
+	}
 }

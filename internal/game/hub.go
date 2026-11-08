@@ -157,9 +157,16 @@ func (h *Hub) Connect(u store.User, c Conn) {
 	h.enqueue(func() { h.connect(u, c) })
 }
 
-// Message handles a client message from userID.
-func (h *Hub) Message(userID int64, m ClientMsg) {
-	h.enqueue(func() { h.message(userID, m) })
+// Message handles a client message from userID received on c. It is
+// ignored unless c is still the user's current connection.
+func (h *Hub) Message(userID int64, c Conn, m ClientMsg) {
+	h.enqueue(func() {
+		if s := h.sessions[userID]; s == nil || s.conn != c {
+			return
+		}
+
+		h.message(userID, m)
+	})
 }
 
 // Disconnect drops the user's session unless c has already been replaced.

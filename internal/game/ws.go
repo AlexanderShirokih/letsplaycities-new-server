@@ -152,7 +152,7 @@ func (c *wsConn) readLoop(ctx context.Context, h *Hub, userID int64) {
 			continue
 		}
 
-		h.Message(userID, msg)
+		h.Message(userID, c, msg)
 	}
 }
 
