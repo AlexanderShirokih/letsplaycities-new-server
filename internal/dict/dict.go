@@ -144,34 +144,12 @@ var fileRe = regexp.MustCompile(`^data-(\d+)\.db2$`)
 
 // LoadLatest parses the data-N.db2 file with the largest N in dir.
 func LoadLatest(dir string) (*Dictionary, string, error) {
-	entries, err := os.ReadDir(dir)
+	name, err := latestFile(dir)
 	if err != nil {
 		return nil, "", err
 	}
 
-	best, bestN := "", -1
-
-	for _, e := range entries {
-		m := fileRe.FindStringSubmatch(e.Name())
-		if m == nil || e.IsDir() {
-			continue
-		}
-
-		n, err := strconv.Atoi(m[1])
-		if err != nil {
-			continue
-		}
-
-		if n > bestN {
-			best, bestN = e.Name(), n
-		}
-	}
-
-	if bestN < 0 {
-		return nil, "", fmt.Errorf("dict: no data-N.db2 files in %s", dir)
-	}
-
-	path := filepath.Join(dir, best)
+	path := filepath.Join(dir, name)
 
 	f, err := os.Open(path)
 	if err != nil {
@@ -185,6 +163,44 @@ func LoadLatest(dir string) (*Dictionary, string, error) {
 	}
 
 	return d, path, nil
+}
+
+// latestFile returns the name of the data-N.db2 file with the largest N in dir.
+func latestFile(dir string) (string, error) {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return "", err
+	}
+
+	best, bestN := "", -1
+
+	for _, e := range entries {
+		if e.IsDir() {
+			continue
+		}
+
+		if n, ok := fileNumber(e.Name()); ok && n > bestN {
+			best, bestN = e.Name(), n
+		}
+	}
+
+	if bestN < 0 {
+		return "", fmt.Errorf("dict: no data-N.db2 files in %s", dir)
+	}
+
+	return best, nil
+}
+
+// fileNumber extracts N from a data-N.db2 file name.
+func fileNumber(name string) (int, bool) {
+	m := fileRe.FindStringSubmatch(name)
+	if m == nil {
+		return 0, false
+	}
+
+	n, err := strconv.Atoi(m[1])
+
+	return n, err == nil
 }
 
 // Contains reports whether word is in the dictionary.

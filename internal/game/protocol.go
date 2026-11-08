@@ -206,10 +206,9 @@ func InviteStatus(userID int64, status string) []byte {
 
 // Match announces a created game.
 func Match(gameID int64, opp Opponent, youStart bool, moveTimeSec int) []byte {
-	return encode(matchMsg{
-		Type: TypeMatch, GameID: gameID, Opponent: opp,
-		YouStart: youStart, MoveTimeSec: moveTimeSec,
-	})
+	m := matchMsg{Type: TypeMatch, GameID: gameID, Opponent: opp, YouStart: youStart, MoveTimeSec: moveTimeSec}
+
+	return encode(m)
 }
 
 // Word reports a move made by player by and the verdict on it.
