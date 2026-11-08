@@ -28,20 +28,25 @@ type Store struct {
 // Use ":memory:" for an in-memory database.
 func Open(path string) (*Store, error) {
 	q := "?_pragma=foreign_keys(1)&_pragma=busy_timeout(5000)"
+
 	dsn := "file::memory:" + q
 	if path != ":memory:" {
 		dsn = "file:" + (&url.URL{Path: path}).EscapedPath() + q + "&_pragma=journal_mode(WAL)"
 	}
+
 	db, err := sql.Open("sqlite", dsn)
 	if err != nil {
 		return nil, err
 	}
+
 	db.SetMaxOpenConns(1)
+
 	s := &Store{db: db}
 	if err := s.migrate(); err != nil {
-		db.Close()
+		_ = db.Close()
 		return nil, fmt.Errorf("init schema: %w", err)
 	}
+
 	return s, nil
 }
 
@@ -51,13 +56,17 @@ func (s *Store) migrate() error {
 		if err := tx.QueryRow(`PRAGMA user_version`).Scan(&v); err != nil {
 			return err
 		}
+
 		if v != 0 {
 			return nil
 		}
+
 		if _, err := tx.Exec(schema); err != nil {
 			return err
 		}
+
 		_, err := tx.Exec(`PRAGMA user_version = 1`)
+
 		return err
 	})
 }
@@ -71,10 +80,12 @@ func (s *Store) inTx(ctx context.Context, fn func(*sql.Tx) error) error {
 	if err != nil {
 		return err
 	}
+
 	if err := fn(tx); err != nil {
-		tx.Rollback()
+		_ = tx.Rollback()
 		return err
 	}
+
 	return tx.Commit()
 }
 

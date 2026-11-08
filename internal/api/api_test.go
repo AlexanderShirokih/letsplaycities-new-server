@@ -40,12 +40,14 @@ func newTestServer(t *testing.T) *testEnv { return newTestServerLimit(t, 1000) }
 func newTestServerLimit(t *testing.T, limit int) *testEnv {
 	t.Helper()
 	dbPath := filepath.Join(t.TempDir(), "t.db")
+
 	st, err := store.Open(dbPath)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	t.Cleanup(func() { st.Close() })
+	t.Cleanup(func() { _ = st.Close() })
+
 	srv := NewServer(Deps{
 		Store:         st,
 		Verifiers:     map[string]auth.Verifier{"google": fakeVerifier{}},
@@ -63,12 +65,14 @@ func newTestServerLimit(t *testing.T, limit int) *testEnv {
 // sql runs a statement through a second connection (the store exposes no admin writes).
 func (e *testEnv) sql(q string, args ...any) {
 	e.t.Helper()
+
 	db, err := sql.Open("sqlite", "file:"+e.dbPath+"?_pragma=busy_timeout(5000)")
 	if err != nil {
 		e.t.Fatal(err)
 	}
 
-	defer db.Close()
+	defer func() { _ = db.Close() }()
+
 	if _, err := db.Exec(q, args...); err != nil {
 		e.t.Fatal(err)
 	}
@@ -77,8 +81,11 @@ func (e *testEnv) sql(q string, args ...any) {
 // do sends a request; body may be nil, []byte (raw) or any JSON value.
 func (e *testEnv) do(method, path, token string, body any, hdr ...string) (*http.Response, []byte) {
 	e.t.Helper()
+
 	var rd io.Reader
+
 	ct := ""
+
 	switch b := body.(type) {
 	case nil:
 	case []byte:
@@ -115,7 +122,8 @@ func (e *testEnv) do(method, path, token string, body any, hdr ...string) (*http
 		e.t.Fatal(err)
 	}
 
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
+
 	data, _ := io.ReadAll(resp.Body)
 
 	return resp, data
@@ -136,6 +144,7 @@ type authResp struct {
 
 func (e *testEnv) wantError(resp *http.Response, data []byte, status int, code string) {
 	e.t.Helper()
+
 	if resp.StatusCode != status {
 		e.t.Fatalf("status %d, want %d: %s", resp.StatusCode, status, data)
 	}
@@ -151,6 +160,7 @@ func (e *testEnv) wantError(resp *http.Response, data []byte, status int, code s
 
 func (e *testEnv) native(device, name string) authResp {
 	e.t.Helper()
+
 	resp, data := e.do("POST", "/v1/auth/native", "", map[string]string{"deviceId": device, "name": name})
 	if resp.StatusCode != 200 {
 		e.t.Fatalf("native: %d %s", resp.StatusCode, data)
@@ -166,6 +176,7 @@ func (e *testEnv) native(device, name string) authResp {
 
 func (e *testEnv) me(token string) testUser {
 	e.t.Helper()
+
 	resp, data := e.do("GET", "/v1/me", token, nil)
 	if resp.StatusCode != 200 {
 		e.t.Fatalf("me: %d %s", resp.StatusCode, data)

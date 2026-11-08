@@ -28,20 +28,25 @@ func NewLimiter(limit int, window time.Duration, now func() time.Time) *Limiter 
 func (l *Limiter) Allow(key string) bool {
 	l.mu.Lock()
 	defer l.mu.Unlock()
+
 	t := l.now()
 	for k, b := range l.hits {
 		if t.Sub(b.start) >= l.window {
 			delete(l.hits, k)
 		}
 	}
+
 	b := l.hits[key]
 	if b == nil {
 		b = &bucket{start: t}
 		l.hits[key] = b
 	}
+
 	if b.n >= l.limit {
 		return false
 	}
+
 	b.n++
+
 	return true
 }

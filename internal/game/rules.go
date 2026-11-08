@@ -12,13 +12,16 @@ func Normalize(s string) string {
 
 	var b strings.Builder
 	b.Grow(len(s))
+
 	var prev rune
 	for _, r := range s {
-		if !(r == '-' && prev == '-') {
+		if r != '-' || prev != '-' {
 			b.WriteRune(r)
 		}
+
 		prev = r
 	}
+
 	return b.String()
 }
 
@@ -27,19 +30,24 @@ func Normalize(s string) string {
 // word is returned. For an empty word it returns 0.
 func LastSuitableRune(word string) rune {
 	var first, last rune
+
 	found := false
+
 	for i, r := range word {
 		if i == 0 {
 			first = r
 		}
+
 		if !isBadEnding(r) {
 			last = r
 			found = true
 		}
 	}
+
 	if !found {
 		return first
 	}
+
 	return last
 }
 
@@ -48,5 +56,6 @@ func isBadEnding(r rune) bool {
 	case 'ь', 'ъ', 'ы', 'ё':
 		return true
 	}
+
 	return false
 }

@@ -41,51 +41,90 @@ type Dictionary struct {
 // Parse reads a .db2 stream.
 func Parse(r io.Reader) (*Dictionary, error) {
 	br := bufio.NewReader(r)
-	var hdr [12]byte
-	if _, err := io.ReadFull(br, hdr[:]); err != nil {
-		return nil, fmt.Errorf("dict: read header: %w", err)
+
+	version, count, err := readHeader(br)
+	if err != nil {
+		return nil, err
 	}
-	if m := binary.BigEndian.Uint16(hdr[0:]); m != magic {
-		return nil, fmt.Errorf("dict: invalid magic %#x", m)
-	}
-	if s := binary.BigEndian.Uint16(hdr[2:]); s != settingsV1 {
-		return nil, fmt.Errorf("dict: unsupported settings %d", s)
-	}
-	version := binary.BigEndian.Uint32(hdr[4:])
-	count := binary.BigEndian.Uint32(hdr[8:])
 
 	d := &Dictionary{
 		Version: int(version),
 		cities:  make(map[string]City),
 		byRune:  make(map[rune][]string),
 	}
-	for i := uint32(0); i <= count; i++ {
-		var rh [4]byte
-		if _, err := io.ReadFull(br, rh[:]); err != nil {
-			return nil, fmt.Errorf("dict: record %d header: %w", i, err)
+
+	for i := uint32(0); i < count; i++ {
+		rh, name, err := readRecord(br, i)
+		if err != nil {
+			return nil, err
 		}
-		raw := make([]byte, rh[0])
-		if _, err := io.ReadFull(br, raw); err != nil {
-			return nil, fmt.Errorf("dict: record %d name: %w", i, err)
-		}
-		name := decodeName(raw)
-		if i == count {
-			if len(name) < checkSuffix || name[:len(name)-checkSuffix] != strconv.FormatUint(uint64(count), 10) {
-				return nil, errors.New("dict: file check failed")
-			}
-			break
-		}
+
 		if name == "" {
 			return nil, fmt.Errorf("dict: record %d has empty name", i)
 		}
-		c := City{Name: name, Diff: rh[1] & 3, Country: binary.BigEndian.Uint16(rh[2:])}
-		if _, dup := d.cities[name]; !dup {
-			first, _ := utf8.DecodeRuneInString(name)
-			d.byRune[first] = append(d.byRune[first], name)
-		}
-		d.cities[name] = c
+
+		d.add(City{Name: name, Diff: rh[1] & 3, Country: binary.BigEndian.Uint16(rh[2:])})
 	}
+
+	if err := checkTrailer(br, count); err != nil {
+		return nil, err
+	}
+
 	return d, nil
+}
+
+func readHeader(br *bufio.Reader) (version, count uint32, err error) {
+	var hdr [12]byte
+	if _, err := io.ReadFull(br, hdr[:]); err != nil {
+		return 0, 0, fmt.Errorf("dict: read header: %w", err)
+	}
+
+	if m := binary.BigEndian.Uint16(hdr[0:]); m != magic {
+		return 0, 0, fmt.Errorf("dict: invalid magic %#x", m)
+	}
+
+	if s := binary.BigEndian.Uint16(hdr[2:]); s != settingsV1 {
+		return 0, 0, fmt.Errorf("dict: unsupported settings %d", s)
+	}
+
+	return binary.BigEndian.Uint32(hdr[4:]), binary.BigEndian.Uint32(hdr[8:]), nil
+}
+
+// readRecord reads record i: its 4-byte header and decoded name.
+func readRecord(br *bufio.Reader, i uint32) (rh [4]byte, name string, err error) {
+	if _, err := io.ReadFull(br, rh[:]); err != nil {
+		return rh, "", fmt.Errorf("dict: record %d header: %w", i, err)
+	}
+
+	raw := make([]byte, rh[0])
+	if _, err := io.ReadFull(br, raw); err != nil {
+		return rh, "", fmt.Errorf("dict: record %d name: %w", i, err)
+	}
+
+	return rh, decodeName(raw), nil
+}
+
+// checkTrailer reads the record after the last city: its name must start with the city count.
+func checkTrailer(br *bufio.Reader, count uint32) error {
+	_, name, err := readRecord(br, count)
+	if err != nil {
+		return err
+	}
+
+	if len(name) < checkSuffix || name[:len(name)-checkSuffix] != strconv.FormatUint(uint64(count), 10) {
+		return errors.New("dict: file check failed")
+	}
+
+	return nil
+}
+
+func (d *Dictionary) add(c City) {
+	if _, dup := d.cities[c.Name]; !dup {
+		first, _ := utf8.DecodeRuneInString(c.Name)
+		d.byRune[first] = append(d.byRune[first], c.Name)
+	}
+
+	d.cities[c.Name] = c
 }
 
 func decodeName(raw []byte) string {
@@ -97,6 +136,7 @@ func decodeName(raw []byte) string {
 			runes[i] = rune(b) + cyrillicBase
 		}
 	}
+
 	return string(runes)
 }
 
@@ -108,33 +148,42 @@ func LoadLatest(dir string) (*Dictionary, string, error) {
 	if err != nil {
 		return nil, "", err
 	}
+
 	best, bestN := "", -1
+
 	for _, e := range entries {
 		m := fileRe.FindStringSubmatch(e.Name())
 		if m == nil || e.IsDir() {
 			continue
 		}
+
 		n, err := strconv.Atoi(m[1])
 		if err != nil {
 			continue
 		}
+
 		if n > bestN {
 			best, bestN = e.Name(), n
 		}
 	}
+
 	if bestN < 0 {
 		return nil, "", fmt.Errorf("dict: no data-N.db2 files in %s", dir)
 	}
+
 	path := filepath.Join(dir, best)
+
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, "", err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
+
 	d, err := Parse(f)
 	if err != nil {
 		return nil, "", fmt.Errorf("%s: %w", path, err)
 	}
+
 	return d, path, nil
 }
 
@@ -148,12 +197,15 @@ func (d *Dictionary) Contains(word string) bool {
 // With probability 0.7 it prefers cities from countries, if any qualify.
 func (d *Dictionary) Pick(first rune, maxDiff uint8, countries []uint16, used func(string) bool, rnd *rand.Rand) (string, bool) {
 	var all, preferred []string
+
 	for _, name := range d.byRune[first] {
 		c := d.cities[name]
 		if c.Diff > maxDiff || used(name) {
 			continue
 		}
+
 		all = append(all, name)
+
 		for _, cc := range countries {
 			if c.Country == cc {
 				preferred = append(preferred, name)
@@ -161,12 +213,15 @@ func (d *Dictionary) Pick(first rune, maxDiff uint8, countries []uint16, used fu
 			}
 		}
 	}
+
 	if len(all) == 0 {
 		return "", false
 	}
+
 	pool := all
 	if len(preferred) > 0 && rnd.Float64() < preferProb {
 		pool = preferred
 	}
+
 	return pool[rnd.Intn(len(pool))], true
 }

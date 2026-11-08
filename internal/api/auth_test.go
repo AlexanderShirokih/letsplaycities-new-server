@@ -19,6 +19,7 @@ import (
 
 func TestNativeCreatesThenFinds(t *testing.T) {
 	e := newTestServer(t)
+
 	a := e.native("dev1", "Вася")
 	if a.Token == "" || a.User.Name != "Вася" || a.User.Provider != "native" || a.User.AvatarHash != nil || a.User.LastSeenAt == 0 {
 		t.Fatalf("bad response: %+v", a)
@@ -72,20 +73,24 @@ func TestSocialInvalidToken(t *testing.T) {
 func TestSocialLogin(t *testing.T) {
 	e := newTestServer(t)
 	body := map[string]string{"provider": "google", "token": "good-42", "name": "Вася"}
+
 	resp, data := e.do("POST", "/v1/auth/social", "", body)
 	if resp.StatusCode != 200 {
 		t.Fatalf("%d %s", resp.StatusCode, data)
 	}
 
 	var a, b authResp
-	json.Unmarshal(data, &a)
+
+	_ = json.Unmarshal(data, &a)
+
 	if a.User.Provider != "google" || a.Token == "" {
 		t.Fatalf("%+v", a)
 	}
 
 	body["name"] = "Другой"
 	_, data = e.do("POST", "/v1/auth/social", "", body)
-	json.Unmarshal(data, &b)
+	_ = json.Unmarshal(data, &b)
+
 	if b.User.ID != a.User.ID || b.User.Name != "Вася" {
 		t.Fatalf("%+v", b)
 	}
@@ -112,6 +117,7 @@ func TestUnauthorized(t *testing.T) {
 func TestLogout(t *testing.T) {
 	e := newTestServer(t)
 	a := e.native("dev1", "Вася")
+
 	resp, _ := e.do("POST", "/v1/auth/logout", a.Token, nil)
 	if resp.StatusCode != 204 {
 		t.Fatalf("logout status %d", resp.StatusCode)
@@ -145,10 +151,12 @@ func TestSocialProviderUnavailableIsLogged(t *testing.T) {
 		Pepper:        []byte("p"),
 		NativeLimiter: auth.NewLimiter(10, time.Minute, time.Now),
 	})
+
 	ts := httptest.NewServer(srv.Handler())
 	defer ts.Close()
 
 	var buf bytes.Buffer
+
 	log.SetOutput(&buf)
 	defer log.SetOutput(os.Stderr)
 
@@ -157,13 +165,16 @@ func TestSocialProviderUnavailableIsLogged(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
+
 	body, _ := io.ReadAll(resp.Body)
 
 	e.wantError(resp, body, 502, "provider_unavailable")
+
 	if strings.Contains(string(body), "secret-host") {
 		t.Fatalf("provider error leaked to client: %s", body)
 	}
+
 	if !strings.Contains(buf.String(), "vk verify") || !strings.Contains(buf.String(), "secret-host") {
 		t.Fatalf("error not logged: %q", buf.String())
 	}

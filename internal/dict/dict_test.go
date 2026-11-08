@@ -12,6 +12,7 @@ import (
 
 func encodeName(name string) []byte {
 	var out []byte
+
 	for _, r := range name {
 		if r < 127 {
 			out = append(out, byte(r))
@@ -19,6 +20,7 @@ func encodeName(name string) []byte {
 			out = append(out, byte(r-(0x0430-127)))
 		}
 	}
+
 	return out
 }
 
@@ -32,15 +34,20 @@ func record(buf *bytes.Buffer, name string, diff uint8, country uint16) {
 
 func buildDB(t *testing.T, version uint32, cities []City) []byte {
 	t.Helper()
+
 	var buf bytes.Buffer
+
 	_ = binary.Write(&buf, binary.BigEndian, uint16(0xFED0))
 	_ = binary.Write(&buf, binary.BigEndian, uint16(1))
 	_ = binary.Write(&buf, binary.BigEndian, version)
+
 	_ = binary.Write(&buf, binary.BigEndian, uint32(len(cities)))
 	for _, c := range cities {
 		record(&buf, c.Name, c.Diff, c.Country)
 	}
+
 	record(&buf, strconv.Itoa(len(cities))+"abcdef", 0, 0)
+
 	return buf.Bytes()
 }
 
@@ -49,17 +56,21 @@ func TestParseRealV80(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
+
 	d, err := Parse(f)
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	if d.Version != 80 {
 		t.Fatalf("version = %d", d.Version)
 	}
+
 	if !d.Contains("москва") {
 		t.Error("москва missing")
 	}
+
 	if d.Contains("абвгд") {
 		t.Error("абвгд must not exist")
 	}
@@ -70,11 +81,14 @@ func TestParseRejects(t *testing.T) {
 	if _, err := Parse(bytes.NewReader(good)); err != nil {
 		t.Fatalf("good rejected: %v", err)
 	}
+
 	mut := func(f func(b []byte)) []byte {
 		b := append([]byte(nil), good...)
 		f(b)
+
 		return b
 	}
+
 	cases := map[string][]byte{
 		"bad magic":    mut(func(b []byte) { b[0] = 0 }),
 		"bad settings": mut(func(b []byte) { b[3] = 2 }),
@@ -98,18 +112,22 @@ func TestLoadLatestPicksMaxN(t *testing.T) {
 	if _, _, err := LoadLatest(dir); err == nil {
 		t.Fatal("empty dir must fail")
 	}
+
 	for _, n := range []uint32{45, 80} {
 		p := filepath.Join(dir, "data-"+strconv.Itoa(int(n))+".db2")
 		if err := os.WriteFile(p, buildDB(t, n, []City{{"омск", 0, 1}}), 0o644); err != nil {
 			t.Fatal(err)
 		}
 	}
+
 	_ = os.WriteFile(filepath.Join(dir, "data-999.txt"), []byte("x"), 0o644)
 	_ = os.WriteFile(filepath.Join(dir, "data-x.db2"), []byte("x"), 0o644)
+
 	d, p, err := LoadLatest(dir)
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	if filepath.Base(p) != "data-80.db2" || d.Version != 80 {
 		t.Fatalf("got %s v%d", p, d.Version)
 	}
@@ -119,10 +137,12 @@ func TestPick(t *testing.T) {
 	cities := []City{
 		{"астана", 0, 7}, {"анапа", 1, 1}, {"аккра", 3, 9}, {"омск", 0, 1},
 	}
+
 	d, err := Parse(bytes.NewReader(buildDB(t, 1, cities)))
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	rnd := rand.New(rand.NewSource(1))
 	for i := 0; i < 50; i++ {
 		w, ok := d.Pick('а', 3, nil, func(string) bool { return false }, rnd)
@@ -139,6 +159,7 @@ func TestPick(t *testing.T) {
 	}
 	// used excludes
 	used := map[string]bool{"астана": true, "анапа": true}
+
 	for i := 0; i < 50; i++ {
 		w, ok := d.Pick('а', 3, nil, func(s string) bool { return used[s] }, rnd)
 		if !ok || w != "аккра" {
@@ -155,12 +176,14 @@ func TestPick(t *testing.T) {
 	}
 	// country preference
 	n7 := 0
+
 	for i := 0; i < 1000; i++ {
 		w, _ := d.Pick('а', 3, []uint16{7}, func(string) bool { return false }, rnd)
 		if w == "астана" {
 			n7++
 		}
 	}
+
 	if n7 < 650 {
 		t.Fatalf("preferred country picked only %d/1000", n7)
 	}

@@ -16,7 +16,9 @@ func NewToken() (token string, hash []byte) {
 	if _, err := rand.Read(b); err != nil {
 		panic("auth: crypto/rand failed: " + err.Error())
 	}
+
 	token = base64.RawURLEncoding.EncodeToString(b)
+
 	return token, HashToken(token)
 }
 
@@ -30,5 +32,6 @@ func HashToken(token string) []byte {
 func NativeUID(pepper []byte, deviceID string) string {
 	m := hmac.New(sha256.New, pepper)
 	m.Write([]byte(deviceID))
+
 	return hex.EncodeToString(m.Sum(nil))
 }

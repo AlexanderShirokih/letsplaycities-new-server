@@ -50,22 +50,47 @@ func Load(getenv func(string) string) (Config, error) {
 	if c.DataDir == "" {
 		c.DataDir = "."
 	}
+
 	if c.Addr == "" {
 		c.Addr = ":443"
 	}
+
 	if len(c.NativePepper) == 0 {
 		return Config{}, errors.New("LPS_NATIVE_PEPPER is required")
 	}
+
 	if c.Domain == "" && (c.TLSCert == "" || c.TLSKey == "") {
 		return Config{}, errors.New("set LPS_DOMAIN or both LPS_TLS_CERT and LPS_TLS_KEY")
 	}
-	if v := getenv("LPS_BOTS_ENABLED"); v != "" {
-		b, err := strconv.ParseBool(v)
-		if err != nil {
-			return Config{}, fmt.Errorf("LPS_BOTS_ENABLED: invalid boolean %q", v)
-		}
-		c.BotsEnabled = b
+
+	if err := c.loadBots(getenv); err != nil {
+		return Config{}, err
 	}
+
+	if err := c.loadDurations(getenv); err != nil {
+		return Config{}, err
+	}
+
+	return c, nil
+}
+
+func (c *Config) loadBots(getenv func(string) string) error {
+	v := getenv("LPS_BOTS_ENABLED")
+	if v == "" {
+		return nil
+	}
+
+	b, err := strconv.ParseBool(v)
+	if err != nil {
+		return fmt.Errorf("LPS_BOTS_ENABLED: invalid boolean %q", v)
+	}
+
+	c.BotsEnabled = b
+
+	return nil
+}
+
+func (c *Config) loadDurations(getenv func(string) string) error {
 	for _, d := range []struct {
 		name string
 		def  int
@@ -78,16 +103,20 @@ func Load(getenv func(string) string) (Config, error) {
 		{"LPS_BOTS_WAIT_SEC", 15, &c.BotsWait},
 	} {
 		sec := d.def
+
 		if v := getenv(d.name); v != "" {
 			n, err := strconv.Atoi(strings.TrimSpace(v))
 			if err != nil || n < 0 {
-				return Config{}, fmt.Errorf("%s: invalid number of seconds %q", d.name, v)
+				return fmt.Errorf("%s: invalid number of seconds %q", d.name, v)
 			}
+
 			sec = n
 		}
+
 		*d.dst = time.Duration(sec) * time.Second
 	}
-	return c, nil
+
+	return nil
 }
 
 // TLS reports how the server obtains its certificate: autocert whenever a
@@ -96,15 +125,18 @@ func (c Config) TLS() TLSMode {
 	if c.Domain != "" {
 		return TLSAutocert
 	}
+
 	return TLSFiles
 }
 
 func splitList(s string) []string {
 	var out []string
+
 	for _, p := range strings.Split(s, ",") {
 		if p = strings.TrimSpace(p); p != "" {
 			out = append(out, p)
 		}
 	}
+
 	return out
 }

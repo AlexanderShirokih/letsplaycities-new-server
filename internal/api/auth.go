@@ -18,7 +18,7 @@ type authResponse struct {
 }
 
 // checkName trims name and validates it; on failure it writes the error and returns ok=false.
-func (s *Server) checkName(w http.ResponseWriter, ctx context.Context, name string) (string, bool) {
+func (s *Server) checkName(ctx context.Context, w http.ResponseWriter, name string) (string, bool) {
 	name = strings.TrimSpace(name)
 	if n := utf8.RuneCountInString(name); n < 2 || n > 64 {
 		writeError(w, http.StatusBadRequest, "bad_name", "Имя должно содержать от 2 до 64 символов")
@@ -46,11 +46,12 @@ func (s *Server) checkName(w http.ResponseWriter, ctx context.Context, name stri
 // name is used only when the account is created.
 func (s *Server) login(w http.ResponseWriter, r *http.Request, provider, uid, name string) {
 	ctx := r.Context()
+
 	u, err := s.d.Store.UserByIdentity(ctx, provider, uid)
 	if errors.Is(err, store.ErrNotFound) {
 		var ok bool
 
-		if name, ok = s.checkName(w, ctx, name); !ok {
+		if name, ok = s.checkName(ctx, w, name); !ok {
 			return
 		}
 

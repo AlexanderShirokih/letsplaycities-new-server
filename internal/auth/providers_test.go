@@ -31,27 +31,33 @@ func jwk(kid string, k *rsa.PublicKey) map[string]string {
 
 func signGoogle(t *testing.T, key *rsa.PrivateKey, kid, iss, aud string, exp time.Time) string {
 	t.Helper()
+
 	tok := jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.MapClaims{
 		"iss": iss, "aud": aud, "sub": "g-123", "exp": exp.Unix(),
 	})
 	tok.Header["kid"] = kid
+
 	s, err := tok.SignedString(key)
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	return s
 }
 
 func TestGoogleVerify(t *testing.T) {
 	key, _ := rsa.GenerateKey(rand.Reader, 2048)
 	other, _ := rsa.GenerateKey(rand.Reader, 2048)
+
 	var hits atomic.Int32
+
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		hits.Add(1)
 		w.Header().Set("Cache-Control", "public, max-age=3600")
 		writeJSON(w, map[string]any{"keys": []any{jwk("k1", &key.PublicKey)}})
 	}))
 	defer srv.Close()
+
 	g := &Google{JWKSURL: srv.URL, ClientIDs: []string{"cid"}, HTTP: srv.Client()}
 	ctx := context.Background()
 	future := time.Now().Add(time.Hour)
@@ -60,12 +66,15 @@ func TestGoogleVerify(t *testing.T) {
 	if err != nil || uid != "g-123" {
 		t.Fatalf("valid: %q %v", uid, err)
 	}
+
 	if uid, err = g.Verify(ctx, signGoogle(t, key, "k1", "accounts.google.com", "cid", future)); err != nil || uid != "g-123" {
 		t.Fatalf("bare iss: %q %v", uid, err)
 	}
+
 	if hits.Load() != 1 {
 		t.Fatalf("jwks fetched %d times, want cached 1", hits.Load())
 	}
+
 	bad := map[string]string{
 		"aud":     signGoogle(t, key, "k1", "https://accounts.google.com", "evil", future),
 		"expired": signGoogle(t, key, "k1", "https://accounts.google.com", "cid", time.Now().Add(-time.Hour)),
@@ -83,26 +92,35 @@ func TestGoogleVerify(t *testing.T) {
 func TestGoogleRefetchOnUnknownKid(t *testing.T) {
 	k1, _ := rsa.GenerateKey(rand.Reader, 2048)
 	k2, _ := rsa.GenerateKey(rand.Reader, 2048)
+
 	var hits atomic.Int32
+
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		n := hits.Add(1)
+
 		w.Header().Set("Cache-Control", "max-age=3600")
+
 		keys := []any{jwk("k1", &k1.PublicKey)}
 		if n > 1 {
 			keys = append(keys, jwk("k2", &k2.PublicKey))
 		}
+
 		writeJSON(w, map[string]any{"keys": keys})
 	}))
 	defer srv.Close()
+
 	g := &Google{JWKSURL: srv.URL, ClientIDs: []string{"cid"}, HTTP: srv.Client()}
 	ctx := context.Background()
+
 	future := time.Now().Add(time.Hour)
 	if _, err := g.Verify(ctx, signGoogle(t, k1, "k1", "accounts.google.com", "cid", future)); err != nil {
 		t.Fatal(err)
 	}
+
 	if _, err := g.Verify(ctx, signGoogle(t, k2, "k2", "accounts.google.com", "cid", future)); err != nil {
 		t.Fatalf("rotated key: %v", err)
 	}
+
 	if _, err := g.Verify(ctx, signGoogle(t, k2, "nope", "accounts.google.com", "cid", future)); !errors.Is(err, ErrInvalidToken) {
 		t.Fatalf("unknown kid: %v", err)
 	}
@@ -111,8 +129,10 @@ func TestGoogleRefetchOnUnknownKid(t *testing.T) {
 func TestGoogleJWKSServerError(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(500) }))
 	defer srv.Close()
+
 	key, _ := rsa.GenerateKey(rand.Reader, 2048)
 	g := &Google{JWKSURL: srv.URL, ClientIDs: []string{"cid"}, HTTP: srv.Client()}
+
 	_, err := g.Verify(context.Background(), signGoogle(t, key, "k1", "accounts.google.com", "cid", time.Now().Add(time.Hour)))
 	if err == nil || errors.Is(err, ErrInvalidToken) {
 		t.Fatalf("err = %v, want non-ErrInvalidToken", err)
@@ -122,6 +142,7 @@ func TestGoogleJWKSServerError(t *testing.T) {
 // providerCases runs the shared success / rejection / 500 checks.
 func providerCases(t *testing.T, mk func(url string, hc *http.Client) Verifier, ok, reject string) {
 	t.Helper()
+
 	for _, c := range []struct {
 		name    string
 		status  int
@@ -138,10 +159,12 @@ func providerCases(t *testing.T, mk func(url string, hc *http.Client) Verifier, 
 		t.Run(c.name, func(t *testing.T) {
 			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(c.status)
-				w.Write([]byte(c.body))
+				_, _ = w.Write([]byte(c.body))
 			}))
 			defer srv.Close()
+
 			uid, err := mk(srv.URL, srv.Client()).Verify(context.Background(), "tok")
+
 			switch {
 			case c.invalid:
 				if !errors.Is(err, ErrInvalidToken) {
@@ -166,15 +189,19 @@ func TestVKVerify(t *testing.T) {
 	}, `{"response":{"success":1,"user_id":42}}`, `{"error":{"error_code":15}}`)
 
 	var q map[string][]string
+
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		q = r.URL.Query()
-		w.Write([]byte(`{"response":{"success":0}}`))
+
+		_, _ = w.Write([]byte(`{"response":{"success":0}}`))
 	}))
 	defer srv.Close()
+
 	_, err := (&VK{BaseURL: srv.URL, ServiceToken: "svc", HTTP: srv.Client()}).Verify(context.Background(), "usertok")
 	if !errors.Is(err, ErrInvalidToken) {
 		t.Fatal(err)
 	}
+
 	if q["token"][0] != "usertok" || q["access_token"][0] != "svc" || q["v"][0] != "5.199" {
 		t.Fatalf("query %v", q)
 	}
@@ -186,20 +213,26 @@ func TestOKVerify(t *testing.T) {
 	}, `{"uid":"42"}`, `{"error_code":100,"error_msg":"PARAM_API_KEY"}`)
 
 	var got map[string][]string
+
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		got = r.URL.Query()
-		w.Write([]byte(`{"uid":"7"}`))
+
+		_, _ = w.Write([]byte(`{"uid":"7"}`))
 	}))
 	defer srv.Close()
+
 	v := &OK{BaseURL: srv.URL, AppKey: "key", AppSecret: "secret", HTTP: srv.Client()}
 	if uid, err := v.Verify(context.Background(), "atok"); err != nil || uid != "7" {
 		t.Fatalf("%q %v", uid, err)
 	}
+
 	md := func(s string) string { h := md5.Sum([]byte(s)); return hex.EncodeToString(h[:]) }
+
 	want := md("application_key=keyformat=jsonmethod=users.getCurrentUser" + md("atok"+"secret"))
 	if got["sig"][0] != want {
 		t.Fatalf("sig %q want %q", got["sig"][0], want)
 	}
+
 	if got["access_token"][0] != "atok" || got["application_key"][0] != "key" {
 		t.Fatalf("query %v", got)
 	}
@@ -214,9 +247,11 @@ func TestFBVerify(t *testing.T) {
 		if r.URL.Query().Get("access_token") != "app|sec" || r.URL.Query().Get("input_token") != "tok" {
 			t.Errorf("query %v", r.URL.Query())
 		}
-		w.Write([]byte(`{"data":{"is_valid":true,"app_id":"other","user_id":"1"}}`))
+
+		_, _ = w.Write([]byte(`{"data":{"is_valid":true,"app_id":"other","user_id":"1"}}`))
 	}))
 	defer srv.Close()
+
 	_, err := (&FB{BaseURL: srv.URL, AppID: "app", AppSecret: "sec", HTTP: srv.Client()}).Verify(context.Background(), "tok")
 	if !errors.Is(err, ErrInvalidToken) {
 		t.Fatalf("foreign app: %v", err)
@@ -228,6 +263,7 @@ func TestNewVerifiersOnlyConfigured(t *testing.T) {
 	if len(m) != 1 || m["vk"] == nil {
 		t.Fatalf("%v", m)
 	}
+
 	all := NewVerifiers(config.Config{
 		GoogleClientIDs: []string{"a"}, VKServiceToken: "x",
 		OKAppKey: "k", OKAppSecret: "s", FBAppID: "i", FBAppSecret: "s",
@@ -235,6 +271,7 @@ func TestNewVerifiersOnlyConfigured(t *testing.T) {
 	if len(all) != 4 {
 		t.Fatalf("%v", all)
 	}
+
 	if len(NewVerifiers(config.Config{OKAppKey: "k"}, http.DefaultClient)) != 0 {
 		t.Fatal("half-configured OK enabled")
 	}
@@ -242,15 +279,16 @@ func TestNewVerifiersOnlyConfigured(t *testing.T) {
 
 func writeJSON(w http.ResponseWriter, v any) {
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(v)
+	_ = json.NewEncoder(w).Encode(v)
 }
 
 func TestProvider4xxIsRejection(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(400)
-		w.Write([]byte(`{"error":{"message":"bad token"}}`))
+		_, _ = w.Write([]byte(`{"error":{"message":"bad token"}}`))
 	}))
 	defer srv.Close()
+
 	_, err := (&FB{BaseURL: srv.URL, AppID: "a", AppSecret: "s", HTTP: srv.Client()}).Verify(context.Background(), "t")
 	if !errors.Is(err, ErrInvalidToken) {
 		t.Fatalf("err = %v", err)
@@ -261,9 +299,12 @@ func TestProviderErrorsDoNotLeakSecrets(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
 	url, hc := srv.URL, srv.Client()
 	srv.Close() // connection refused
+
 	cancelled, cancel := context.WithCancel(context.Background())
 	cancel()
+
 	const user, secret = "USERTOKEN123", "SECRET456"
+
 	vs := map[string]Verifier{
 		"vk": &VK{BaseURL: url, ServiceToken: secret, HTTP: hc},
 		"ok": &OK{BaseURL: url, AppKey: "key", AppSecret: secret, HTTP: hc},
@@ -275,9 +316,11 @@ func TestProviderErrorsDoNotLeakSecrets(t *testing.T) {
 			if err == nil || errors.Is(err, ErrInvalidToken) {
 				t.Fatalf("%s/%s: err = %v", name, cname, err)
 			}
+
 			if msg := err.Error(); strings.Contains(msg, secret) || strings.Contains(msg, user) || strings.Contains(msg, "access_token") {
 				t.Errorf("%s/%s leaks: %s", name, cname, msg)
 			}
+
 			if cname == "cancelled" && !errors.Is(err, context.Canceled) {
 				t.Errorf("%s: lost context.Canceled: %v", name, err)
 			}

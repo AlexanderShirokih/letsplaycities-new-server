@@ -31,8 +31,9 @@ func (s *Server) handlePatchMe(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 	u := userFrom(r)
+
 	if req.Name != nil {
-		name, ok := s.checkName(w, ctx, *req.Name)
+		name, ok := s.checkName(ctx, w, *req.Name)
 		if !ok {
 			return
 		}
@@ -81,6 +82,7 @@ func (s *Server) handlePutAvatar(w http.ResponseWriter, r *http.Request) {
 	}
 
 	mt, _, _ := mime.ParseMediaType(r.Header.Get("Content-Type"))
+
 	sig, ok := signatures[mt]
 	if !ok || !strings.HasPrefix(string(data), sig) {
 		writeError(w, http.StatusBadRequest, "bad_image", "Нужна картинка PNG или JPEG")
@@ -90,6 +92,7 @@ func (s *Server) handlePutAvatar(w http.ResponseWriter, r *http.Request) {
 
 	sum := sha256.Sum256(data)
 	hash := hex.EncodeToString(sum[:])[:16]
+
 	u := userFrom(r)
 	if err := s.d.Store.SetAvatar(r.Context(), u.ID, store.Avatar{MIME: mt, Data: data}, hash); err != nil {
 		writeInternal(w, err)
@@ -135,6 +138,7 @@ func (s *Server) handleGetAvatar(w http.ResponseWriter, r *http.Request) {
 	etag := `"` + hash + `"`
 	h := w.Header()
 	h.Set("ETag", etag)
+
 	if r.URL.Query().Get("v") == hash {
 		h.Set("Cache-Control", "public, max-age=31536000, immutable")
 	} else {
@@ -152,5 +156,5 @@ func (s *Server) handleGetAvatar(w http.ResponseWriter, r *http.Request) {
 
 	h.Set("Content-Type", av.MIME)
 	h.Set("Content-Length", strconv.Itoa(len(av.Data)))
-	w.Write(av.Data)
+	_, _ = w.Write(av.Data)
 }

@@ -13,6 +13,7 @@ var png1x1 = []byte("\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00
 func TestPatchMe(t *testing.T) {
 	e := newTestServer(t)
 	a := e.native("dev1", "Вася")
+
 	resp, data := e.do("PATCH", "/v1/me", a.Token, map[string]string{"name": "  Коля  ", "fcmToken": "fcm-1"})
 	if resp.StatusCode != 200 {
 		t.Fatalf("%d %s", resp.StatusCode, data)
@@ -29,6 +30,7 @@ func TestPatchMe(t *testing.T) {
 
 	resp, data = e.do("PATCH", "/v1/me", a.Token, map[string]string{"name": "a"})
 	e.wantError(resp, data, 400, "bad_name")
+
 	if got := e.me(a.Token); got.Name != "Коля" {
 		t.Fatalf("name changed on error: %q", got.Name)
 	}
@@ -37,13 +39,16 @@ func TestPatchMe(t *testing.T) {
 func TestAvatarUploadAndFetch(t *testing.T) {
 	e := newTestServer(t)
 	a := e.native("dev1", "Вася")
+
 	resp, data := e.do("PUT", "/v1/me/avatar", a.Token, png1x1, "Content-Type", "image/png")
 	if resp.StatusCode != 200 {
 		t.Fatalf("%d %s", resp.StatusCode, data)
 	}
 
 	var u testUser
-	json.Unmarshal(data, &u)
+
+	_ = json.Unmarshal(data, &u)
+
 	if u.AvatarHash == nil || len(*u.AvatarHash) != 16 {
 		t.Fatalf("hash %v", u.AvatarHash)
 	}
@@ -81,6 +86,7 @@ func TestAvatarUploadAndFetch(t *testing.T) {
 
 	resp, data = e.do("GET", path, "", nil)
 	e.wantError(resp, data, 404, "not_found")
+
 	if got := e.me(a.Token); got.AvatarHash != nil {
 		t.Fatalf("hash after delete %v", got.AvatarHash)
 	}
@@ -97,6 +103,7 @@ func TestAvatarRejects(t *testing.T) {
 	e.wantError(resp, data, 400, "bad_image")
 	resp, data = e.do("PUT", "/v1/me/avatar", a.Token, png1x1, "Content-Type", "image/gif")
 	e.wantError(resp, data, 400, "bad_image")
+
 	big := append([]byte("\x89PNG\r\n\x1a\n"), make([]byte, 70000)...)
 	resp, data = e.do("PUT", "/v1/me/avatar", a.Token, big, "Content-Type", "image/png")
 	e.wantError(resp, data, 413, "too_large")
@@ -116,6 +123,7 @@ func TestUserProfileRelation(t *testing.T) {
 	e := newTestServer(t)
 	a := e.native("dev1", "Вася")
 	b := e.native("dev2", "Петя")
+
 	resp, data := e.do("GET", fmt.Sprintf("/v1/users/%d", b.User.ID), a.Token, nil)
 	if resp.StatusCode != 200 {
 		t.Fatalf("%d %s", resp.StatusCode, data)
@@ -127,7 +135,8 @@ func TestUserProfileRelation(t *testing.T) {
 		Blocked    string `json:"blocked"`
 	}
 
-	json.Unmarshal(data, &got)
+	_ = json.Unmarshal(data, &got)
+
 	if got.ID != b.User.ID || got.Name != "Петя" || got.Friendship != "none" || got.Blocked != "none" {
 		t.Fatalf("%s", data)
 	}

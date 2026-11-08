@@ -19,6 +19,7 @@ func (s *Store) RecordGame(ctx context.Context, g Game) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
+
 	return res.LastInsertId()
 }
 
@@ -35,52 +36,76 @@ func (s *Store) History(ctx context.Context, userID, with, before int64, limit i
 	if limit <= 0 {
 		return nil, 0, nil
 	}
-	rows, err := s.db.QueryContext(ctx,
-		`SELECT id, starter_id, invited_id, started_at, duration_sec, words FROM games
-		 WHERE (starter_id = ?1 OR invited_id = ?1)
-		   AND (?2 = 0 OR starter_id = ?2 OR invited_id = ?2)
-		   AND (?3 = 0 OR (started_at, id) < (SELECT started_at, id FROM games WHERE id = ?3))
-		 ORDER BY started_at DESC, id DESC LIMIT ?4`, userID, with, before, limit+1)
+
+	games, err := s.queryGames(ctx, userID, with, before, limit+1)
 	if err != nil {
 		return nil, 0, err
 	}
-	var games []Game
-	for rows.Next() {
-		var g Game
-		var started, dur int64
-		if err := rows.Scan(&g.ID, &g.StarterID, &g.InvitedID, &started, &dur, &g.Words); err != nil {
-			rows.Close()
-			return nil, 0, err
-		}
-		g.StartedAt, g.Duration = fromMS(started), time.Duration(dur)*time.Second
-		games = append(games, g)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, 0, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, 0, err
-	}
+
 	var next int64
+
 	if len(games) > limit {
 		games = games[:limit]
 		next = games[limit-1].ID
 	}
+
 	out := make([]HistoryEntry, len(games))
 	for i, g := range games {
 		opp := g.InvitedID
 		if opp == userID {
 			opp = g.StarterID
 		}
+
 		u, err := s.User(ctx, opp)
 		if err != nil {
 			return nil, 0, err
 		}
+
 		r, err := s.Relation(ctx, userID, opp)
 		if err != nil {
 			return nil, 0, err
 		}
+
 		out[i] = HistoryEntry{Game: g, Opponent: u, IsFriend: r.Friendship == FriendFriends}
 	}
+
 	return out, next, nil
+}
+
+func (s *Store) queryGames(ctx context.Context, userID, with, before int64, limit int) ([]Game, error) {
+	rows, err := s.db.QueryContext(ctx,
+		`SELECT id, starter_id, invited_id, started_at, duration_sec, words FROM games
+		 WHERE (starter_id = ?1 OR invited_id = ?1)
+		   AND (?2 = 0 OR starter_id = ?2 OR invited_id = ?2)
+		   AND (?3 = 0 OR (started_at, id) < (SELECT started_at, id FROM games WHERE id = ?3))
+		 ORDER BY started_at DESC, id DESC LIMIT ?4`, userID, with, before, limit)
+	if err != nil {
+		return nil, err
+	}
+
+	var games []Game
+
+	for rows.Next() {
+		var (
+			g            Game
+			started, dur int64
+		)
+		if err := rows.Scan(&g.ID, &g.StarterID, &g.InvitedID, &started, &dur, &g.Words); err != nil {
+			_ = rows.Close()
+			return nil, err
+		}
+
+		g.StartedAt, g.Duration = fromMS(started), time.Duration(dur)*time.Second
+		games = append(games, g)
+	}
+
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return games, nil
 }

@@ -18,22 +18,28 @@ func (s *Store) CityEdits(ctx context.Context, userID int64, limit int) ([]CityE
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
+
 	var out []CityEdit
+
 	for rows.Next() {
 		var e CityEdit
 		if err := rows.Scan(&e.ID, &e.OldCountry, &e.NewCountry, &e.OldName, &e.NewName, &e.Reason, &e.Verdict, &e.Status); err != nil {
 			return nil, err
 		}
+
 		out = append(out, e)
 	}
+
 	return out, rows.Err()
 }
 
 func (s *Store) CountNewCityEdits(ctx context.Context, userID int64) (int, error) {
 	var n int
+
 	err := s.db.QueryRowContext(ctx,
 		`SELECT COUNT(*) FROM city_edits WHERE user_id = ? AND status = 'NEW'`, userID).Scan(&n)
+
 	return n, err
 }
 
@@ -46,5 +52,6 @@ func (s *Store) AddCityEdit(ctx context.Context, userID int64, e CityEdit) (int6
 	if err != nil {
 		return 0, err
 	}
+
 	return res.LastInsertId()
 }
