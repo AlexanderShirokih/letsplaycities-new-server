@@ -31,7 +31,7 @@ func Open(path string) (*Store, error) {
 
 	dsn := "file::memory:" + q
 	if path != ":memory:" {
-		dsn = "file:" + (&url.URL{Path: path}).EscapedPath() + q + "&_pragma=journal_mode(WAL)"
+		dsn = "file:" + (&url.URL{Path: path}).EscapedPath() + q + "&_pragma=journal_mode(WAL)&_pragma=synchronous(NORMAL)"
 	}
 
 	db, err := sql.Open("sqlite", dsn)
