@@ -3,6 +3,7 @@ module github.com/AlexanderShirokih/letsplaycities-new-server
 go 1.26.0
 
 require (
+	github.com/coder/websocket v1.8.15
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	golang.org/x/oauth2 v0.37.0
 	modernc.org/sqlite v1.62.0
