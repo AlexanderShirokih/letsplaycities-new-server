@@ -78,8 +78,6 @@ func validAvatar(data []byte, mt string) bool {
 }
 
 func (s *Server) handlePutAvatar(w http.ResponseWriter, r *http.Request) {
-	limitBodyTime(w)
-
 	data, err := io.ReadAll(http.MaxBytesReader(w, r.Body, maxAvatar))
 	if err != nil {
 		var tooBig *http.MaxBytesError

@@ -58,7 +58,15 @@ func NewServer(d Deps) *Server {
 }
 
 // Handler serves every /v1 route and the static pages.
-func (s *Server) Handler() http.Handler { return s.mux }
+// Handler serves the REST API. Every request gets a body read deadline, so
+// that a client cannot hold a connection with a body it never sends, even
+// when the handler does not read the body.
+func (s *Server) Handler() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		limitBodyTime(w)
+		s.mux.ServeHTTP(w, r)
+	})
+}
 
 func (s *Server) routes() {
 	m := s.mux
@@ -170,11 +178,9 @@ func limitBodyTime(w http.ResponseWriter) {
 	_ = http.NewResponseController(w).SetReadDeadline(time.Now().Add(bodyReadTimeout))
 }
 
-// decodeJSON reads a JSON body (at most 64 KB, within bodyReadTimeout) into
+// decodeJSON reads a JSON body (at most 64 KB) into
 // v; on failure it answers 400 bad_request.
 func decodeJSON(w http.ResponseWriter, r *http.Request, v any) bool {
-	limitBodyTime(w)
-
 	r.Body = http.MaxBytesReader(w, r.Body, maxJSONBody)
 	if err := json.NewDecoder(r.Body).Decode(v); err != nil {
 		writeBadRequest(w)

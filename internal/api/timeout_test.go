@@ -18,9 +18,14 @@ func TestSlowBodyTimesOut(t *testing.T) {
 	e := newTestServer(t)
 	a := e.native("device-slow", "Slow")
 
-	for _, tc := range []struct{ method, path, ctype string }{
-		{"POST", "/v1/auth/native", "application/json"},
-		{"PUT", "/v1/me/avatar", "image/png"},
+	for _, tc := range []struct {
+		method, path, ctype string
+		want                int
+	}{
+		{"POST", "/v1/auth/native", "application/json", http.StatusBadRequest},
+		{"PUT", "/v1/me/avatar", "image/png", http.StatusBadRequest},
+		{"POST", "/v1/unknown", "application/json", http.StatusNotFound},
+		{"POST", "/v1/auth/logout", "application/json", http.StatusNoContent},
 	} {
 		t.Run(tc.path, func(t *testing.T) {
 			conn, err := net.Dial("tcp", e.ts.Listener.Addr().String())
@@ -41,8 +46,8 @@ func TestSlowBodyTimesOut(t *testing.T) {
 
 			_ = resp.Body.Close()
 
-			if resp.StatusCode != http.StatusBadRequest {
-				t.Fatalf("status %d, want 400", resp.StatusCode)
+			if resp.StatusCode != tc.want {
+				t.Fatalf("status %d, want %d", resp.StatusCode, tc.want)
 			}
 		})
 	}
