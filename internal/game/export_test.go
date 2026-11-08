@@ -12,8 +12,21 @@ func (h *Hub) step() bool {
 	}
 }
 
-// drain processes events until the queue is empty.
-func (h *Hub) drain() {
+// flush processes events until the queue is empty.
+func (h *Hub) flush() {
 	for h.step() {
+	}
+}
+
+// drain processes events until the queue is empty and no push is in
+// flight.
+func (h *Hub) drain() {
+	for {
+		h.flush()
+		h.pushes.Wait()
+
+		if len(h.events) == 0 {
+			return
+		}
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"slices"
+	"sync"
 	"time"
 	"unicode/utf8"
 
@@ -104,22 +105,28 @@ type Hub struct {
 	lastRoom int64
 	bots     []*session // in AddBot order
 	queueSeq int64
+
+	invitedAt    map[int64]time.Time // last invite per user, for the throttle
+	invitesSwept time.Time
+
+	pushes sync.WaitGroup // invite pushes in flight
 }
 
 // NewHub creates a hub. Call Run to start processing events.
 func NewHub(cfg HubConfig, st HubStore, d *dict.Dictionary, push fcm.Sender, clk Clock) *Hub {
 	h := &Hub{
-		cfg:      cfg,
-		st:       st,
-		dict:     d,
-		push:     push,
-		clk:      clk,
-		events:   make(chan func(), eventBuffer),
-		done:     make(chan struct{}),
-		ctx:      context.Background(),
-		sessions: make(map[int64]*session),
-		invites:  make(map[int64]*invite),
-		rooms:    make(map[int64]*activeGame),
+		cfg:       cfg,
+		st:        st,
+		dict:      d,
+		push:      push,
+		clk:       clk,
+		events:    make(chan func(), eventBuffer),
+		done:      make(chan struct{}),
+		ctx:       context.Background(),
+		sessions:  make(map[int64]*session),
+		invites:   make(map[int64]*invite),
+		rooms:     make(map[int64]*activeGame),
+		invitedAt: make(map[int64]time.Time),
 	}
 	h.handlers = map[string]func(*session, ClientMsg){
 		TypeHello:       h.hello,
@@ -456,7 +463,7 @@ func (h *Hub) fail(s *session, op string, err error) {
 	s.Send(Error(ErrCodeInvalidState))
 }
 
-// callCtx bounds one store or push call.
+// callCtx bounds one store call.
 func (h *Hub) callCtx() (context.Context, context.CancelFunc) {
 	return context.WithTimeout(h.ctx, callTimeout)
 }

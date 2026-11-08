@@ -67,6 +67,7 @@ const (
 	ErrCodeInvalidState        = "invalid_state"
 	ErrCodeUnsupportedProtocol = "unsupported_protocol"
 	ErrCodeReplaced            = "replaced"
+	ErrCodeRateLimited         = "rate_limited"
 )
 
 // ErrBadMessage is returned by DecodeClient for malformed JSON and for a

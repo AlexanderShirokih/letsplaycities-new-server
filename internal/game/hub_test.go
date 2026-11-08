@@ -136,15 +136,55 @@ type pushCall struct {
 	data  map[string]string
 }
 
+// fakePush records pushes. With started set it signals each Send; with
+// release set, Send waits until release is closed or ctx is done.
 type fakePush struct {
-	calls []pushCall
-	err   error
+	mu      sync.Mutex
+	calls   []pushCall
+	err     error
+	started chan struct{}
+	release chan struct{}
 }
 
-func (p *fakePush) Send(_ context.Context, token string, data map[string]string) error {
+func (p *fakePush) Send(ctx context.Context, token string, data map[string]string) error {
+	p.mu.Lock()
 	p.calls = append(p.calls, pushCall{token: token, data: data})
+	err, started, release := p.err, p.started, p.release
+	p.mu.Unlock()
 
-	return p.err
+	if started != nil {
+		started <- struct{}{}
+	}
+
+	if release != nil {
+		select {
+		case <-release:
+		case <-ctx.Done():
+			return ctx.Err()
+		}
+	}
+
+	return err
+}
+
+// hold makes pushes block until the returned function is called; the
+// cleanup releases them too.
+func (p *fakePush) hold(t *testing.T) (release func()) {
+	t.Helper()
+
+	p.started = make(chan struct{}, 8)
+	p.release = make(chan struct{})
+	release = sync.OnceFunc(func() { close(p.release) })
+	t.Cleanup(release)
+
+	return release
+}
+
+func (p *fakePush) count() int {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	return len(p.calls)
 }
 
 type hubFixture struct {
@@ -189,6 +229,12 @@ func (f *hubFixture) connect(id int64) *fakeConn {
 func (f *hubFixture) send(id int64, m ClientMsg) {
 	f.hub.Message(id, f.conns[id], m)
 	f.hub.drain()
+}
+
+// post handles m without waiting for pushes in flight.
+func (f *hubFixture) post(id int64, m ClientMsg) {
+	f.hub.Message(id, f.conns[id], m)
+	f.hub.flush()
 }
 
 func (f *hubFixture) login(id int64) *fakeConn {
@@ -808,4 +854,147 @@ func TestMessageFromReplacedConnectionIgnored(t *testing.T) {
 	if fresh.count(TypeWelcome) != 1 {
 		t.Fatalf("fresh hello not handled: %v", fresh.msgs)
 	}
+}
+
+func recvType(t *testing.T, c *chanConn, typ string) map[string]any {
+	t.Helper()
+
+	select {
+	case msg := <-c.ch:
+		m := toMap(t, msg)
+		if m["type"] != typ {
+			t.Fatalf("want %s, got %v", typ, m)
+		}
+
+		return m
+	case <-time.After(time.Second):
+		t.Fatalf("no %s within a second", typ)
+	}
+
+	return nil
+}
+
+func TestInvitePushDoesNotBlockHub(t *testing.T) {
+	f := newHubFixture(t)
+	f.st.befriend(userA, userB)
+	release := f.push.hold(t)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+
+	go f.hub.Run(ctx)
+
+	conns := map[int64]*chanConn{}
+
+	for _, id := range []int64{userA, userC, userD} {
+		c := &chanConn{ch: make(chan []byte, 16)}
+		conns[id] = c
+		f.hub.Connect(f.st.users[id], c)
+		f.hub.Message(id, c, ClientMsg{Type: TypeHello, Protocol: 1, Client: "test"})
+		recvType(t, c, TypeWelcome)
+	}
+
+	f.hub.Message(userA, conns[userA], ClientMsg{Type: TypeInvite, UserID: userB})
+	<-f.push.started
+
+	f.hub.Message(userC, conns[userC], ClientMsg{Type: TypeFind})
+	f.hub.Message(userD, conns[userD], ClientMsg{Type: TypeFind})
+
+	recvType(t, conns[userC], TypeQueued)
+	recvType(t, conns[userC], TypeMatch)
+	recvType(t, conns[userD], TypeQueued)
+	recvType(t, conns[userD], TypeMatch)
+
+	release()
+
+	if m := recvType(t, conns[userA], TypeInviteStatus); m["status"] != InviteSent {
+		t.Fatalf("invite: %v", m)
+	}
+}
+
+func TestInvitePushPending(t *testing.T) {
+	t.Run("withdrawn", func(t *testing.T) {
+		f := newHubFixture(t)
+		f.st.befriend(userA, userB)
+		ca := f.login(userA)
+		release := f.push.hold(t)
+
+		f.post(userA, ClientMsg{Type: TypeInvite, UserID: userB})
+		f.post(userA, ClientMsg{Type: TypeCancel})
+		release()
+		f.hub.drain()
+
+		if ca.count(TypeInviteStatus) != 0 {
+			t.Fatalf("status for a withdrawn invite: %s", ca.msgs)
+		}
+	})
+
+	t.Run("acceptedBeforePushReturns", func(t *testing.T) {
+		f := newHubFixture(t)
+		f.st.befriend(userA, userB)
+		ca, cb := f.login(userA), f.login(userB)
+		release := f.push.hold(t)
+
+		f.post(userA, ClientMsg{Type: TypeInvite, UserID: userB})
+		f.post(userB, ClientMsg{Type: TypeInviteReply, UserID: userA, Accept: true})
+
+		wantMatch(t, ca, userB, true)
+		wantMatch(t, cb, userA, false)
+
+		release()
+		f.hub.drain()
+
+		if ca.count(TypeInviteStatus) != 0 {
+			t.Fatalf("status after the game started: %s", ca.msgs)
+		}
+	})
+
+	t.Run("pushFailed", func(t *testing.T) {
+		f := newHubFixture(t)
+		f.st.befriend(userA, userB)
+		ca, cb := f.login(userA), f.login(userB)
+		f.push.err = errors.New("fcm down")
+		release := f.push.hold(t)
+
+		f.post(userA, ClientMsg{Type: TypeInvite, UserID: userB})
+		release()
+		f.hub.drain()
+
+		wantInviteStatus(t, ca, userB, InviteOffline)
+
+		f.send(userB, ClientMsg{Type: TypeInviteReply, UserID: userA, Accept: true})
+
+		wantInviteStatus(t, cb, userA, InviteExpired)
+	})
+}
+
+func TestInviteRateLimited(t *testing.T) {
+	f := newHubFixture(t)
+	f.st.befriend(userA, userB)
+	ca := f.login(userA)
+	f.invite(userA, userB)
+	f.send(userA, ClientMsg{Type: TypeCancel})
+
+	f.clk.Advance(inviteInterval - time.Millisecond)
+	f.hub.drain()
+
+	for _, to := range []int64{userB, userC} {
+		f.send(userA, ClientMsg{Type: TypeInvite, UserID: to})
+
+		wantError(t, ca, ErrCodeRateLimited)
+	}
+
+	if f.push.count() != 1 {
+		t.Fatalf("pushes: %d", f.push.count())
+	}
+
+	f.clk.Advance(time.Millisecond)
+	f.hub.drain()
+
+	f.invite(userA, userB)
+
+	f.login(userC)
+	f.send(userC, ClientMsg{Type: TypeInvite, UserID: userA})
+
+	wantInviteStatus(t, f.conns[userC], userA, InviteNotFriends)
 }

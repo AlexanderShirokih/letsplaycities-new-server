@@ -1,13 +1,25 @@
 package game
 
 import (
+	"context"
 	"log"
 	"strconv"
+	"time"
 
 	"lps/internal/store"
 )
 
-// invite is an outstanding invitation, keyed by the inviter.
+const (
+	// inviteInterval is the shortest time between two invites of one user.
+	inviteInterval = 2 * time.Second
+
+	// pushTimeout bounds one invite push, which runs off the hub goroutine.
+	pushTimeout = 10 * time.Second
+)
+
+// invite is an outstanding invitation, keyed by the inviter. It is
+// registered before its push is sent, so the invitee may answer a push that
+// is still being confirmed.
 type invite struct {
 	from, to int64
 	stop     func() bool
@@ -20,47 +32,87 @@ func (h *Hub) invite(s *session, m ClientMsg) {
 		return
 	}
 
-	status, err := h.inviteStatus(s.user, m.UserID)
+	if !h.allowInvite(s.user.ID) {
+		s.Send(Error(ErrCodeRateLimited))
+
+		return
+	}
+
+	token, status, err := h.inviteTarget(s.user.ID, m.UserID)
 	if err != nil {
 		h.fail(s, "invite", err)
 
 		return
 	}
 
-	if status == InviteSent {
-		h.addInvite(s, m.UserID)
+	if status != "" {
+		s.Send(InviteStatus(m.UserID, status))
+
+		return
 	}
 
-	s.Send(InviteStatus(m.UserID, status))
+	inv := h.addInvite(s, m.UserID)
+	h.sendInvitePush(inv, s.user, token)
 }
 
-// inviteStatus runs the invite checks in the order of the spec and sends
-// the push when they pass.
-func (h *Hub) inviteStatus(from store.User, to int64) (string, error) {
-	rel, err := h.relation(from.ID, to)
+// allowInvite lets a user invite at most once per inviteInterval. Users
+// stay in invitedAt across reconnects until their entry is swept.
+func (h *Hub) allowInvite(userID int64) bool {
+	now := h.clk.Now()
+	h.sweepInviteTimes(now)
+
+	if last, ok := h.invitedAt[userID]; ok && now.Sub(last) < inviteInterval {
+		return false
+	}
+
+	h.invitedAt[userID] = now
+
+	return true
+}
+
+// sweepInviteTimes forgets stale invite times at most once per interval,
+// so invitedAt holds only the users who invited recently.
+func (h *Hub) sweepInviteTimes(now time.Time) {
+	if now.Sub(h.invitesSwept) < inviteInterval {
+		return
+	}
+
+	for id, at := range h.invitedAt {
+		if now.Sub(at) >= inviteInterval {
+			delete(h.invitedAt, id)
+		}
+	}
+
+	h.invitesSwept = now
+}
+
+// inviteTarget runs the invite checks in the order of the spec. It returns
+// the invitee's FCM token when the push is to be sent, or the final status.
+func (h *Hub) inviteTarget(from, to int64) (token, status string, err error) {
+	rel, err := h.relation(from, to)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	switch {
 	case rel.Blocked != store.BlockedNone:
-		return InviteBlocked, nil
+		return "", InviteBlocked, nil
 	case rel.Friendship != store.FriendFriends:
-		return InviteNotFriends, nil
+		return "", InviteNotFriends, nil
 	case h.playing(to):
-		return InviteBusy, nil
+		return "", InviteBusy, nil
 	}
 
 	target, err := h.user(to)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
-	if target.FCMToken == "" || !h.sendInvitePush(from, target.FCMToken) {
-		return InviteOffline, nil
+	if target.FCMToken == "" {
+		return "", InviteOffline, nil
 	}
 
-	return InviteSent, nil
+	return target.FCMToken, "", nil
 }
 
 func (h *Hub) playing(userID int64) bool {
@@ -69,26 +121,49 @@ func (h *Hub) playing(userID int64) bool {
 	return ok && s.game != nil
 }
 
-func (h *Hub) sendInvitePush(from store.User, token string) bool {
-	ctx, cancel := h.callCtx()
-	defer cancel()
-
+// sendInvitePush sends the push in its own goroutine and reports the
+// result to the hub as an event.
+func (h *Hub) sendInvitePush(inv *invite, from store.User, token string) {
+	ctx, cancel := context.WithTimeout(h.ctx, pushTimeout)
 	data := map[string]string{
 		"type":     "invite",
 		"fromId":   strconv.FormatInt(from.ID, 10),
 		"fromName": from.Name,
 	}
 
-	if err := h.push.Send(ctx, token, data); err != nil {
-		log.Printf("game: invite push from %d: %v", from.ID, err)
+	h.pushes.Add(1)
 
-		return false
-	}
+	go func() {
+		defer h.pushes.Done()
+		defer cancel()
 
-	return true
+		err := h.push.Send(ctx, token, data)
+		if err != nil {
+			log.Printf("game: invite push from %d: %v", from.ID, err)
+		}
+
+		h.enqueue(func() { h.invitePushed(inv, err == nil) })
+	}()
 }
 
-func (h *Hub) addInvite(s *session, to int64) {
+// invitePushed answers the inviter once the push is done, unless the
+// invite was withdrawn, answered or expired meanwhile.
+func (h *Hub) invitePushed(inv *invite, delivered bool) {
+	if h.invites[inv.from] != inv {
+		return
+	}
+
+	if !delivered {
+		h.withdraw(inv.from)
+		h.sessions[inv.from].Send(InviteStatus(inv.to, InviteOffline))
+
+		return
+	}
+
+	h.sessions[inv.from].Send(InviteStatus(inv.to, InviteSent))
+}
+
+func (h *Hub) addInvite(s *session, to int64) *invite {
 	inv := &invite{from: s.user.ID, to: to}
 	inv.stop = h.clk.AfterFunc(h.cfg.InviteTTL, func() {
 		h.enqueue(func() { h.inviteExpired(inv) })
@@ -96,6 +171,8 @@ func (h *Hub) addInvite(s *session, to int64) {
 
 	h.invites[inv.from] = inv
 	s.state = stateInviting
+
+	return inv
 }
 
 func (h *Hub) inviteExpired(inv *invite) {
