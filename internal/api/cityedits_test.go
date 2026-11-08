@@ -15,6 +15,18 @@ func TestCityEditLimits(t *testing.T) {
 	})
 	e.wantError(resp, data, 400, "bad_reason")
 
+	for _, field := range []string{"oldName", "newName"} {
+		resp, data = e.do("POST", "/v1/city-edits", a.Token, map[string]any{field: strings.Repeat("я", 101)})
+		e.wantError(resp, data, 400, "bad_request")
+	}
+
+	b := e.native("dev-b", "Bob")
+	long := map[string]any{"oldName": strings.Repeat("я", 100), "newName": strings.Repeat("я", 100)}
+
+	if resp, data := e.do("POST", "/v1/city-edits", b.Token, long); resp.StatusCode != 201 {
+		t.Fatalf("100-character names: %d %s", resp.StatusCode, data)
+	}
+
 	ok := map[string]any{"oldCountryCode": 1, "newCountryCode": 2, "oldName": "Старый", "reason": strings.Repeat("я", 64)}
 
 	for i := range 50 {

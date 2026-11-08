@@ -9,6 +9,7 @@ import (
 
 const (
 	maxReasonRunes   = 64
+	maxCityNameRunes = 100
 	maxNewCityEdits  = 50
 	cityEditsPerPage = 50
 )
@@ -47,22 +48,40 @@ func (s *Server) handleListCityEdits(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, out)
 }
 
-func (s *Server) handlePostCityEdit(w http.ResponseWriter, r *http.Request) {
-	var req struct {
-		OldCountryCode int     `json:"oldCountryCode"`
-		NewCountryCode int     `json:"newCountryCode"`
-		OldName        *string `json:"oldName"`
-		NewName        *string `json:"newName"`
-		Reason         *string `json:"reason"`
+type cityEditRequest struct {
+	OldCountryCode int     `json:"oldCountryCode"`
+	NewCountryCode int     `json:"newCountryCode"`
+	OldName        *string `json:"oldName"`
+	NewName        *string `json:"newName"`
+	Reason         *string `json:"reason"`
+}
+
+// longer reports whether s is set and longer than n runes.
+func longer(s *string, n int) bool {
+	return s != nil && utf8.RuneCountInString(*s) > n
+}
+
+// checkCityEdit validates the field lengths; on failure it answers 400.
+func checkCityEdit(w http.ResponseWriter, req cityEditRequest) bool {
+	if longer(req.OldName, maxCityNameRunes) || longer(req.NewName, maxCityNameRunes) {
+		writeBadRequest(w)
+
+		return false
 	}
 
-	if !decodeJSON(w, r, &req) {
-		return
-	}
-
-	if req.Reason != nil && utf8.RuneCountInString(*req.Reason) > maxReasonRunes {
+	if longer(req.Reason, maxReasonRunes) {
 		writeError(w, http.StatusBadRequest, "bad_reason", "Причина длиннее 64 символов")
 
+		return false
+	}
+
+	return true
+}
+
+func (s *Server) handlePostCityEdit(w http.ResponseWriter, r *http.Request) {
+	var req cityEditRequest
+
+	if !decodeJSON(w, r, &req) || !checkCityEdit(w, req) {
 		return
 	}
 
