@@ -101,6 +101,31 @@ func TestLoadBadDuration(t *testing.T) {
 	}
 }
 
+func TestLoadDurationMinimums(t *testing.T) {
+	for _, name := range []string{"LPS_MOVE_TIME_SEC", "LPS_INVITE_TTL_SEC"} {
+		m := base()
+		m[name] = "0"
+
+		_, err := Load(env(m))
+		if err == nil || !strings.Contains(err.Error(), name) {
+			t.Fatalf("%s=0: err = %v", name, err)
+		}
+
+		m[name] = "1"
+
+		if _, err := Load(env(m)); err != nil {
+			t.Fatalf("%s=1: %v", name, err)
+		}
+	}
+
+	m := base()
+	m["LPS_BOTS_WAIT_SEC"] = "0"
+
+	if _, err := Load(env(m)); err != nil {
+		t.Fatalf("LPS_BOTS_WAIT_SEC=0: %v", err)
+	}
+}
+
 func TestLoadDomainWinsOverFiles(t *testing.T) {
 	m := base()
 	m["LPS_DOMAIN"] = "example.org"

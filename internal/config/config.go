@@ -90,24 +90,26 @@ func (c *Config) loadBots(getenv func(string) string) error {
 	return nil
 }
 
+// loadDurations reads the timings in seconds. A zero move time or invite
+// TTL would end every game or invite at once, so they must be at least 1.
 func (c *Config) loadDurations(getenv func(string) string) error {
 	for _, d := range []struct {
-		name string
-		def  int
-		dst  *time.Duration
+		name     string
+		def, min int
+		dst      *time.Duration
 	}{
-		{"LPS_MOVE_TIME_SEC", 92, &c.MoveTime},
-		{"LPS_PING_INTERVAL_SEC", 5, &c.PingInterval},
-		{"LPS_PING_TIMEOUT_SEC", 15, &c.PingTimeout},
-		{"LPS_INVITE_TTL_SEC", 60, &c.InviteTTL},
-		{"LPS_BOTS_WAIT_SEC", 15, &c.BotsWait},
+		{"LPS_MOVE_TIME_SEC", 92, 1, &c.MoveTime},
+		{"LPS_PING_INTERVAL_SEC", 5, 0, &c.PingInterval},
+		{"LPS_PING_TIMEOUT_SEC", 15, 0, &c.PingTimeout},
+		{"LPS_INVITE_TTL_SEC", 60, 1, &c.InviteTTL},
+		{"LPS_BOTS_WAIT_SEC", 15, 0, &c.BotsWait},
 	} {
 		sec := d.def
 
 		if v := getenv(d.name); v != "" {
 			n, err := strconv.Atoi(strings.TrimSpace(v))
-			if err != nil || n < 0 {
-				return fmt.Errorf("%s: invalid number of seconds %q", d.name, v)
+			if err != nil || n < d.min {
+				return fmt.Errorf("%s: invalid number of seconds %q, the minimum is %d", d.name, v, d.min)
 			}
 
 			sec = n
