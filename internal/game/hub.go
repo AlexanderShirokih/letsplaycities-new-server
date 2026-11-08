@@ -1,0 +1,634 @@
+package game
+
+import (
+	"context"
+	"log"
+	"slices"
+	"strconv"
+	"time"
+	"unicode/utf8"
+
+	"github.com/AlexanderShirokih/letsplaycities-new-server/internal/dict"
+	"github.com/AlexanderShirokih/letsplaycities-new-server/internal/fcm"
+	"github.com/AlexanderShirokih/letsplaycities-new-server/internal/store"
+)
+
+const (
+	protocolVersion = 1
+	maxChatRunes    = 200
+	callTimeout     = 3 * time.Second
+	eventBuffer     = 256
+)
+
+// HubStore is the part of the store the hub needs.
+type HubStore interface {
+	User(ctx context.Context, id int64) (store.User, error)
+	Relation(ctx context.Context, viewer, other int64) (store.Relation, error)
+	RecordGame(ctx context.Context, g store.Game) (int64, error)
+}
+
+// Conn is a player's connection: a WebSocket transport or a bot.
+type Conn interface {
+	Send(msg []byte)
+	Close(code string)
+}
+
+// HubConfig holds the game timings.
+type HubConfig struct {
+	MoveTime, InviteTTL, BotsWait time.Duration
+	BotsEnabled                   bool
+}
+
+type sessionState int
+
+const (
+	stateConnected sessionState = iota // waiting for hello
+	stateIdle
+	stateQueued
+	stateInviting
+	statePlaying
+)
+
+// session is a connected user. It is also the user's Seat in a room, so a
+// room keeps working when the connection is replaced.
+type session struct {
+	user  store.User
+	conn  Conn
+	state sessionState
+	game  *activeGame
+}
+
+// UserID implements Seat.
+func (s *session) UserID() int64 { return s.user.ID }
+
+// Send implements Seat; it does nothing once the user has disconnected.
+func (s *session) Send(msg []byte) {
+	if s.conn != nil {
+		s.conn.Send(msg)
+	}
+}
+
+type activeGame struct {
+	room    *Room
+	players [2]*session
+}
+
+func (g *activeGame) opponent(s *session) *session {
+	if g.players[0] == s {
+		return g.players[1]
+	}
+
+	return g.players[0]
+}
+
+// invite is an outstanding invitation, keyed by the inviter.
+type invite struct {
+	from, to int64
+	stop     func() bool
+}
+
+// Hub owns sessions, the matchmaking queue, invites and rooms. Its state is
+// touched only by the Run goroutine: public methods and timers just enqueue
+// events.
+type Hub struct {
+	cfg  HubConfig
+	st   HubStore
+	dict *dict.Dictionary
+	push fcm.Sender
+	clk  Clock
+
+	events   chan func()
+	done     chan struct{}
+	ctx      context.Context
+	handlers map[string]func(*session, ClientMsg)
+
+	sessions map[int64]*session
+	queue    []*session
+	invites  map[int64]*invite
+	rooms    map[int64]*activeGame
+	lastRoom int64
+}
+
+// NewHub creates a hub. Call Run to start processing events.
+func NewHub(cfg HubConfig, st HubStore, d *dict.Dictionary, push fcm.Sender, clk Clock) *Hub {
+	h := &Hub{
+		cfg:      cfg,
+		st:       st,
+		dict:     d,
+		push:     push,
+		clk:      clk,
+		events:   make(chan func(), eventBuffer),
+		done:     make(chan struct{}),
+		ctx:      context.Background(),
+		sessions: make(map[int64]*session),
+		invites:  make(map[int64]*invite),
+		rooms:    make(map[int64]*activeGame),
+	}
+	h.handlers = map[string]func(*session, ClientMsg){
+		TypeHello:       h.hello,
+		TypeFind:        h.find,
+		TypeInvite:      h.invite,
+		TypeInviteReply: h.inviteReply,
+		TypeCancel:      h.cancel,
+		TypeWord:        h.word,
+		TypeChat:        h.chat,
+		TypeLeave:       h.leave,
+	}
+
+	return h
+}
+
+// Run processes events one at a time until ctx is done.
+func (h *Hub) Run(ctx context.Context) {
+	h.ctx = ctx
+
+	defer close(h.done)
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case e := <-h.events:
+			e()
+		}
+	}
+}
+
+// Connect registers a connection for u. An existing connection of the same
+// user is replaced: it gets error{replaced} and is closed.
+func (h *Hub) Connect(u store.User, c Conn) {
+	h.enqueue(func() { h.connect(u, c) })
+}
+
+// Message handles a client message from userID.
+func (h *Hub) Message(userID int64, m ClientMsg) {
+	h.enqueue(func() { h.message(userID, m) })
+}
+
+// Disconnect drops the user's session unless c has already been replaced.
+func (h *Hub) Disconnect(userID int64, c Conn) {
+	h.enqueue(func() { h.disconnect(userID, c) })
+}
+
+func (h *Hub) enqueue(e func()) {
+	select {
+	case h.events <- e:
+	case <-h.done:
+	}
+}
+
+func (h *Hub) connect(u store.User, c Conn) {
+	s, ok := h.sessions[u.ID]
+	if !ok {
+		h.sessions[u.ID] = &session{user: u, conn: c}
+
+		return
+	}
+
+	old := s.conn
+	old.Send(Error(ErrCodeReplaced))
+	old.Close(ErrCodeReplaced)
+
+	h.toIdle(s)
+	s.user, s.conn, s.state = u, c, stateConnected
+}
+
+func (h *Hub) disconnect(userID int64, c Conn) {
+	s, ok := h.sessions[userID]
+	if !ok || s.conn != c {
+		return
+	}
+
+	h.drop(s)
+}
+
+// drop forgets a session: its queue place and invite go away and its game
+// is lost.
+func (h *Hub) drop(s *session) {
+	s.conn = nil
+	delete(h.sessions, s.user.ID)
+	h.toIdle(s)
+
+	if g := s.game; g != nil {
+		g.room.Leave(s.user.ID, ReasonOpponentLeft)
+		h.finishGame(g)
+	}
+}
+
+func (h *Hub) message(userID int64, m ClientMsg) {
+	s, ok := h.sessions[userID]
+	if !ok {
+		return
+	}
+
+	if s.state == stateConnected && m.Type != TypeHello {
+		s.Send(Error(ErrCodeHelloRequired))
+
+		return
+	}
+
+	handle, ok := h.handlers[m.Type]
+	if !ok {
+		s.Send(Error(ErrCodeBadMessage))
+
+		return
+	}
+
+	handle(s, m)
+}
+
+func (h *Hub) hello(s *session, m ClientMsg) {
+	if s.state != stateConnected {
+		s.Send(Error(ErrCodeInvalidState))
+
+		return
+	}
+
+	if m.Protocol != protocolVersion {
+		s.Send(Error(ErrCodeUnsupportedProtocol))
+		s.conn.Close(ErrCodeUnsupportedProtocol)
+		h.drop(s)
+
+		return
+	}
+
+	s.state = stateIdle
+	if s.game != nil {
+		s.state = statePlaying
+	}
+
+	s.Send(Welcome(userView(s.user)))
+}
+
+// find queues an idle player. An inviter may search too: the invite is
+// withdrawn because the inviter starts another game.
+func (h *Hub) find(s *session, _ ClientMsg) {
+	if s.state != stateIdle && s.state != stateInviting {
+		s.Send(Error(ErrCodeInvalidState))
+
+		return
+	}
+
+	h.withdraw(s.user.ID)
+	s.state = stateQueued
+	s.Send(Queued())
+
+	h.matchQueued(s)
+}
+
+// matchQueued pairs s with the earliest queued player it is not blocked
+// with, or puts s at the end of the queue.
+func (h *Hub) matchQueued(s *session) {
+	for _, q := range h.queue {
+		ab, ba, err := h.relations(q, s)
+		if err != nil {
+			s.state = stateIdle
+			h.fail(s, "match", err)
+
+			return
+		}
+
+		if ab.Blocked == store.BlockedNone {
+			h.dequeue(q)
+			h.startGame(q, s, ab, ba)
+
+			return
+		}
+	}
+
+	h.queue = append(h.queue, s)
+}
+
+func (h *Hub) cancel(s *session, _ ClientMsg) {
+	switch s.state {
+	case stateQueued, stateInviting:
+		h.toIdle(s)
+	default:
+		s.Send(Error(ErrCodeInvalidState))
+	}
+}
+
+func (h *Hub) invite(s *session, m ClientMsg) {
+	if s.state != stateIdle {
+		s.Send(Error(ErrCodeInvalidState))
+
+		return
+	}
+
+	status, err := h.inviteStatus(s.user, m.UserID)
+	if err != nil {
+		h.fail(s, "invite", err)
+
+		return
+	}
+
+	if status == InviteSent {
+		h.addInvite(s, m.UserID)
+	}
+
+	s.Send(InviteStatus(m.UserID, status))
+}
+
+// inviteStatus runs the invite checks in the order of the spec and sends
+// the push when they pass.
+func (h *Hub) inviteStatus(from store.User, to int64) (string, error) {
+	rel, err := h.relation(from.ID, to)
+	if err != nil {
+		return "", err
+	}
+
+	switch {
+	case rel.Blocked != store.BlockedNone:
+		return InviteBlocked, nil
+	case rel.Friendship != store.FriendFriends:
+		return InviteNotFriends, nil
+	case h.playing(to):
+		return InviteBusy, nil
+	}
+
+	target, err := h.user(to)
+	if err != nil {
+		return "", err
+	}
+
+	if target.FCMToken == "" || !h.sendInvitePush(from, target.FCMToken) {
+		return InviteOffline, nil
+	}
+
+	return InviteSent, nil
+}
+
+func (h *Hub) playing(userID int64) bool {
+	s, ok := h.sessions[userID]
+
+	return ok && s.game != nil
+}
+
+func (h *Hub) sendInvitePush(from store.User, token string) bool {
+	ctx, cancel := context.WithTimeout(h.ctx, callTimeout)
+	defer cancel()
+
+	data := map[string]string{
+		"type":     "invite",
+		"fromId":   strconv.FormatInt(from.ID, 10),
+		"fromName": from.Name,
+	}
+
+	if err := h.push.Send(ctx, token, data); err != nil {
+		log.Printf("game: invite push from %d: %v", from.ID, err)
+
+		return false
+	}
+
+	return true
+}
+
+func (h *Hub) addInvite(s *session, to int64) {
+	inv := &invite{from: s.user.ID, to: to}
+	inv.stop = h.clk.AfterFunc(h.cfg.InviteTTL, func() {
+		h.enqueue(func() { h.inviteExpired(inv) })
+	})
+
+	h.invites[inv.from] = inv
+	s.state = stateInviting
+}
+
+func (h *Hub) inviteExpired(inv *invite) {
+	if h.invites[inv.from] != inv {
+		return
+	}
+
+	h.withdraw(inv.from)
+	h.sessions[inv.from].Send(InviteStatus(inv.to, InviteExpired))
+}
+
+func (h *Hub) inviteReply(s *session, m ClientMsg) {
+	inv, ok := h.invites[m.UserID]
+	if !ok || inv.to != s.user.ID {
+		s.Send(InviteStatus(m.UserID, InviteExpired))
+
+		return
+	}
+
+	if !m.Accept {
+		h.withdraw(inv.from)
+		h.sessions[inv.from].Send(InviteStatus(s.user.ID, InviteDeclined))
+
+		return
+	}
+
+	h.acceptInvite(s, inv)
+}
+
+func (h *Hub) acceptInvite(s *session, inv *invite) {
+	if s.state == statePlaying {
+		s.Send(Error(ErrCodeInvalidState))
+
+		return
+	}
+
+	inviter := h.sessions[inv.from]
+
+	ab, ba, err := h.relations(inviter, s)
+	if err != nil {
+		h.fail(s, "accept", err)
+
+		return
+	}
+
+	h.withdraw(inv.from)
+
+	if ab.Blocked != store.BlockedNone {
+		s.Send(InviteStatus(inviter.user.ID, InviteBlocked))
+		inviter.Send(InviteStatus(s.user.ID, InviteBlocked))
+
+		return
+	}
+
+	h.toIdle(s)
+	h.startGame(inviter, s, ab, ba)
+}
+
+func (h *Hub) word(s *session, m ClientMsg) {
+	if s.state != statePlaying {
+		s.Send(Error(ErrCodeInvalidState))
+
+		return
+	}
+
+	s.game.room.Word(s.user.ID, m.Text)
+}
+
+func (h *Hub) chat(s *session, m ClientMsg) {
+	if s.state != statePlaying {
+		s.Send(Error(ErrCodeInvalidState))
+
+		return
+	}
+
+	if utf8.RuneCountInString(m.Text) > maxChatRunes {
+		s.Send(Error(ErrCodeBadMessage))
+
+		return
+	}
+
+	rel, err := h.relation(s.user.ID, s.game.opponent(s).user.ID)
+	if err != nil {
+		h.fail(s, "chat", err)
+
+		return
+	}
+
+	s.game.room.Chat(s.user.ID, m.Text, rel.Blocked != store.BlockedNone)
+}
+
+func (h *Hub) leave(s *session, _ ClientMsg) {
+	if s.state != statePlaying {
+		s.Send(Error(ErrCodeInvalidState))
+
+		return
+	}
+
+	g := s.game
+	g.room.Leave(s.user.ID, ReasonSurrender)
+	h.finishGame(g)
+}
+
+// startGame creates a room where a moves first. ab is a's relation to b,
+// ba the other way round.
+func (h *Hub) startGame(a, b *session, ab, ba store.Relation) {
+	h.lastRoom++
+	g := &activeGame{players: [2]*session{a, b}}
+	g.room = NewRoom(h.lastRoom, a, b, opponent(a.user, ba), opponent(b.user, ab),
+		h.dict, h.cfg.MoveTime, h.clk, h.onRoomTimer)
+	h.rooms[g.room.ID] = g
+
+	for _, p := range g.players {
+		p.game, p.state = g, statePlaying
+	}
+
+	g.room.Start()
+}
+
+func (h *Hub) onRoomTimer(roomID int64, move int) {
+	h.enqueue(func() { h.roomTimer(roomID, move) })
+}
+
+func (h *Hub) roomTimer(roomID int64, move int) {
+	g, ok := h.rooms[roomID]
+	if ok && g.room.Timer(move) {
+		h.finishGame(g)
+	}
+}
+
+// finishGame is called after the room has sent gameOver: it frees both
+// players and records the game in the history.
+func (h *Hub) finishGame(g *activeGame) {
+	delete(h.rooms, g.room.ID)
+
+	for _, p := range g.players {
+		p.game = nil
+
+		if p.state == statePlaying {
+			p.state = stateIdle
+		}
+	}
+
+	res, ok := g.room.Result()
+	if !ok {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(h.ctx, callTimeout)
+	defer cancel()
+
+	if _, err := h.st.RecordGame(ctx, res); err != nil {
+		log.Printf("game: record game %d-%d: %v", res.StarterID, res.InvitedID, err)
+	}
+}
+
+// toIdle takes s out of the queue and withdraws its invite.
+func (h *Hub) toIdle(s *session) {
+	h.dequeue(s)
+	h.withdraw(s.user.ID)
+}
+
+func (h *Hub) dequeue(s *session) {
+	i := slices.Index(h.queue, s)
+	if i < 0 {
+		return
+	}
+
+	h.queue = slices.Delete(h.queue, i, i+1)
+	s.state = stateIdle
+}
+
+func (h *Hub) withdraw(from int64) {
+	inv, ok := h.invites[from]
+	if !ok {
+		return
+	}
+
+	inv.stop()
+	delete(h.invites, from)
+
+	if s, ok := h.sessions[from]; ok && s.state == stateInviting {
+		s.state = stateIdle
+	}
+}
+
+// fail logs a store error and reports it to the requester.
+func (h *Hub) fail(s *session, op string, err error) {
+	log.Printf("game: %s for user %d: %v", op, s.user.ID, err)
+	s.Send(Error(ErrCodeInvalidState))
+}
+
+func (h *Hub) relation(viewer, other int64) (store.Relation, error) {
+	ctx, cancel := context.WithTimeout(h.ctx, callTimeout)
+	defer cancel()
+
+	return h.st.Relation(ctx, viewer, other)
+}
+
+func (h *Hub) relations(a, b *session) (ab, ba store.Relation, err error) {
+	if ab, err = h.relation(a.user.ID, b.user.ID); err != nil {
+		return ab, ba, err
+	}
+
+	ba, err = h.relation(b.user.ID, a.user.ID)
+
+	return ab, ba, err
+}
+
+func (h *Hub) user(id int64) (store.User, error) {
+	ctx, cancel := context.WithTimeout(h.ctx, callTimeout)
+	defer cancel()
+
+	return h.st.User(ctx, id)
+}
+
+func userView(u store.User) UserView {
+	v := UserView{ID: u.ID, Name: u.Name, AvatarHash: optional(u.AvatarHash), Provider: u.Provider}
+	if !u.LastSeenAt.IsZero() {
+		v.LastSeenAt = u.LastSeenAt.UnixMilli()
+	}
+
+	return v
+}
+
+func opponent(u store.User, rel store.Relation) Opponent {
+	return Opponent{
+		ID:         u.ID,
+		Name:       u.Name,
+		AvatarHash: optional(u.AvatarHash),
+		Friendship: string(rel.Friendship),
+	}
+}
+
+func optional(s string) *string {
+	if s == "" {
+		return nil
+	}
+
+	return &s
+}
