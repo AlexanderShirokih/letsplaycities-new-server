@@ -67,34 +67,32 @@ func (r *Room) Start() {
 	r.armTimer()
 }
 
-// Word handles a move and reports whether the game is over. A finished
-// room ignores it.
-func (r *Room) Word(from int64, raw string) (finished bool) {
+// Word handles a move. A finished room ignores it.
+func (r *Room) Word(from int64, raw string) {
 	if r.finished {
-		return false
+		return
 	}
 
 	idx := r.seatIndex(from)
 	if idx < 0 {
-		return false
-	}
-
-	if idx != r.turn {
-		r.reject(idx, Normalize(raw), WordNotYourTurn)
-
-		return false
+		return
 	}
 
 	word := Normalize(raw)
+
+	if idx != r.turn {
+		r.reject(idx, word, WordNotYourTurn)
+
+		return
+	}
+
 	if status := r.check(word); status != WordAccepted {
 		r.reject(idx, word, status)
 
-		return false
+		return
 	}
 
 	r.accept(idx, word)
-
-	return false
 }
 
 func (r *Room) check(word string) string {

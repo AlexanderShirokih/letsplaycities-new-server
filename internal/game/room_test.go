@@ -137,9 +137,7 @@ func TestRoomFlow(t *testing.T) {
 		from int64
 		word string
 	}{{starterID, "Москва"}, {invitedID, "анапа"}, {starterID, "абакан"}} {
-		if f.room.Word(step.from, step.word) {
-			t.Fatal("finished")
-		}
+		f.room.Word(step.from, step.word)
 
 		wordMsg(t, f.starter, step.from, Normalize(step.word), WordAccepted)
 		wordMsg(t, f.invited, step.from, Normalize(step.word), WordAccepted)
@@ -180,9 +178,7 @@ func TestRoomRejections(t *testing.T) {
 
 			nSender, nOther := len(sender.msgs), len(other.msgs)
 
-			if f.room.Word(tt.try.from, tt.try.word) {
-				t.Fatal("finished")
-			}
+			f.room.Word(tt.try.from, tt.try.word)
 
 			if len(sender.msgs) != nSender+1 || len(other.msgs) != nOther {
 				t.Fatalf("rejection must reach only the sender")
@@ -205,9 +201,7 @@ func TestRoomRejections(t *testing.T) {
 func TestRoomNonParticipantIgnored(t *testing.T) {
 	f := newFixture(t)
 
-	if f.room.Word(99, "москва") {
-		t.Fatal("finished")
-	}
+	f.room.Word(99, "москва")
 
 	if len(f.starter.msgs) != 1 || len(f.invited.msgs) != 1 {
 		t.Fatal("outsider word must be ignored")
@@ -313,9 +307,7 @@ func TestRoomFinishedIsFrozen(t *testing.T) {
 
 	f.clk.Advance(time.Hour)
 
-	if f.room.Word(invitedID, "анапа") {
-		t.Fatal("Word after finish must return false")
-	}
+	f.room.Word(invitedID, "анапа")
 
 	f.room.Chat(invitedID, "hi", false)
 	f.room.Leave(starterID, ReasonSurrender)
