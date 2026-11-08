@@ -10,3 +10,6 @@ logs/
 !internal/store/schema.sql
 .metrics/
 target/
+
+# superpowers artifacts
+docs/superpowers/
