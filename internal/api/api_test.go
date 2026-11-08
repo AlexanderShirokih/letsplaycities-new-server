@@ -39,6 +39,13 @@ func newTestServer(t *testing.T) *testEnv { return newTestServerLimit(t, 1000) }
 
 func newTestServerLimit(t *testing.T, limit int) *testEnv {
 	t.Helper()
+
+	return newTestServerWith(t, limit, nil)
+}
+
+// newTestServerWith builds a server; tweak, when set, adjusts the dependencies before use.
+func newTestServerWith(t *testing.T, limit int, tweak func(*Deps)) *testEnv {
+	t.Helper()
 	dbPath := filepath.Join(t.TempDir(), "t.db")
 
 	st, err := store.Open(dbPath)
@@ -48,13 +55,19 @@ func newTestServerLimit(t *testing.T, limit int) *testEnv {
 
 	t.Cleanup(func() { _ = st.Close() })
 
-	srv := NewServer(Deps{
+	deps := Deps{
 		Store:         st,
 		Verifiers:     map[string]auth.Verifier{"google": fakeVerifier{}},
 		Pepper:        []byte("pepper"),
 		NativeLimiter: auth.NewLimiter(limit, time.Minute, time.Now),
 		Now:           time.Now,
-	})
+	}
+
+	if tweak != nil {
+		tweak(&deps)
+	}
+
+	srv := NewServer(deps)
 
 	ts := httptest.NewServer(srv.Handler())
 	t.Cleanup(ts.Close)

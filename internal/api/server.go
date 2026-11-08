@@ -34,6 +34,8 @@ type Deps struct {
 type Server struct {
 	d   Deps
 	mux *http.ServeMux
+
+	dicts dictCache
 }
 
 // NewServer panics if d.NativeLimiter is nil: the auth/native rate limit is mandatory.
@@ -67,6 +69,18 @@ func (s *Server) routes() {
 	m.HandleFunc("DELETE /v1/me/avatar", s.requireUser(s.handleDeleteAvatar))
 	m.HandleFunc("GET /v1/users/{id}", s.requireUser(s.handleGetUser))
 	m.HandleFunc("GET /v1/avatars/{id}", s.handleGetAvatar)
+
+	m.HandleFunc("GET /v1/friends", s.requireUser(s.handleListFriends))
+	m.HandleFunc("PUT /v1/friends/{id}", s.requireUser(s.handlePutFriend))
+	m.HandleFunc("DELETE /v1/friends/{id}", s.requireUser(s.handleDeleteFriend))
+	m.HandleFunc("GET /v1/blocks", s.requireUser(s.handleListBlocks))
+	m.HandleFunc("PUT /v1/blocks/{id}", s.requireUser(s.handlePutBlock))
+	m.HandleFunc("DELETE /v1/blocks/{id}", s.requireUser(s.handleDeleteBlock))
+	m.HandleFunc("GET /v1/history", s.requireUser(s.handleHistory))
+	m.HandleFunc("GET /v1/city-edits", s.requireUser(s.handleListCityEdits))
+	m.HandleFunc("POST /v1/city-edits", s.requireUser(s.handlePostCityEdit))
+	m.HandleFunc("GET /v1/dictionary", s.handleDictionary)
+	m.HandleFunc("GET /v1/dictionary/{file}", s.handleDictionaryFile)
 
 	m.HandleFunc("GET /privacy-mobile.html", staticPage("static/privacy-mobile.html", "text/html; charset=utf-8"))
 	m.HandleFunc("GET /legal-mobile.txt", staticPage("static/legal-mobile.txt", "text/plain; charset=utf-8"))

@@ -1,0 +1,99 @@
+package api
+
+import (
+	"net/http"
+	"unicode/utf8"
+
+	"github.com/AlexanderShirokih/letsplaycities-new-server/internal/store"
+)
+
+const (
+	maxReasonRunes   = 64
+	maxNewCityEdits  = 50
+	cityEditsPerPage = 50
+)
+
+type cityEditJSON struct {
+	ID             int64   `json:"id"`
+	OldCountryCode int     `json:"oldCountryCode"`
+	NewCountryCode int     `json:"newCountryCode"`
+	OldName        *string `json:"oldName"`
+	NewName        *string `json:"newName"`
+	Reason         *string `json:"reason"`
+	Verdict        *string `json:"verdict"`
+	Status         string  `json:"status"`
+}
+
+func toCityEditJSON(e store.CityEdit) cityEditJSON {
+	return cityEditJSON{
+		ID: e.ID, OldCountryCode: e.OldCountry, NewCountryCode: e.NewCountry,
+		OldName: e.OldName, NewName: e.NewName, Reason: e.Reason, Verdict: e.Verdict, Status: e.Status,
+	}
+}
+
+func (s *Server) handleListCityEdits(w http.ResponseWriter, r *http.Request) {
+	list, err := s.d.Store.CityEdits(r.Context(), userFrom(r).ID, cityEditsPerPage)
+	if err != nil {
+		writeInternal(w, err)
+
+		return
+	}
+
+	out := make([]cityEditJSON, 0, len(list))
+	for _, e := range list {
+		out = append(out, toCityEditJSON(e))
+	}
+
+	writeJSON(w, http.StatusOK, out)
+}
+
+func (s *Server) handlePostCityEdit(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		OldCountryCode int     `json:"oldCountryCode"`
+		NewCountryCode int     `json:"newCountryCode"`
+		OldName        *string `json:"oldName"`
+		NewName        *string `json:"newName"`
+		Reason         *string `json:"reason"`
+	}
+
+	if !decodeJSON(w, r, &req) {
+		return
+	}
+
+	if req.Reason != nil && utf8.RuneCountInString(*req.Reason) > maxReasonRunes {
+		writeError(w, http.StatusBadRequest, "bad_reason", "Причина длиннее 64 символов")
+
+		return
+	}
+
+	ctx := r.Context()
+	uid := userFrom(r).ID
+
+	n, err := s.d.Store.CountNewCityEdits(ctx, uid)
+	if err != nil {
+		writeInternal(w, err)
+
+		return
+	}
+
+	if n >= maxNewCityEdits {
+		writeError(w, http.StatusTooManyRequests, "too_many_requests", "Слишком много необработанных заявок")
+
+		return
+	}
+
+	e := store.CityEdit{
+		OldCountry: req.OldCountryCode, NewCountry: req.NewCountryCode,
+		OldName: req.OldName, NewName: req.NewName, Reason: req.Reason, Status: "NEW",
+	}
+
+	id, err := s.d.Store.AddCityEdit(ctx, uid, e)
+	if err != nil {
+		writeInternal(w, err)
+
+		return
+	}
+
+	e.ID = id
+	writeJSON(w, http.StatusCreated, toCityEditJSON(e))
+}
