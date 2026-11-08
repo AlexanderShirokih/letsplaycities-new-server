@@ -35,3 +35,12 @@ func NativeUID(pepper []byte, deviceID string) string {
 
 	return hex.EncodeToString(m.Sum(nil))
 }
+
+const pepperCheckInput = "lps-pepper-check"
+
+// PepperCheck returns hex(HMAC-SHA256(pepper, "lps-pepper-check")). The
+// database keeps it so that the server can detect a pepper that differs
+// from the one the migration used.
+func PepperCheck(pepper []byte) string {
+	return NativeUID(pepper, pepperCheckInput)
+}

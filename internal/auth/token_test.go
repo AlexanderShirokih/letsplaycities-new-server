@@ -39,3 +39,15 @@ func TestTokenHash(t *testing.T) {
 		t.Fatal("tokens repeat")
 	}
 }
+
+func TestPepperCheck(t *testing.T) {
+	a := PepperCheck([]byte("pepper"))
+
+	if a != NativeUID([]byte("pepper"), "lps-pepper-check") {
+		t.Fatalf("check = %s, want hex HMAC of lps-pepper-check", a)
+	}
+
+	if a == PepperCheck([]byte("pepper\n")) {
+		t.Fatal("pepper ignored")
+	}
+}

@@ -38,7 +38,7 @@ func run(ctx context.Context, cfg config.Config, ln net.Listener, clk game.Clock
 		return fmt.Errorf("no dictionary in %s: %w", cfg.DataDir, err)
 	}
 
-	st, err := store.Open(filepath.Join(cfg.DataDir, "lps.db"))
+	st, err := openStore(ctx, cfg)
 	if err != nil {
 		return err
 	}
@@ -75,6 +75,23 @@ func run(ctx context.Context, cfg config.Config, ln net.Listener, clk game.Clock
 	<-hubDone
 
 	return err
+}
+
+// openStore opens lps.db and makes sure it was created with this pepper;
+// a fresh database takes it.
+func openStore(ctx context.Context, cfg config.Config) (*store.Store, error) {
+	st, err := store.Open(filepath.Join(cfg.DataDir, "lps.db"))
+	if err != nil {
+		return nil, err
+	}
+
+	if err := st.CheckPepper(ctx, auth.PepperCheck(cfg.NativePepper)); err != nil {
+		_ = st.Close()
+
+		return nil, fmt.Errorf("check pepper: %w", err)
+	}
+
+	return st, nil
 }
 
 // serve runs srv until it fails or ctx is done, in which case it shuts srv down.

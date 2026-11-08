@@ -69,3 +69,9 @@ CREATE TABLE city_edits (
 CREATE TABLE forbidden_logins (
     value TEXT PRIMARY KEY
 );
+
+-- One row: hex(HMAC-SHA256(LPS_NATIVE_PEPPER, 'lps-pepper-check')).
+CREATE TABLE meta (
+    id           INTEGER PRIMARY KEY CHECK (id = 1),
+    pepper_check TEXT NOT NULL
+);

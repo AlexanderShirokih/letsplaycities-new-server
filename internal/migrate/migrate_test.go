@@ -575,3 +575,17 @@ func TestMigrateRealDump(t *testing.T) {
 		t.Fatal("report not OK")
 	}
 }
+
+func TestMigrateWritesPepperCheck(t *testing.T) {
+	_, db := migrate(t, baseDump(t))
+
+	var check string
+
+	if err := db.QueryRow(`SELECT pepper_check FROM meta WHERE id = 1`).Scan(&check); err != nil {
+		t.Fatal(err)
+	}
+
+	if check != auth.PepperCheck([]byte(testPepper)) {
+		t.Fatalf("pepper_check = %s", check)
+	}
+}

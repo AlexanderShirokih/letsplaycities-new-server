@@ -279,6 +279,12 @@ func loadTx(ctx context.Context, tx *sql.Tx, o Options) (Report, error) {
 		return Report{}, err
 	}
 
+	// lps-server refuses to start on this database with another pepper.
+	check := auth.PepperCheck(o.Pepper)
+	if _, err := tx.ExecContext(ctx, `INSERT INTO meta (id, pepper_check) VALUES (1, ?)`, check); err != nil {
+		return Report{}, fmt.Errorf("write pepper check: %w", err)
+	}
+
 	return m.rep, nil
 }
 
