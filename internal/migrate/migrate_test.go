@@ -257,8 +257,14 @@ func TestMigrateCounts(t *testing.T) {
 	}
 }
 
-func ms(s string) int64 {
-	tm, err := time.Parse(time.DateTime, s)
+// ms is epoch ms of a UTC datetime (TIMESTAMP columns).
+func ms(s string) int64 { return msIn(s, time.UTC) }
+
+// mskMS is epoch ms of a Moscow datetime (User DATETIME columns).
+func mskMS(s string) int64 { return msIn(s, time.FixedZone("MSK", 3*3600)) }
+
+func msIn(s string, loc *time.Location) int64 {
+	tm, err := time.ParseInLocation(time.DateTime, s, loc)
 	if err != nil {
 		panic(err)
 	}
@@ -277,10 +283,10 @@ func TestMigrateUsers(t *testing.T) {
 	}
 
 	want := map[int64]row{
-		1: {"Вася 'Пупкин'", ms("2019-05-01 12:34:56"), ms("2020-01-02 03:04:05"), 1, sql.NullString{}},
-		2: {"Google", ms("2021-06-07 08:09:10"), ms("2021-06-07 08:09:10"), 2, sql.NullString{}},
-		3: {"VK", ms("2018-01-01 00:00:00"), ms("2018-01-01 00:00:00"), 0, sql.NullString{}},
-		4: {"VK twin", ms("2018-01-02 00:00:00"), ms("2018-01-03 00:00:00"), 1, sql.NullString{}},
+		1: {"Вася 'Пупкин'", mskMS("2019-05-01 12:34:56"), mskMS("2020-01-02 03:04:05"), 1, sql.NullString{}},
+		2: {"Google", mskMS("2021-06-07 08:09:10"), mskMS("2021-06-07 08:09:10"), 2, sql.NullString{}},
+		3: {"VK", mskMS("2018-01-01 00:00:00"), mskMS("2018-01-01 00:00:00"), 0, sql.NullString{}},
+		4: {"VK twin", mskMS("2018-01-02 00:00:00"), mskMS("2018-01-03 00:00:00"), 1, sql.NullString{}},
 	}
 
 	for id, w := range want {
@@ -295,6 +301,34 @@ func TestMigrateUsers(t *testing.T) {
 		if got != w {
 			t.Errorf("user %d = %+v, want %+v", id, got, w)
 		}
+	}
+}
+
+// TestMigrateTimeZones pins the zones: User DATETIME columns hold Moscow time,
+// TIMESTAMP columns were dumped in UTC.
+func TestMigrateTimeZones(t *testing.T) {
+	var d sqlDump
+
+	d.insert("Friendship", []any{1, 2, 1, "2020-01-01 03:00:00"})
+	d.insert("History", []any{1, 1, 2, "2020-01-01 03:00:00", 10, 1})
+	d.insert("User",
+		user(1, "a", "2020-01-01 03:00:00", "2020-01-02 03:00:00", "s1", nil, 1, 1),
+		user(2, "b", "2020-01-01 03:00:00", nil, "s2", nil, 1, 1))
+
+	_, db := migrate(t, &d)
+
+	var created, seen, friends, started int64
+
+	err := db.QueryRow(`SELECT u.created_at, u.last_seen_at, f.created_at, g.started_at
+		FROM users u, friendships f, games g WHERE u.id = 1`).Scan(&created, &seen, &friends, &started)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	at := func(day, hour int) int64 { return time.Date(2020, 1, day, hour, 0, 0, 0, time.UTC).UnixMilli() }
+
+	if created != at(1, 0) || seen != at(2, 0) || friends != at(1, 3) || started != at(1, 3) {
+		t.Fatalf("created %d, seen %d, friendship %d, game %d", created, seen, friends, started)
 	}
 }
 

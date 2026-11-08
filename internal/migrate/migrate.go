@@ -489,13 +489,17 @@ func (c *cols) text(i int) any {
 	return c.str(i)
 }
 
-// ms converts a UTC datetime to epoch ms; ok is false for NULL and the zero date.
-func (c *cols) ms(i int) (int64, bool) {
+// Zones of the dump's time columns: TIMESTAMP columns were dumped in UTC (TIME_ZONE='+00:00'),
+// DATETIME columns (User.reg_date, User.last_visit) hold Moscow time and are not converted by mysqldump.
+var moscow = time.FixedZone("MSK", 3*3600)
+
+// ms converts a datetime in loc to epoch ms; ok is false for NULL and the zero date.
+func (c *cols) ms(i int, loc *time.Location) (int64, bool) {
 	if c.v[i].Null || strings.HasPrefix(c.str(i), "0000-00-00") {
 		return 0, false
 	}
 
-	t, err := time.Parse(time.DateTime, c.str(i))
+	t, err := time.ParseInLocation(time.DateTime, c.str(i), loc)
 	if err != nil {
 		c.fail(i)
 
@@ -527,8 +531,8 @@ var providers = []string{"native", "google", "vk", "ok", "fb"}
 // access_hash and firebase_token are not carried over; avatar_hash is set by the Picture pass.
 func (m *migrator) loadUser(ctx context.Context, c *cols) (string, error) {
 	id, authType, role := c.int(0), c.int(9), c.intOr(8, 1)
-	created, okCreated := c.ms(2)
-	seen, okSeen := c.ms(3)
+	created, okCreated := c.ms(2, moscow)
+	seen, okSeen := c.ms(3, moscow)
 
 	if c.err != nil {
 		return "", c.err
@@ -679,7 +683,7 @@ func imageMIME(data []byte) (string, bool) {
 // loadFriendship: sender_id, receiver_id, accepted, creation_date.
 func (m *migrator) loadFriendship(ctx context.Context, c *cols) (string, error) {
 	sender, receiver, accepted := c.int(0), c.int(1), c.intOr(2, 0)
-	created, ok := c.ms(3)
+	created, ok := c.ms(3, time.UTC)
 
 	switch {
 	case c.err != nil:
@@ -711,7 +715,7 @@ func (m *migrator) loadBlock(ctx context.Context, c *cols) (string, error) {
 func (m *migrator) loadGame(ctx context.Context, c *cols) (string, error) {
 	id, starter, invited := c.int(0), c.int(1), c.int(2)
 	duration, words := c.int(4), c.int(5)
-	started, ok := c.ms(3)
+	started, ok := c.ms(3, time.UTC)
 
 	switch {
 	case c.err != nil:
