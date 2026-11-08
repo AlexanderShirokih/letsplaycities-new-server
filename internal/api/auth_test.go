@@ -11,6 +11,7 @@ func TestNativeCreatesThenFinds(t *testing.T) {
 	if a.Token == "" || a.User.Name != "Вася" || a.User.Provider != "native" || a.User.AvatarHash != nil || a.User.LastSeenAt == 0 {
 		t.Fatalf("bad response: %+v", a)
 	}
+
 	b := e.native("dev1", "Петя")
 	if b.User.ID != a.User.ID || b.User.Name != "Вася" {
 		t.Fatalf("second login: %+v", b)
@@ -39,6 +40,7 @@ func TestNativeRateLimit(t *testing.T) {
 	for i := 0; i < 10; i++ {
 		e.native("dev", "Вася")
 	}
+
 	resp, data := e.do("POST", "/v1/auth/native", "", map[string]string{"deviceId": "dev", "name": "Вася"})
 	e.wantError(resp, data, 429, "too_many_requests")
 }
@@ -62,11 +64,13 @@ func TestSocialLogin(t *testing.T) {
 	if resp.StatusCode != 200 {
 		t.Fatalf("%d %s", resp.StatusCode, data)
 	}
+
 	var a, b authResp
 	json.Unmarshal(data, &a)
 	if a.User.Provider != "google" || a.Token == "" {
 		t.Fatalf("%+v", a)
 	}
+
 	body["name"] = "Другой"
 	_, data = e.do("POST", "/v1/auth/social", "", body)
 	json.Unmarshal(data, &b)
@@ -100,6 +104,7 @@ func TestLogout(t *testing.T) {
 	if resp.StatusCode != 204 {
 		t.Fatalf("logout status %d", resp.StatusCode)
 	}
+
 	resp, data := e.do("GET", "/v1/me", a.Token, nil)
 	e.wantError(resp, data, 401, "unauthorized")
 }

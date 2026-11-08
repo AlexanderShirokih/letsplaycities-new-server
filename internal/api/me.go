@@ -24,9 +24,11 @@ func (s *Server) handlePatchMe(w http.ResponseWriter, r *http.Request) {
 		Name     *string `json:"name"`
 		FCMToken *string `json:"fcmToken"`
 	}
+
 	if !decodeJSON(w, r, &req) {
 		return
 	}
+
 	ctx := r.Context()
 	u := userFrom(r)
 	if req.Name != nil {
@@ -34,19 +36,26 @@ func (s *Server) handlePatchMe(w http.ResponseWriter, r *http.Request) {
 		if !ok {
 			return
 		}
+
 		if err := s.d.Store.UpdateName(ctx, u.ID, name); err != nil {
 			writeInternal(w, err)
+
 			return
 		}
+
 		u.Name = name
 	}
+
 	if req.FCMToken != nil {
 		if err := s.d.Store.UpdateFCMToken(ctx, u.ID, *req.FCMToken); err != nil {
 			writeInternal(w, err)
+
 			return
 		}
+
 		u.FCMToken = *req.FCMToken
 	}
+
 	writeJSON(w, http.StatusOK, toUserJSON(u))
 }
 
@@ -59,26 +68,35 @@ func (s *Server) handlePutAvatar(w http.ResponseWriter, r *http.Request) {
 	data, err := io.ReadAll(http.MaxBytesReader(w, r.Body, maxAvatar))
 	if err != nil {
 		var tooBig *http.MaxBytesError
+
 		if errors.As(err, &tooBig) {
 			writeError(w, http.StatusRequestEntityTooLarge, "too_large", "Файл больше 64 КБ")
+
 			return
 		}
+
 		writeError(w, http.StatusBadRequest, "bad_request", "Некорректный запрос")
+
 		return
 	}
+
 	mt, _, _ := mime.ParseMediaType(r.Header.Get("Content-Type"))
 	sig, ok := signatures[mt]
 	if !ok || !strings.HasPrefix(string(data), sig) {
 		writeError(w, http.StatusBadRequest, "bad_image", "Нужна картинка PNG или JPEG")
+
 		return
 	}
+
 	sum := sha256.Sum256(data)
 	hash := hex.EncodeToString(sum[:])[:16]
 	u := userFrom(r)
 	if err := s.d.Store.SetAvatar(r.Context(), u.ID, store.Avatar{MIME: mt, Data: data}, hash); err != nil {
 		writeInternal(w, err)
+
 		return
 	}
+
 	u.AvatarHash = hash
 	writeJSON(w, http.StatusOK, toUserJSON(u))
 }
@@ -86,8 +104,10 @@ func (s *Server) handlePutAvatar(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleDeleteAvatar(w http.ResponseWriter, r *http.Request) {
 	if err := s.d.Store.DeleteAvatar(r.Context(), userFrom(r).ID); err != nil {
 		writeInternal(w, err)
+
 		return
 	}
+
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -95,17 +115,23 @@ func (s *Server) handleGetAvatar(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
 		writeError(w, http.StatusNotFound, "not_found", "Аватарка не найдена")
+
 		return
 	}
+
 	av, hash, err := s.d.Store.Avatar(r.Context(), id)
 	if errors.Is(err, store.ErrNotFound) {
 		writeError(w, http.StatusNotFound, "not_found", "Аватарка не найдена")
+
 		return
 	}
+
 	if err != nil {
 		writeInternal(w, err)
+
 		return
 	}
+
 	etag := `"` + hash + `"`
 	h := w.Header()
 	h.Set("ETag", etag)
@@ -114,13 +140,16 @@ func (s *Server) handleGetAvatar(w http.ResponseWriter, r *http.Request) {
 	} else {
 		h.Set("Cache-Control", "no-cache")
 	}
+
 	for _, c := range strings.Split(r.Header.Get("If-None-Match"), ",") {
 		c = strings.TrimPrefix(strings.TrimSpace(c), "W/")
 		if c == etag || c == "*" {
 			w.WriteHeader(http.StatusNotModified)
+
 			return
 		}
 	}
+
 	h.Set("Content-Type", av.MIME)
 	h.Set("Content-Length", strconv.Itoa(len(av.Data)))
 	w.Write(av.Data)

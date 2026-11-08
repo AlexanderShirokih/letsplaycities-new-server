@@ -24,6 +24,7 @@ func (fakeVerifier) Verify(_ context.Context, token string) (string, error) {
 	if uid, ok := strings.CutPrefix(token, "good-"); ok {
 		return uid, nil
 	}
+
 	return "", auth.ErrInvalidToken
 }
 
@@ -43,6 +44,7 @@ func newTestServerLimit(t *testing.T, limit int) *testEnv {
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	t.Cleanup(func() { st.Close() })
 	srv := NewServer(Deps{
 		Store:         st,
@@ -51,8 +53,10 @@ func newTestServerLimit(t *testing.T, limit int) *testEnv {
 		NativeLimiter: auth.NewLimiter(limit, time.Minute, time.Now),
 		Now:           time.Now,
 	})
+
 	ts := httptest.NewServer(srv.Handler())
 	t.Cleanup(ts.Close)
+
 	return &testEnv{t: t, ts: ts, store: st, dbPath: dbPath}
 }
 
@@ -63,6 +67,7 @@ func (e *testEnv) sql(q string, args ...any) {
 	if err != nil {
 		e.t.Fatal(err)
 	}
+
 	defer db.Close()
 	if _, err := db.Exec(q, args...); err != nil {
 		e.t.Fatal(err)
@@ -83,28 +88,36 @@ func (e *testEnv) do(method, path, token string, body any, hdr ...string) (*http
 		if err != nil {
 			e.t.Fatal(err)
 		}
+
 		rd = bytes.NewReader(raw)
 		ct = "application/json"
 	}
+
 	req, err := http.NewRequest(method, e.ts.URL+path, rd)
 	if err != nil {
 		e.t.Fatal(err)
 	}
+
 	if ct != "" {
 		req.Header.Set("Content-Type", ct)
 	}
+
 	if token != "" {
 		req.Header.Set("Authorization", "Bearer "+token)
 	}
+
 	for i := 0; i+1 < len(hdr); i += 2 {
 		req.Header.Set(hdr[i], hdr[i+1])
 	}
+
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		e.t.Fatal(err)
 	}
+
 	defer resp.Body.Close()
 	data, _ := io.ReadAll(resp.Body)
+
 	return resp, data
 }
 
@@ -126,9 +139,11 @@ func (e *testEnv) wantError(resp *http.Response, data []byte, status int, code s
 	if resp.StatusCode != status {
 		e.t.Fatalf("status %d, want %d: %s", resp.StatusCode, status, data)
 	}
+
 	var er struct {
 		Error struct{ Code, Message string } `json:"error"`
 	}
+
 	if err := json.Unmarshal(data, &er); err != nil || er.Error.Code != code || er.Error.Message == "" {
 		e.t.Fatalf("error body %s, want code %q with message", data, code)
 	}
@@ -140,10 +155,12 @@ func (e *testEnv) native(device, name string) authResp {
 	if resp.StatusCode != 200 {
 		e.t.Fatalf("native: %d %s", resp.StatusCode, data)
 	}
+
 	var a authResp
 	if err := json.Unmarshal(data, &a); err != nil {
 		e.t.Fatal(err)
 	}
+
 	return a
 }
 
@@ -153,9 +170,11 @@ func (e *testEnv) me(token string) testUser {
 	if resp.StatusCode != 200 {
 		e.t.Fatalf("me: %d %s", resp.StatusCode, data)
 	}
+
 	var u testUser
 	if err := json.Unmarshal(data, &u); err != nil {
 		e.t.Fatal(err)
 	}
+
 	return u
 }

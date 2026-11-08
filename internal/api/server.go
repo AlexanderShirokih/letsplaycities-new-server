@@ -40,8 +40,10 @@ func NewServer(d Deps) *Server {
 	if d.Now == nil {
 		d.Now = time.Now
 	}
+
 	s := &Server{d: d, mux: http.NewServeMux()}
 	s.routes()
+
 	return s
 }
 
@@ -74,8 +76,10 @@ func staticPage(name, ctype string) http.HandlerFunc {
 		data, err := staticFS.ReadFile(name)
 		if err != nil {
 			writeError(w, http.StatusNotFound, "not_found", "Не найдено")
+
 			return
 		}
+
 		w.Header().Set("Content-Type", ctype)
 		w.Write(data)
 	}
@@ -105,8 +109,10 @@ func decodeJSON(w http.ResponseWriter, r *http.Request, v any) bool {
 	r.Body = http.MaxBytesReader(w, r.Body, maxJSONBody)
 	if err := json.NewDecoder(r.Body).Decode(v); err != nil {
 		writeError(w, http.StatusBadRequest, "bad_request", "Некорректный запрос")
+
 		return false
 	}
+
 	return true
 }
 
@@ -122,6 +128,7 @@ func bearerToken(r *http.Request) string {
 	if len(h) > 7 && strings.EqualFold(h[:7], "Bearer ") {
 		return strings.TrimSpace(h[7:])
 	}
+
 	return ""
 }
 
@@ -132,16 +139,20 @@ func (s *Server) Authenticate(r *http.Request) (store.User, error) {
 	if tok == "" {
 		return store.User{}, ErrUnauthorized
 	}
+
 	u, err := s.d.Store.UserBySession(r.Context(), auth.HashToken(tok))
 	if errors.Is(err, store.ErrNotFound) {
 		return store.User{}, ErrUnauthorized
 	}
+
 	if err != nil {
 		return store.User{}, err
 	}
+
 	if u.Role == store.RoleBanned {
 		return store.User{}, ErrBanned
 	}
+
 	return u, nil
 }
 
@@ -161,6 +172,7 @@ type ctxKey struct{}
 
 func userFrom(r *http.Request) store.User {
 	u, _ := r.Context().Value(ctxKey{}).(store.User)
+
 	return u
 }
 
@@ -169,13 +181,17 @@ func (s *Server) requireUser(h http.HandlerFunc) http.HandlerFunc {
 		u, err := s.Authenticate(r)
 		if err != nil {
 			WriteAuthError(w, err)
+
 			return
 		}
+
 		now := s.d.Now()
 		if err := s.d.Store.TouchLastSeen(r.Context(), u.ID, now); err != nil {
 			writeInternal(w, err)
+
 			return
 		}
+
 		u.LastSeenAt = now
 		h(w, r.WithContext(context.WithValue(r.Context(), ctxKey{}, u)))
 	}
@@ -186,6 +202,7 @@ func clientIP(r *http.Request) string {
 	if err != nil {
 		return r.RemoteAddr
 	}
+
 	return host
 }
 
@@ -205,5 +222,6 @@ func toUserJSON(u store.User) userJSON {
 		h := u.AvatarHash
 		j.AvatarHash = &h
 	}
+
 	return j
 }
