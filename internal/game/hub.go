@@ -49,8 +49,7 @@ const (
 	statePlaying
 )
 
-// session is a connected user. It is also the user's Seat in a room, so a
-// room keeps working when the connection is replaced.
+// session is a connected user. It is also the user's Seat in a room.
 type session struct {
 	user  store.User
 	conn  Conn
@@ -159,7 +158,8 @@ func (h *Hub) Run(ctx context.Context) {
 }
 
 // Connect registers a connection for u. An existing connection of the same
-// user is replaced: it gets error{replaced} and is closed.
+// user is replaced: its game is lost, then it gets error{replaced} and is
+// closed.
 func (h *Hub) Connect(u store.User, c Conn) {
 	h.enqueue(func() { h.connect(u, c) })
 }
@@ -202,6 +202,8 @@ func (h *Hub) connect(u store.User, c Conn) {
 		return
 	}
 
+	h.forfeit(s)
+
 	old := s.conn
 	old.Send(Error(ErrCodeReplaced))
 	old.Close(ErrCodeReplaced)
@@ -225,7 +227,11 @@ func (h *Hub) drop(s *session) {
 	s.conn = nil
 	delete(h.sessions, s.user.ID)
 	h.toIdle(s)
+	h.forfeit(s)
+}
 
+// forfeit ends the game of s, if any, as if s had left: the opponent wins.
+func (h *Hub) forfeit(s *session) {
 	if g := s.game; g != nil {
 		g.room.Leave(s.user.ID, ReasonOpponentLeft)
 		h.finishGame(g)
@@ -270,10 +276,6 @@ func (h *Hub) hello(s *session, m ClientMsg) {
 	}
 
 	s.state = stateIdle
-	if s.game != nil {
-		s.state = statePlaying
-	}
-
 	s.Send(Welcome(userView(s.user)))
 }
 

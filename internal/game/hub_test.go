@@ -661,18 +661,34 @@ func TestReplacedConnection(t *testing.T) {
 	wantMatch(t, cb, userA, false)
 }
 
-func TestReplacedConnectionKeepsRoom(t *testing.T) {
+func TestReplacedConnectionEndsGame(t *testing.T) {
 	f := newHubFixture(t)
-	_, cb := f.play(userA, userB)
-
-	fresh := f.login(userA)
+	old, cb := f.play(userA, userB)
 	f.send(userA, ClientMsg{Type: TypeWord, Text: "москва"})
 
-	if m := wantType(t, fresh, TypeWord); m["status"] != WordAccepted {
-		t.Fatalf("new conn: %v", m)
+	fresh := f.connect(userA)
+
+	wantGameOver(t, cb, ReasonOpponentLeft, userA)
+	wantError(t, old, ErrCodeReplaced)
+
+	if old.count(TypeGameOver) != 1 || len(fresh.msgs) != 0 {
+		t.Fatalf("old %s, fresh %s", old.msgs, fresh.msgs)
 	}
 
-	wantType(t, cb, TypeWord)
+	if len(f.st.games) != 1 || f.st.games[0].StarterID != userA || f.st.games[0].Words != 1 {
+		t.Fatalf("games: %+v", f.st.games)
+	}
+
+	f.send(userA, ClientMsg{Type: TypeHello, Protocol: 1, Client: "test"})
+	wantType(t, fresh, TypeWelcome)
+	f.send(userA, ClientMsg{Type: TypeFind})
+
+	wantType(t, fresh, TypeQueued)
+
+	f.send(userB, ClientMsg{Type: TypeFind})
+
+	wantMatch(t, fresh, userB, true)
+	wantMatch(t, cb, userA, false)
 }
 
 func TestDisconnectInGame(t *testing.T) {
