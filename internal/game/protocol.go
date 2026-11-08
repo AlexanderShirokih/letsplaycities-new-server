@@ -52,6 +52,14 @@ const (
 	InviteExpired    = "expired"
 )
 
+// Friendship values, as in REST /v1/users/{id}.
+const (
+	FriendshipNone     = "none"
+	FriendshipFriends  = "friends"
+	FriendshipIncoming = "incoming"
+	FriendshipOutgoing = "outgoing"
+)
+
 // Error codes.
 const (
 	ErrCodeBadMessage          = "bad_message"
@@ -114,7 +122,8 @@ type UserView struct {
 	LastSeenAt int64   `json:"lastSeenAt,omitempty"`
 }
 
-// Opponent describes the other player in a match.
+// Opponent describes the other player in a match. Friendship is one of the
+// Friendship* constants.
 type Opponent struct {
 	ID         int64   `json:"id"`
 	Name       string  `json:"name"`

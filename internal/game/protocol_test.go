@@ -62,7 +62,7 @@ func TestServerFixtures(t *testing.T) {
 		"queued":       Queued(),
 		"inviteStatus": InviteStatus(12407, InviteSent),
 		"match": Match(58231, Opponent{
-			ID: 12408, Name: "Дмитрий", Friendship: "accepted",
+			ID: 12408, Name: "Дмитрий", Friendship: FriendshipFriends,
 		}, true, 92),
 		"word":     Word(14397, "Архангельск", WordAccepted),
 		"chat":     Chat(12408, "Хороший ход!"),
