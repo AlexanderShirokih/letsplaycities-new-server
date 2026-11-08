@@ -2,6 +2,7 @@ package game
 
 import (
 	"log"
+	"time"
 
 	"github.com/AlexanderShirokih/letsplaycities-new-server/internal/store"
 )
@@ -26,9 +27,13 @@ func (h *Hub) addBot(b *Bot) {
 	h.bots = append(h.bots, s)
 }
 
-// armBotWait schedules a bot check for the queue entry seq of userID.
-func (h *Hub) armBotWait(userID, seq int64) {
-	h.clk.AfterFunc(h.cfg.BotsWait, func() {
+// minBotRetry bounds the interval between repeated bot checks, so that
+// BotsWait = 0 does not turn the retry into a busy loop.
+const minBotRetry = time.Second
+
+// armBotWait schedules a bot check for the queue entry seq of userID after d.
+func (h *Hub) armBotWait(userID, seq int64, d time.Duration) {
+	h.clk.AfterFunc(d, func() {
 		h.enqueue(func() { h.botCheck(userID, seq) })
 	})
 }
@@ -36,7 +41,8 @@ func (h *Hub) armBotWait(userID, seq int64) {
 // botCheck matches a player who is still in the same queue entry with the
 // first free bot it is not blocked with. The player moves first. Without a
 // free bot the player stays in the queue and the bot wait is armed again
-// for the same entry.
+// for the same entry, as it is after a store error. Retries wait
+// max(BotsWait, minBotRetry).
 func (h *Hub) botCheck(userID, seq int64) {
 	s, ok := h.sessions[userID]
 	if !ok || s.state != stateQueued || s.queueSeq != seq {
@@ -48,8 +54,9 @@ func (h *Hub) botCheck(userID, seq int64) {
 	switch {
 	case err != nil:
 		log.Printf("game: bot match for user %d: %v", userID, err)
+		h.armBotWait(userID, seq, max(h.cfg.BotsWait, minBotRetry))
 	case bot == nil:
-		h.armBotWait(userID, seq)
+		h.armBotWait(userID, seq, max(h.cfg.BotsWait, minBotRetry))
 	default:
 		h.dequeue(s)
 		h.startGame(s, bot, ab, ba)

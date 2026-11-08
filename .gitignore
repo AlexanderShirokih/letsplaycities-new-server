@@ -9,3 +9,4 @@ lps.db*
 logs/
 !internal/store/schema.sql
 .metrics/
+target/

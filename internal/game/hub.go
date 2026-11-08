@@ -313,7 +313,7 @@ func (h *Hub) joinQueue(s *session) {
 
 	h.queueSeq++
 	s.queueSeq = h.queueSeq
-	h.armBotWait(s.user.ID, s.queueSeq)
+	h.armBotWait(s.user.ID, s.queueSeq, h.cfg.BotsWait)
 }
 
 func (h *Hub) cancel(s *session, _ ClientMsg) {

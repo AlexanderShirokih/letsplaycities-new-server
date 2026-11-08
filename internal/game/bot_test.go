@@ -176,6 +176,54 @@ func TestBotStaleMoveDropped(t *testing.T) {
 	}
 }
 
+func TestBotRetryIntervalBoundedWithZeroWait(t *testing.T) {
+	f := newBotFixture(t, true, bot1)
+	f.hub.cfg.BotsWait = 0
+	f.playBot(userB, bot1)
+
+	f.login(userA)
+	f.send(userA, ClientMsg{Type: TypeFind})
+	f.advance(0)
+
+	if n := len(f.hub.events); n != 0 {
+		t.Fatalf("busy loop: %d events pending", n)
+	}
+
+	want := f.clk.Now().Add(time.Second)
+	n := 0
+
+	for _, tm := range f.clk.timers {
+		if tm.at.Equal(want) {
+			n++
+		}
+	}
+
+	if n != 1 {
+		t.Fatalf("want one bot timer at +1s, got %d", n)
+	}
+}
+
+func TestBotRetryAfterStoreError(t *testing.T) {
+	f := newBotFixture(t, true, bot1)
+	ca := f.login(userA)
+
+	f.send(userA, ClientMsg{Type: TypeFind})
+
+	f.st.err = errStore
+	f.advance(botsWait)
+
+	f.st.err = nil
+	f.advance(botsWait - time.Second)
+
+	if ca.count(TypeMatch) != 0 {
+		t.Fatal("matched before the retry interval elapsed")
+	}
+
+	f.advance(time.Second)
+
+	wantMatch(t, ca, bot1, true)
+}
+
 func TestBotWaitRestartsOnRequeue(t *testing.T) {
 	f := newBotFixture(t, true, botIDs...)
 	ca := f.login(userA)
