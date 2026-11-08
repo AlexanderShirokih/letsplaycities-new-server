@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"testing"
 )
 
@@ -190,5 +191,60 @@ func TestPick(t *testing.T) {
 	// preferred country with no candidate falls back
 	if _, ok := d.Pick('а', 3, []uint16{42}, func(string) bool { return false }, rnd); !ok {
 		t.Fatal("fallback failed")
+	}
+}
+
+func TestCitiesKeepFileOrder(t *testing.T) {
+	cities := []City{{Name: "омск", Diff: 1, Country: 51}, {Name: "анкара", Country: 109}, {Name: "бонн", Diff: 2, Country: 118}}
+
+	d, err := Parse(bytes.NewReader(buildDB(t, 1, cities)))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	got := d.Cities()
+	if len(got) != len(cities) {
+		t.Fatalf("len = %d", len(got))
+	}
+
+	for i := range cities {
+		if got[i] != cities[i] {
+			t.Errorf("Cities()[%d] = %+v, want %+v", i, got[i], cities[i])
+		}
+	}
+}
+
+func TestWriteReproducesV80(t *testing.T) {
+	orig, err := os.ReadFile("../../testdata/dict/data-80.db2")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	d, err := Parse(bytes.NewReader(orig))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var buf bytes.Buffer
+	if err := Write(&buf, 80, d.Cities()); err != nil {
+		t.Fatal(err)
+	}
+
+	got := buf.Bytes()
+	if len(got) != len(orig) {
+		t.Fatalf("size = %d, want %d", len(got), len(orig))
+	}
+
+	// The trailer's 6-character suffix is arbitrary.
+	if body := len(orig) - checkSuffix; !bytes.Equal(got[:body], orig[:body]) {
+		t.Fatal("records differ from the original file")
+	}
+}
+
+func TestWriteRejectsBadCity(t *testing.T) {
+	for _, c := range []City{{Name: ""}, {Name: "москва", Diff: 4}, {Name: "Москва"}, {Name: strings.Repeat("а", 256)}} {
+		if err := Write(&bytes.Buffer{}, 1, []City{c}); err == nil {
+			t.Errorf("%+v accepted", c)
+		}
 	}
 }

@@ -3,6 +3,7 @@ package dict
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -34,8 +35,9 @@ type City struct {
 type Dictionary struct {
 	Version int
 
-	cities map[string]City
-	byRune map[rune][]string
+	cities  map[string]City
+	byRune  map[rune][]string
+	ordered []City
 }
 
 // Parse reads a .db2 stream.
@@ -119,6 +121,8 @@ func checkTrailer(br *bufio.Reader, count uint32) error {
 }
 
 func (d *Dictionary) add(c City) {
+	d.ordered = append(d.ordered, c)
+
 	if _, dup := d.cities[c.Name]; !dup {
 		first, _ := utf8.DecodeRuneInString(c.Name)
 		d.byRune[first] = append(d.byRune[first], c.Name)
@@ -201,6 +205,77 @@ func fileNumber(name string) (int, bool) {
 	n, err := strconv.Atoi(m[1])
 
 	return n, err == nil
+}
+
+// trailerSuffix pads the check record; readers ignore its value.
+const trailerSuffix = "lpsgeo"
+
+// Write encodes cities as a .db2 file with the given version.
+func Write(w io.Writer, version uint32, cities []City) error {
+	var buf bytes.Buffer
+
+	_ = binary.Write(&buf, binary.BigEndian, struct {
+		Magic, Settings uint16
+		Version, Count  uint32
+	}{magic, settingsV1, version, uint32(len(cities))})
+
+	for i, c := range cities {
+		if c.Diff > 3 {
+			return fmt.Errorf("dict: city %d %q: diff %d out of range", i, c.Name, c.Diff)
+		}
+
+		if err := writeRecord(&buf, c.Name, c.Diff, c.Country); err != nil {
+			return fmt.Errorf("dict: city %d: %w", i, err)
+		}
+	}
+
+	if err := writeRecord(&buf, strconv.Itoa(len(cities))+trailerSuffix, 0xFF, 0); err != nil {
+		return err
+	}
+
+	_, err := w.Write(buf.Bytes())
+
+	return err
+}
+
+func writeRecord(buf *bytes.Buffer, name string, diff uint8, country uint16) error {
+	raw, err := encodeRaw(name)
+	if err != nil {
+		return err
+	}
+
+	buf.WriteByte(byte(len(raw)))
+	buf.WriteByte(diff)
+	_ = binary.Write(buf, binary.BigEndian, country)
+	buf.Write(raw)
+
+	return nil
+}
+
+func encodeRaw(name string) ([]byte, error) {
+	var raw []byte
+
+	for _, r := range name {
+		switch {
+		case r < 127:
+			raw = append(raw, byte(r))
+		case r >= 127+cyrillicBase && r <= 255+cyrillicBase:
+			raw = append(raw, byte(r-cyrillicBase))
+		default:
+			return nil, fmt.Errorf("%q: rune %q cannot be encoded", name, r)
+		}
+	}
+
+	if len(raw) == 0 || len(raw) > 255 {
+		return nil, fmt.Errorf("%q: encoded length %d out of range", name, len(raw))
+	}
+
+	return raw, nil
+}
+
+// Cities returns all records in file order.
+func (d *Dictionary) Cities() []City {
+	return append([]City(nil), d.ordered...)
 }
 
 // Contains reports whether word is in the dictionary.
