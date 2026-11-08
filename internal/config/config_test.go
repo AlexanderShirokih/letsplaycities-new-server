@@ -90,3 +90,15 @@ func TestLoadBadDuration(t *testing.T) {
 		t.Fatalf("err = %v", err)
 	}
 }
+
+func TestLoadDomainWinsOverFiles(t *testing.T) {
+	m := base()
+	m["LPS_DOMAIN"] = "example.org"
+	c, err := Load(env(m))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if c.TLS() != TLSAutocert {
+		t.Fatal("want TLSAutocert when domain and files are both set")
+	}
+}

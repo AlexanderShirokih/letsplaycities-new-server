@@ -1,7 +1,7 @@
 lps.db*
 *.sql
 *.sql.gz
-dump/
+/dump/
 !testdata/dump/*.sql
 /bin/
 .idea/

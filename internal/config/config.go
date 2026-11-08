@@ -90,12 +90,13 @@ func Load(getenv func(string) string) (Config, error) {
 	return c, nil
 }
 
-// TLS reports how the server obtains its certificate: explicit files win over autocert.
+// TLS reports how the server obtains its certificate: autocert whenever a
+// domain is set, certificate files otherwise.
 func (c Config) TLS() TLSMode {
-	if c.TLSCert != "" && c.TLSKey != "" {
-		return TLSFiles
+	if c.Domain != "" {
+		return TLSAutocert
 	}
-	return TLSAutocert
+	return TLSFiles
 }
 
 func splitList(s string) []string {
