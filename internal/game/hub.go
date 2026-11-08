@@ -4,7 +4,6 @@ import (
 	"context"
 	"log"
 	"slices"
-	"strconv"
 	"time"
 	"unicode/utf8"
 
@@ -81,12 +80,6 @@ func (g *activeGame) opponent(s *session) *session {
 	}
 
 	return g.players[0]
-}
-
-// invite is an outstanding invitation, keyed by the inviter.
-type invite struct {
-	from, to int64
-	stop     func() bool
 }
 
 // Hub owns sessions, the matchmaking queue, invites and rooms. Its state is
@@ -327,56 +320,6 @@ func (h *Hub) joinQueue(s *session) {
 	})
 }
 
-func (h *Hub) addBot(b *Bot) {
-	id := b.spec.UserID
-	if _, ok := h.sessions[id]; ok {
-		log.Printf("game: add bot %d: user is already connected", id)
-
-		return
-	}
-
-	u, err := h.user(id)
-	if err != nil {
-		log.Printf("game: add bot %d: %v", id, err)
-
-		return
-	}
-
-	s := &session{user: u, conn: b, state: stateIdle}
-	h.sessions[id] = s
-	h.bots = append(h.bots, s)
-}
-
-// botCheck matches a player who is still in the same queue entry with the
-// first free bot it is not blocked with. The player moves first. Without a
-// free bot the player stays in the queue.
-func (h *Hub) botCheck(userID, seq int64) {
-	s, ok := h.sessions[userID]
-	if !ok || s.state != stateQueued || s.queueSeq != seq {
-		return
-	}
-
-	for _, bot := range h.bots {
-		if bot.game != nil || bot.state != stateIdle {
-			continue
-		}
-
-		ab, ba, err := h.relations(s, bot)
-		if err != nil {
-			log.Printf("game: bot match for user %d: %v", userID, err)
-
-			return
-		}
-
-		if ab.Blocked == store.BlockedNone {
-			h.dequeue(s)
-			h.startGame(s, bot, ab, ba)
-
-			return
-		}
-	}
-}
-
 func (h *Hub) cancel(s *session, _ ClientMsg) {
 	switch s.state {
 	case stateQueued, stateInviting:
@@ -384,147 +327,6 @@ func (h *Hub) cancel(s *session, _ ClientMsg) {
 	default:
 		s.Send(Error(ErrCodeInvalidState))
 	}
-}
-
-func (h *Hub) invite(s *session, m ClientMsg) {
-	if s.state != stateIdle {
-		s.Send(Error(ErrCodeInvalidState))
-
-		return
-	}
-
-	status, err := h.inviteStatus(s.user, m.UserID)
-	if err != nil {
-		h.fail(s, "invite", err)
-
-		return
-	}
-
-	if status == InviteSent {
-		h.addInvite(s, m.UserID)
-	}
-
-	s.Send(InviteStatus(m.UserID, status))
-}
-
-// inviteStatus runs the invite checks in the order of the spec and sends
-// the push when they pass.
-func (h *Hub) inviteStatus(from store.User, to int64) (string, error) {
-	rel, err := h.relation(from.ID, to)
-	if err != nil {
-		return "", err
-	}
-
-	switch {
-	case rel.Blocked != store.BlockedNone:
-		return InviteBlocked, nil
-	case rel.Friendship != store.FriendFriends:
-		return InviteNotFriends, nil
-	case h.playing(to):
-		return InviteBusy, nil
-	}
-
-	target, err := h.user(to)
-	if err != nil {
-		return "", err
-	}
-
-	if target.FCMToken == "" || !h.sendInvitePush(from, target.FCMToken) {
-		return InviteOffline, nil
-	}
-
-	return InviteSent, nil
-}
-
-func (h *Hub) playing(userID int64) bool {
-	s, ok := h.sessions[userID]
-
-	return ok && s.game != nil
-}
-
-func (h *Hub) sendInvitePush(from store.User, token string) bool {
-	ctx, cancel := context.WithTimeout(h.ctx, callTimeout)
-	defer cancel()
-
-	data := map[string]string{
-		"type":     "invite",
-		"fromId":   strconv.FormatInt(from.ID, 10),
-		"fromName": from.Name,
-	}
-
-	if err := h.push.Send(ctx, token, data); err != nil {
-		log.Printf("game: invite push from %d: %v", from.ID, err)
-
-		return false
-	}
-
-	return true
-}
-
-func (h *Hub) addInvite(s *session, to int64) {
-	inv := &invite{from: s.user.ID, to: to}
-	inv.stop = h.clk.AfterFunc(h.cfg.InviteTTL, func() {
-		h.enqueue(func() { h.inviteExpired(inv) })
-	})
-
-	h.invites[inv.from] = inv
-	s.state = stateInviting
-}
-
-func (h *Hub) inviteExpired(inv *invite) {
-	if h.invites[inv.from] != inv {
-		return
-	}
-
-	h.withdraw(inv.from)
-	h.sessions[inv.from].Send(InviteStatus(inv.to, InviteExpired))
-}
-
-func (h *Hub) inviteReply(s *session, m ClientMsg) {
-	inv, ok := h.invites[m.UserID]
-	if !ok || inv.to != s.user.ID {
-		s.Send(InviteStatus(m.UserID, InviteExpired))
-
-		return
-	}
-
-	if !m.Accept {
-		h.withdraw(inv.from)
-		h.sessions[inv.from].Send(InviteStatus(s.user.ID, InviteDeclined))
-
-		return
-	}
-
-	h.acceptInvite(s, inv)
-}
-
-func (h *Hub) acceptInvite(s *session, inv *invite) {
-	if s.state == statePlaying {
-		s.Send(Error(ErrCodeInvalidState))
-
-		return
-	}
-
-	inviter := h.sessions[inv.from]
-
-	ab, ba, err := h.relations(inviter, s)
-	if err != nil {
-		h.fail(s, "accept", err)
-
-		return
-	}
-
-	h.withdraw(inv.from)
-
-	if ab.Blocked != store.BlockedNone {
-		s.Send(InviteStatus(inviter.user.ID, InviteBlocked))
-		inviter.Send(InviteStatus(s.user.ID, InviteBlocked))
-
-		return
-	}
-
-	h.toIdle(s)
-	h.startGame(inviter, s, ab, ba)
 }
 
 func (h *Hub) word(s *session, m ClientMsg) {
@@ -617,7 +419,7 @@ func (h *Hub) finishGame(g *activeGame) {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(h.ctx, callTimeout)
+	ctx, cancel := h.callCtx()
 	defer cancel()
 
 	if _, err := h.st.RecordGame(ctx, res); err != nil {
@@ -641,28 +443,19 @@ func (h *Hub) dequeue(s *session) {
 	s.state = stateIdle
 }
 
-func (h *Hub) withdraw(from int64) {
-	inv, ok := h.invites[from]
-	if !ok {
-		return
-	}
-
-	inv.stop()
-	delete(h.invites, from)
-
-	if s, ok := h.sessions[from]; ok && s.state == stateInviting {
-		s.state = stateIdle
-	}
-}
-
 // fail logs a store error and reports it to the requester.
 func (h *Hub) fail(s *session, op string, err error) {
 	log.Printf("game: %s for user %d: %v", op, s.user.ID, err)
 	s.Send(Error(ErrCodeInvalidState))
 }
 
+// callCtx bounds one store or push call.
+func (h *Hub) callCtx() (context.Context, context.CancelFunc) {
+	return context.WithTimeout(h.ctx, callTimeout)
+}
+
 func (h *Hub) relation(viewer, other int64) (store.Relation, error) {
-	ctx, cancel := context.WithTimeout(h.ctx, callTimeout)
+	ctx, cancel := h.callCtx()
 	defer cancel()
 
 	return h.st.Relation(ctx, viewer, other)
@@ -679,7 +472,7 @@ func (h *Hub) relations(a, b *session) (ab, ba store.Relation, err error) {
 }
 
 func (h *Hub) user(id int64) (store.User, error) {
-	ctx, cancel := context.WithTimeout(h.ctx, callTimeout)
+	ctx, cancel := h.callCtx()
 	defer cancel()
 
 	return h.st.User(ctx, id)
