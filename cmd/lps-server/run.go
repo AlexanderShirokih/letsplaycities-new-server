@@ -26,8 +26,8 @@ const (
 	headerTimeout     = 10 * time.Second
 	shutdownTimeout   = 10 * time.Second
 	idleTimeout       = 120 * time.Second
-	nativeLimit       = 10
-	nativeWindow      = time.Minute
+	authLimit         = 10 // per IP and window, for each of auth/native and auth/social
+	authWindow        = time.Minute
 )
 
 // run wires the server together and serves on ln until ctx is done, then
@@ -127,7 +127,8 @@ func newHandler(
 		Store:         st,
 		Verifiers:     auth.NewVerifiers(cfg, hc),
 		Pepper:        cfg.NativePepper,
-		NativeLimiter: auth.NewLimiter(nativeLimit, nativeWindow, time.Now),
+		NativeLimiter: auth.NewLimiter(authLimit, authWindow, time.Now),
+		SocialLimiter: auth.NewLimiter(authLimit, authWindow, time.Now),
 		Dict:          func() *dict.Dictionary { return d },
 		DictPath:      func() string { return dictPath },
 		Now:           time.Now,

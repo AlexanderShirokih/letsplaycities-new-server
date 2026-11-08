@@ -27,6 +27,7 @@ type Deps struct {
 	Verifiers     map[string]auth.Verifier
 	Pepper        []byte
 	NativeLimiter *auth.Limiter
+	SocialLimiter *auth.Limiter
 	Dict          func() *dict.Dictionary
 	DictPath      func() string
 	Now           func() time.Time
@@ -39,10 +40,11 @@ type Server struct {
 	dicts dictCache
 }
 
-// NewServer panics if d.NativeLimiter is nil: the auth/native rate limit is mandatory.
+// NewServer panics if d.NativeLimiter or d.SocialLimiter is nil: the
+// auth rate limits are mandatory.
 func NewServer(d Deps) *Server {
-	if d.NativeLimiter == nil {
-		panic("api: Deps.NativeLimiter is required")
+	if d.NativeLimiter == nil || d.SocialLimiter == nil {
+		panic("api: Deps.NativeLimiter and Deps.SocialLimiter are required")
 	}
 
 	if d.Now == nil {

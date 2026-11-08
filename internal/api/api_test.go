@@ -60,6 +60,7 @@ func newTestServerWith(t *testing.T, limit int, tweak func(*Deps)) *testEnv {
 		Verifiers:     map[string]auth.Verifier{"google": fakeVerifier{}},
 		Pepper:        []byte("pepper"),
 		NativeLimiter: auth.NewLimiter(limit, time.Minute, time.Now),
+		SocialLimiter: auth.NewLimiter(limit, time.Minute, time.Now),
 		Now:           time.Now,
 	}
 

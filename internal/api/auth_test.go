@@ -58,6 +58,23 @@ func TestNativeRateLimit(t *testing.T) {
 	e.wantError(resp, data, 429, "too_many_requests")
 }
 
+func TestSocialRateLimit(t *testing.T) {
+	e := newTestServerLimit(t, 10)
+	for i := 0; i < 10; i++ {
+		e.native("dev", "Вася")
+	}
+
+	body := map[string]string{"provider": "google", "token": "bad", "name": "Вася"}
+
+	for i := 0; i < 10; i++ {
+		resp, data := e.do("POST", "/v1/auth/social", "", body)
+		e.wantError(resp, data, 401, "invalid_provider_token")
+	}
+
+	resp, data := e.do("POST", "/v1/auth/social", "", body)
+	e.wantError(resp, data, 429, "too_many_requests")
+}
+
 func TestSocialDisabledProvider(t *testing.T) {
 	e := newTestServer(t)
 	resp, data := e.do("POST", "/v1/auth/social", "", map[string]string{"provider": "vk", "token": "good-1", "name": "Вася"})
@@ -127,14 +144,23 @@ func TestLogout(t *testing.T) {
 	e.wantError(resp, data, 401, "unauthorized")
 }
 
-func TestNewServerRequiresLimiter(t *testing.T) {
-	defer func() {
-		if recover() == nil {
-			t.Fatal("expected panic for nil NativeLimiter")
-		}
-	}()
+func TestNewServerRequiresLimiters(t *testing.T) {
+	l := auth.NewLimiter(10, time.Minute, time.Now)
 
-	NewServer(Deps{})
+	for name, d := range map[string]Deps{
+		"native": {SocialLimiter: l},
+		"social": {NativeLimiter: l},
+	} {
+		t.Run(name, func(t *testing.T) {
+			defer func() {
+				if recover() == nil {
+					t.Fatal("expected panic for a nil limiter")
+				}
+			}()
+
+			NewServer(d)
+		})
+	}
 }
 
 type failingVerifier struct{}
@@ -150,6 +176,7 @@ func TestSocialProviderUnavailableIsLogged(t *testing.T) {
 		Verifiers:     map[string]auth.Verifier{"vk": failingVerifier{}},
 		Pepper:        []byte("p"),
 		NativeLimiter: auth.NewLimiter(10, time.Minute, time.Now),
+		SocialLimiter: auth.NewLimiter(10, time.Minute, time.Now),
 	})
 
 	ts := httptest.NewServer(srv.Handler())

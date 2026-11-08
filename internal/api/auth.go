@@ -86,10 +86,19 @@ func (s *Server) login(w http.ResponseWriter, r *http.Request, provider, uid, na
 	writeJSON(w, http.StatusOK, authResponse{Token: token, User: toUserJSON(u)})
 }
 
-func (s *Server) handleAuthNative(w http.ResponseWriter, r *http.Request) {
-	if !s.d.NativeLimiter.Allow(clientIP(r)) {
-		writeError(w, http.StatusTooManyRequests, "too_many_requests", "Слишком много запросов, попробуйте позже")
+// allow applies the per-IP limiter l; over the limit it answers 429.
+func allow(w http.ResponseWriter, r *http.Request, l *auth.Limiter) bool {
+	if l.Allow(clientIP(r)) {
+		return true
+	}
 
+	writeError(w, http.StatusTooManyRequests, "too_many_requests", "Слишком много запросов, попробуйте позже")
+
+	return false
+}
+
+func (s *Server) handleAuthNative(w http.ResponseWriter, r *http.Request) {
+	if !allow(w, r, s.d.NativeLimiter) {
 		return
 	}
 
@@ -109,6 +118,10 @@ func (s *Server) handleAuthNative(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleAuthSocial(w http.ResponseWriter, r *http.Request) {
+	if !allow(w, r, s.d.SocialLimiter) {
+		return
+	}
+
 	var req struct{ Provider, Token, Name string }
 	if !decodeJSON(w, r, &req) {
 		return
