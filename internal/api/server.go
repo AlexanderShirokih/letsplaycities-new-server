@@ -158,8 +158,21 @@ func writeInternal(w http.ResponseWriter, err error) {
 
 const maxJSONBody = 64 << 10
 
-// decodeJSON reads a JSON body (at most 64 KB) into v; on failure it answers 400 bad_request.
+// bodyReadTimeout bounds reading a request body, so that a client cannot
+// hold a connection by trickling it. Tests shorten it.
+var bodyReadTimeout = 15 * time.Second
+
+// limitBodyTime sets the read deadline for the request body. The error is
+// ignored: writers without deadline support (recorders) read without one.
+func limitBodyTime(w http.ResponseWriter) {
+	_ = http.NewResponseController(w).SetReadDeadline(time.Now().Add(bodyReadTimeout))
+}
+
+// decodeJSON reads a JSON body (at most 64 KB, within bodyReadTimeout) into
+// v; on failure it answers 400 bad_request.
 func decodeJSON(w http.ResponseWriter, r *http.Request, v any) bool {
+	limitBodyTime(w)
+
 	r.Body = http.MaxBytesReader(w, r.Body, maxJSONBody)
 	if err := json.NewDecoder(r.Body).Decode(v); err != nil {
 		writeBadRequest(w)

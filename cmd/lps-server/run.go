@@ -25,6 +25,7 @@ const (
 	httpClientTimeout = 10 * time.Second
 	headerTimeout     = 10 * time.Second
 	shutdownTimeout   = 10 * time.Second
+	idleTimeout       = 120 * time.Second
 	nativeLimit       = 10
 	nativeWindow      = time.Minute
 )
@@ -68,11 +69,7 @@ func run(ctx context.Context, cfg config.Config, ln net.Listener, clk game.Clock
 		hub.Run(hubCtx)
 	}()
 
-	srv := &http.Server{
-		Handler:           newHandler(cfg, st, hc, hub, d, dictPath),
-		ReadHeaderTimeout: headerTimeout,
-	}
-	err = serve(ctx, srv, ln)
+	err = serve(ctx, newHTTPServer(newHandler(cfg, st, hc, hub, d, dictPath)), ln)
 
 	stopHub()
 	<-hubDone
@@ -183,4 +180,14 @@ func tlsMode(cfg config.Config) string {
 	}
 
 	return "files"
+}
+
+// newHTTPServer sets no ReadTimeout or WriteTimeout: they would also cut
+// the hijacked game sockets. Request bodies get a deadline in the handlers.
+func newHTTPServer(h http.Handler) *http.Server {
+	return &http.Server{
+		Handler:           h,
+		ReadHeaderTimeout: headerTimeout,
+		IdleTimeout:       idleTimeout,
+	}
 }
