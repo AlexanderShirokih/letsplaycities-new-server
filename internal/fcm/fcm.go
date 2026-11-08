@@ -66,7 +66,7 @@ func NewHTTP(credentialsJSON []byte, hc *http.Client) (*HTTPSender, error) {
 
 	ctx := context.WithValue(context.Background(), oauth2.HTTPClient, hc)
 
-	creds, err := google.CredentialsFromJSON(ctx, credentialsJSON, messagingScope)
+	creds, err := google.CredentialsFromJSONWithType(ctx, credentialsJSON, google.ServiceAccount, messagingScope)
 	if err != nil {
 		return nil, fmt.Errorf("fcm credentials: %w", err)
 	}
