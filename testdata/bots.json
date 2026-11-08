@@ -1,0 +1,8 @@
+[
+  {"userId": 12407, "level": 1, "prefCountries": [51], "minDelaySec": 4, "maxDelaySec": 12},
+  {"userId": 12408, "level": 2, "prefCountries": [51, 196, 96], "minDelaySec": 3, "maxDelaySec": 10},
+  {"userId": 14397, "level": 0, "prefCountries": [], "minDelaySec": 5, "maxDelaySec": 15},
+  {"userId": 14398, "level": 2, "prefCountries": [], "minDelaySec": 3, "maxDelaySec": 8},
+  {"userId": 14399, "level": 1, "prefCountries": [118, 106], "minDelaySec": 4, "maxDelaySec": 12},
+  {"userId": 14400, "level": 2, "prefCountries": [44], "minDelaySec": 6, "maxDelaySec": 14}
+]

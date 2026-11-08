@@ -56,6 +56,8 @@ type session struct {
 	conn  Conn
 	state sessionState
 	game  *activeGame
+
+	queueSeq int64 // identifies the current queue entry for the bot wait
 }
 
 // UserID implements Seat.
@@ -107,6 +109,8 @@ type Hub struct {
 	invites  map[int64]*invite
 	rooms    map[int64]*activeGame
 	lastRoom int64
+	bots     []*session // in AddBot order
+	queueSeq int64
 }
 
 // NewHub creates a hub. Call Run to start processing events.
@@ -168,6 +172,12 @@ func (h *Hub) Message(userID int64, m ClientMsg) {
 // Disconnect drops the user's session unless c has already been replaced.
 func (h *Hub) Disconnect(userID int64, c Conn) {
 	h.enqueue(func() { h.disconnect(userID, c) })
+}
+
+// AddBot registers a bot as an idle player. With BotsEnabled the hub
+// offers free bots to players who waited BotsWait in the queue.
+func (h *Hub) AddBot(b *Bot) {
+	h.enqueue(func() { h.addBot(b) })
 }
 
 func (h *Hub) enqueue(e func()) {
@@ -296,7 +306,75 @@ func (h *Hub) matchQueued(s *session) {
 		}
 	}
 
+	h.joinQueue(s)
+}
+
+// joinQueue puts s at the end of the queue and, with bots enabled, arms the
+// bot wait for this queue entry.
+func (h *Hub) joinQueue(s *session) {
 	h.queue = append(h.queue, s)
+
+	if !h.cfg.BotsEnabled {
+		return
+	}
+
+	h.queueSeq++
+	s.queueSeq = h.queueSeq
+	id, seq := s.user.ID, s.queueSeq
+
+	h.clk.AfterFunc(h.cfg.BotsWait, func() {
+		h.enqueue(func() { h.botCheck(id, seq) })
+	})
+}
+
+func (h *Hub) addBot(b *Bot) {
+	id := b.spec.UserID
+	if _, ok := h.sessions[id]; ok {
+		log.Printf("game: add bot %d: user is already connected", id)
+
+		return
+	}
+
+	u, err := h.user(id)
+	if err != nil {
+		log.Printf("game: add bot %d: %v", id, err)
+
+		return
+	}
+
+	s := &session{user: u, conn: b, state: stateIdle}
+	h.sessions[id] = s
+	h.bots = append(h.bots, s)
+}
+
+// botCheck matches a player who is still in the same queue entry with the
+// first free bot it is not blocked with. The player moves first. Without a
+// free bot the player stays in the queue.
+func (h *Hub) botCheck(userID, seq int64) {
+	s, ok := h.sessions[userID]
+	if !ok || s.state != stateQueued || s.queueSeq != seq {
+		return
+	}
+
+	for _, bot := range h.bots {
+		if bot.game != nil || bot.state != stateIdle {
+			continue
+		}
+
+		ab, ba, err := h.relations(s, bot)
+		if err != nil {
+			log.Printf("game: bot match for user %d: %v", userID, err)
+
+			return
+		}
+
+		if ab.Blocked == store.BlockedNone {
+			h.dequeue(s)
+			h.startGame(s, bot, ab, ba)
+
+			return
+		}
+	}
 }
 
 func (h *Hub) cancel(s *session, _ ClientMsg) {
