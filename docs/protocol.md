@@ -127,7 +127,7 @@
 | `gameOver` | `reason` (`timeout`, `opponentLeft`, `surrender`), `loser`, `words`, `durationSec` |
 | `error` | `code` |
 
-`opponent.friendship`: `none`, `friends`, `incoming`, `outgoing`. В `welcome.user` поля `provider` и `lastSeenAt` присутствуют, когда они не пустые.
+`opponent.friendship`: `none`, `friends`, `incoming`, `outgoing`. `welcome.user` — тот же объект `user`, что в REST.
 
 Отклонённое слово получает только автор. Принятое получают оба игрока, ход переходит к сопернику, таймер перезапускается.
 

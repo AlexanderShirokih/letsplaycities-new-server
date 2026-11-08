@@ -135,7 +135,7 @@ func TestDecodeBadMessage(t *testing.T) {
 	}
 }
 
-func TestAvatarHashAlwaysPresent(t *testing.T) {
+func TestWelcomeUserShape(t *testing.T) {
 	m := toMap(t, Welcome(UserView{ID: 1, Name: "a"}))
 
 	user, _ := m["user"].(map[string]any)
@@ -143,7 +143,10 @@ func TestAvatarHashAlwaysPresent(t *testing.T) {
 		t.Errorf("user.avatarHash = %v (present %v), want null", v, ok)
 	}
 
-	if _, ok := user["provider"]; ok {
-		t.Error("provider must be omitted when empty")
+	// welcome.user has the REST user shape: every field is present.
+	for _, k := range []string{"provider", "lastSeenAt"} {
+		if _, ok := user[k]; !ok {
+			t.Errorf("user.%s missing", k)
+		}
 	}
 }

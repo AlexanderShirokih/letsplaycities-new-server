@@ -113,14 +113,14 @@ func DecodeClient(b []byte) (ClientMsg, error) {
 	return m, nil
 }
 
-// UserView is the public profile of a user. AvatarHash is null when the
-// user has no avatar.
+// UserView is the public profile of a user, the same object as the REST
+// user. AvatarHash is null when the user has no avatar.
 type UserView struct {
 	ID         int64   `json:"id"`
 	Name       string  `json:"name"`
 	AvatarHash *string `json:"avatarHash"`
-	Provider   string  `json:"provider,omitempty"`
-	LastSeenAt int64   `json:"lastSeenAt,omitempty"`
+	Provider   string  `json:"provider"`
+	LastSeenAt int64   `json:"lastSeenAt"`
 }
 
 // Opponent describes the other player in a match. Friendship is one of the
