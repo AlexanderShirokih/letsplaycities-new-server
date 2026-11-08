@@ -63,3 +63,52 @@ func TestHistoryPaging(t *testing.T) {
 		}
 	}
 }
+
+func TestHistoryCursorOutOfOrder(t *testing.T) {
+	s := openMem(t)
+	ctx := context.Background()
+	u := mkUsers(t, s, "A", "B")
+	base := time.UnixMilli(1700000000000)
+	// ids ascend while started_at is shuffled; some share started_at
+	offsets := []int{5, 1, 9, 3, 3, 7, 0, 8, 2, 6, 4, 9, 1}
+	want := map[int64]time.Time{}
+	for _, o := range offsets {
+		at := base.Add(time.Duration(o) * time.Minute)
+		id, err := s.RecordGame(ctx, Game{StarterID: u[0], InvitedID: u[1], StartedAt: at})
+		if err != nil {
+			t.Fatal(err)
+		}
+		want[id] = at
+	}
+	var got []Game
+	var cur int64
+	for pages := 0; pages < 20; pages++ {
+		p, next, err := s.History(ctx, u[0], 0, cur, 4)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, e := range p {
+			got = append(got, e.Game)
+		}
+		if next == 0 {
+			break
+		}
+		cur = next
+	}
+	if len(got) != len(offsets) {
+		t.Fatalf("got %d games, want %d", len(got), len(offsets))
+	}
+	seen := map[int64]bool{}
+	for i, g := range got {
+		if seen[g.ID] || !g.StartedAt.Equal(want[g.ID]) {
+			t.Fatalf("duplicate or wrong game %+v", g)
+		}
+		seen[g.ID] = true
+		if i > 0 {
+			p := got[i-1]
+			if g.StartedAt.After(p.StartedAt) || (g.StartedAt.Equal(p.StartedAt) && g.ID > p.ID) {
+				t.Fatalf("order broken at %d: %+v after %+v", i, g, p)
+			}
+		}
+	}
+}

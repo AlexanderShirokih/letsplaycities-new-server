@@ -102,3 +102,24 @@ func TestBlockRemovesFriendship(t *testing.T) {
 		t.Fatal("expected me")
 	}
 }
+
+func TestReRequestAfterFriends(t *testing.T) {
+	s := openMem(t)
+	ctx := context.Background()
+	u := mkUsers(t, s, "A", "B")
+	now := time.UnixMilli(1700000000000)
+	s.RequestOrAcceptFriend(ctx, u[0], u[1], now)
+	s.RequestOrAcceptFriend(ctx, u[1], u[0], now)
+	if err := s.RequestOrAcceptFriend(ctx, u[1], u[0], now); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.RequestOrAcceptFriend(ctx, u[0], u[1], now); err != nil {
+		t.Fatal(err)
+	}
+	for _, id := range u {
+		fs, err := s.Friends(ctx, id)
+		if err != nil || len(fs) != 1 || fs[0].Status != "friends" {
+			t.Fatalf("%d: %+v %v", id, fs, err)
+		}
+	}
+}

@@ -144,8 +144,15 @@ func (s *Store) RequestOrAcceptFriend(ctx context.Context, from, to int64, now t
 		if n, err := res.RowsAffected(); err != nil || n > 0 {
 			return err
 		}
+		var exists bool
+		if err := tx.QueryRowContext(ctx,
+			`SELECT EXISTS(SELECT 1 FROM friendships
+			 WHERE (sender_id = ?1 AND receiver_id = ?2) OR (sender_id = ?2 AND receiver_id = ?1))`,
+			from, to).Scan(&exists); err != nil || exists {
+			return err
+		}
 		_, err = tx.ExecContext(ctx,
-			`INSERT OR IGNORE INTO friendships(sender_id, receiver_id, accepted, created_at) VALUES(?, ?, 0, ?)`,
+			`INSERT INTO friendships(sender_id, receiver_id, accepted, created_at) VALUES(?, ?, 0, ?)`,
 			from, to, ms(now))
 		return err
 	})

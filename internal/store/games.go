@@ -39,7 +39,7 @@ func (s *Store) History(ctx context.Context, userID, with, before int64, limit i
 		`SELECT id, starter_id, invited_id, started_at, duration_sec, words FROM games
 		 WHERE (starter_id = ?1 OR invited_id = ?1)
 		   AND (?2 = 0 OR starter_id = ?2 OR invited_id = ?2)
-		   AND (?3 = 0 OR id < ?3)
+		   AND (?3 = 0 OR (started_at, id) < (SELECT started_at, id FROM games WHERE id = ?3))
 		 ORDER BY started_at DESC, id DESC LIMIT ?4`, userID, with, before, limit+1)
 	if err != nil {
 		return nil, 0, err
