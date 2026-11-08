@@ -8,3 +8,4 @@ lps.db*
 .vscode/
 logs/
 !internal/store/schema.sql
+.metrics/
