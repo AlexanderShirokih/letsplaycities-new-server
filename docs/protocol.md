@@ -44,12 +44,12 @@
 |---|---|
 | `GET /v1/me` | 200 `user` |
 | `PATCH /v1/me {name?, fcmToken?}` | 200 `user`. Ошибки имени — `bad_name`, `forbidden_name` |
-| `PUT /v1/me/avatar` | тело — сырые байты, `Content-Type` `image/png` или `image/jpeg`, до 64 КБ. 200 `user` |
+| `PUT /v1/me/avatar` | тело — сырые байты, `Content-Type` `image/png` или `image/jpeg`, до 256 КБ, каждая сторона не больше 512 px. Клиент присылает 256×256. 200 `user` |
 | `DELETE /v1/me/avatar` | 204 |
 | `GET /v1/users/{id}` | 200 `user` + `friendship` (`none`, `friends`, `incoming`, `outgoing`) + `blocked` (`none`, `byMe`, `me`, `both`) |
 | `GET /v1/avatars/{id}?v={hash}` | без авторизации. Байты картинки с `ETag: "<hash>"`. Если `v` равен текущему хешу — `Cache-Control: public, max-age=31536000, immutable`, иначе `no-cache`. `If-None-Match` даёт 304 |
 
-Ошибки: 400 `bad_image` (не PNG и не JPEG по сигнатуре или `Content-Type`), 413 `too_large` (больше 64 КБ), 404 `not_found` (нет пользователя или аватарки; нечисловой `{id}` — тоже 404).
+Ошибки: 400 `bad_image` (не PNG и не JPEG, формат не совпадает с `Content-Type` или сторона больше 512 px), 413 `too_large` (больше 256 КБ), 404 `not_found` (нет пользователя или аватарки; нечисловой `{id}` — тоже 404).
 
 ### Друзья, блокировки, история
 

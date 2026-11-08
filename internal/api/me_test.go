@@ -3,12 +3,46 @@ package api
 import (
 	"bytes"
 	"context"
+	"encoding/binary"
 	"encoding/json"
 	"fmt"
+	"hash/crc32"
 	"testing"
 )
 
 var png1x1 = []byte("\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15\xc4\x89")
+
+// pngHeader returns a PNG signature and an IHDR chunk declaring w×h pixels.
+func pngHeader(w, h uint32) []byte {
+	ihdr := binary.BigEndian.AppendUint32([]byte("IHDR"), w)
+	ihdr = binary.BigEndian.AppendUint32(ihdr, h)
+	ihdr = append(ihdr, 8, 6, 0, 0, 0)
+
+	out := binary.BigEndian.AppendUint32([]byte("\x89PNG\r\n\x1a\n"), 13)
+	out = append(out, ihdr...)
+
+	return binary.BigEndian.AppendUint32(out, crc32.ChecksumIEEE(ihdr))
+}
+
+func TestAvatarSizeLimits(t *testing.T) {
+	e := newTestServer(t)
+	a := e.native("dev1", "Вася")
+
+	ok := append(pngHeader(512, 512), make([]byte, 200<<10)...)
+	if resp, data := e.do("PUT", "/v1/me/avatar", a.Token, ok, "Content-Type", "image/png"); resp.StatusCode != 200 {
+		t.Fatalf("512x512 of 200 KB: %d %s", resp.StatusCode, data)
+	}
+
+	resp, data := e.do("PUT", "/v1/me/avatar", a.Token, pngHeader(513, 10), "Content-Type", "image/png")
+	e.wantError(resp, data, 400, "bad_image")
+
+	resp, data = e.do("PUT", "/v1/me/avatar", a.Token, pngHeader(10, 513), "Content-Type", "image/png")
+	e.wantError(resp, data, 400, "bad_image")
+
+	big := append(pngHeader(256, 256), make([]byte, 256<<10)...)
+	resp, data = e.do("PUT", "/v1/me/avatar", a.Token, big, "Content-Type", "image/png")
+	e.wantError(resp, data, 413, "too_large")
+}
 
 func TestPatchMe(t *testing.T) {
 	e := newTestServer(t)
@@ -104,7 +138,7 @@ func TestAvatarRejects(t *testing.T) {
 	resp, data = e.do("PUT", "/v1/me/avatar", a.Token, png1x1, "Content-Type", "image/gif")
 	e.wantError(resp, data, 400, "bad_image")
 
-	big := append([]byte("\x89PNG\r\n\x1a\n"), make([]byte, 70000)...)
+	big := append([]byte("\x89PNG\r\n\x1a\n"), make([]byte, 300000)...)
 	resp, data = e.do("PUT", "/v1/me/avatar", a.Token, big, "Content-Type", "image/png")
 	e.wantError(resp, data, 413, "too_large")
 

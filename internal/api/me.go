@@ -1,9 +1,13 @@
 package api
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
+	"image"
+	_ "image/jpeg"
+	_ "image/png"
 	"io"
 	"mime"
 	"net/http"
@@ -13,7 +17,10 @@ import (
 	"lps/internal/store"
 )
 
-const maxAvatar = 64 << 10
+const (
+	maxAvatar     = 256 << 10
+	maxAvatarSide = 512
+)
 
 func (s *Server) handleGetMe(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, toUserJSON(userFrom(r)))
@@ -60,9 +67,14 @@ func (s *Server) handlePatchMe(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, toUserJSON(u))
 }
 
-var signatures = map[string]string{
-	"image/png":  "\x89PNG\r\n\x1a\n",
-	"image/jpeg": "\xff\xd8\xff",
+// validAvatar reports whether data is a PNG or JPEG of type mt with sides of at most maxAvatarSide.
+func validAvatar(data []byte, mt string) bool {
+	cfg, format, err := image.DecodeConfig(bytes.NewReader(data))
+	if err != nil || "image/"+format != mt {
+		return false
+	}
+
+	return cfg.Width <= maxAvatarSide && cfg.Height <= maxAvatarSide
 }
 
 func (s *Server) handlePutAvatar(w http.ResponseWriter, r *http.Request) {
@@ -71,7 +83,7 @@ func (s *Server) handlePutAvatar(w http.ResponseWriter, r *http.Request) {
 		var tooBig *http.MaxBytesError
 
 		if errors.As(err, &tooBig) {
-			writeError(w, http.StatusRequestEntityTooLarge, "too_large", "Файл больше 64 КБ")
+			writeError(w, http.StatusRequestEntityTooLarge, "too_large", "Файл больше 256 КБ")
 
 			return
 		}
@@ -83,9 +95,8 @@ func (s *Server) handlePutAvatar(w http.ResponseWriter, r *http.Request) {
 
 	mt, _, _ := mime.ParseMediaType(r.Header.Get("Content-Type"))
 
-	sig, ok := signatures[mt]
-	if !ok || !strings.HasPrefix(string(data), sig) {
-		writeError(w, http.StatusBadRequest, "bad_image", "Нужна картинка PNG или JPEG")
+	if !validAvatar(data, mt) {
+		writeError(w, http.StatusBadRequest, "bad_image", "Нужна картинка PNG или JPEG не больше 512×512")
 
 		return
 	}
