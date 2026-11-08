@@ -1,6 +1,0 @@
-
-### Gets a list of all countries
-GET http://localhost:8080/countries/
-
-### Gets a list of all country groups
-GET http://localhost:8080/countries/groups/
