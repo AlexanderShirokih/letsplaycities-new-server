@@ -105,6 +105,77 @@ func TestBotNoFreeBots(t *testing.T) {
 	wantMatch(t, cc, userA, false)
 }
 
+func TestBotWaitRetriesUntilBotFrees(t *testing.T) {
+	f := newBotFixture(t, true, bot1)
+	cb := f.playBot(userB, bot1)
+
+	ca := f.login(userA)
+	f.send(userA, ClientMsg{Type: TypeFind})
+	f.advance(botsWait)
+
+	wantType(t, ca, TypeQueued)
+
+	f.send(userB, ClientMsg{Type: TypeLeave})
+	wantGameOver(t, cb, ReasonSurrender, userB)
+
+	f.advance(botsWait - time.Second)
+
+	if ca.count(TypeMatch) != 0 {
+		t.Fatal("matched before the next bot wait elapsed")
+	}
+
+	f.advance(time.Second)
+
+	wantMatch(t, ca, bot1, true)
+}
+
+func TestBotWaitRetryStopsWhenPlayerLeavesQueue(t *testing.T) {
+	f := newBotFixture(t, true, bot1)
+	f.playBot(userB, bot1)
+
+	ca := f.login(userA)
+	f.send(userA, ClientMsg{Type: TypeFind})
+	f.advance(botsWait)
+	f.send(userA, ClientMsg{Type: TypeCancel})
+
+	f.advance(botsWait)
+
+	if len(f.clk.timers) != 1 { // only the room move timer of B's game
+		t.Fatalf("timers left: %d", len(f.clk.timers))
+	}
+
+	if ca.count(TypeMatch) != 0 {
+		t.Fatal("matched after cancel")
+	}
+}
+
+func TestBotStaleMoveDropped(t *testing.T) {
+	f := newBotFixture(t, true, bot1)
+	ca := f.playBot(userA, bot1)
+	b, ok := f.hub.sessions[bot1].conn.(*Bot)
+
+	if !ok {
+		t.Fatal("bot1 conn is not a Bot")
+	}
+
+	f.send(userA, ClientMsg{Type: TypeWord, Text: "москва"})
+
+	// the move timer fires: its event is queued but not processed yet
+	f.clk.Advance(10 * time.Second)
+
+	if len(f.hub.events) != 1 {
+		t.Fatalf("want the queued move event, got %d events", len(f.hub.events))
+	}
+
+	// the bot's game state resets before the event runs
+	b.Send(GameOver(ReasonSurrender, userA, 1, 1))
+	f.hub.drain()
+
+	if n := ca.count(TypeWord); n != 1 {
+		t.Fatalf("stale bot move was delivered: %d word messages", n)
+	}
+}
+
 func TestBotWaitRestartsOnRequeue(t *testing.T) {
 	f := newBotFixture(t, true, botIDs...)
 	ca := f.login(userA)

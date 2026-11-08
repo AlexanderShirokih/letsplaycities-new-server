@@ -48,7 +48,7 @@ func LoadBots(path string) ([]BotSpec, error) {
 
 // Bot is a computer player. It implements Conn: the hub delivers server
 // messages to Send from its own goroutine, and the bot answers by
-// scheduling Hub.Message on the clock, so Send never blocks the hub.
+// scheduling a hub event on the clock, so Send never blocks the hub.
 type Bot struct {
 	spec BotSpec
 	hub  *Hub
@@ -58,6 +58,7 @@ type Bot struct {
 
 	used     map[string]struct{}
 	stopMove func() bool
+	gen      uint64 // incremented when the game state resets; hub goroutine only
 }
 
 // botMsg holds the fields of the server messages a bot reacts to.
@@ -104,6 +105,7 @@ func (b *Bot) reset() {
 	}
 
 	b.used = make(map[string]struct{})
+	b.gen++
 }
 
 // accepted records a word of either player and answers the opponent's.
@@ -125,10 +127,23 @@ func (b *Bot) accepted(by int64, word string) {
 		return
 	}
 
+	b.stopMove = b.clk.AfterFunc(b.delay(), b.moveTimer(b.gen, answer))
+}
+
+// moveTimer returns the timer callback for a move planned in generation
+// gen. It only enqueues a hub event; the event delivers the word unless
+// the game state has been reset since, which stop cannot prevent once the
+// timer has fired.
+func (b *Bot) moveTimer(gen uint64, answer string) func() {
 	h, id := b.hub, b.spec.UserID
-	b.stopMove = b.clk.AfterFunc(b.delay(), func() {
-		h.Message(id, ClientMsg{Type: TypeWord, Text: answer})
-	})
+
+	return func() {
+		h.enqueue(func() {
+			if b.gen == gen {
+				h.message(id, ClientMsg{Type: TypeWord, Text: answer})
+			}
+		})
+	}
 }
 
 // delay returns a random answer delay in [MinDelaySec, MaxDelaySec].
