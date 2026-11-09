@@ -13,3 +13,6 @@ target/
 
 # superpowers artifacts
 docs/superpowers/
+
+# local dev server data: TLS key, database, bots
+/local/
