@@ -52,3 +52,43 @@ func TestCityEdits(t *testing.T) {
 		t.Fatalf("limit: %d", len(l))
 	}
 }
+
+func TestRemoveCityEdit(t *testing.T) {
+	s := openMem(t)
+	ctx := context.Background()
+	users := mkUsers(t, s, "A", "B")
+	a, b := users[0], users[1]
+	name := "Город"
+
+	add := func() int64 {
+		id, err := s.AddCityEdit(ctx, a, CityEdit{NewName: &name})
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		return id
+	}
+	remove := func(user, id int64, want CityEditRemoval) {
+		t.Helper()
+
+		got, err := s.RemoveCityEdit(ctx, user, id)
+		if err != nil || got != want {
+			t.Fatalf("remove: %v %v, want %v", got, err, want)
+		}
+	}
+
+	pending, reviewed := add(), add()
+	if _, err := s.db.ExecContext(ctx, `UPDATE city_edits SET status = 'APPROVED' WHERE id = ?`, reviewed); err != nil {
+		t.Fatal(err)
+	}
+
+	remove(b, pending, CityEditMissing)
+	remove(a, reviewed, CityEditReviewed)
+	remove(a, pending, CityEditRemoved)
+	remove(a, pending, CityEditMissing)
+
+	list, err := s.CityEdits(ctx, a, 50)
+	if err != nil || len(list) != 1 || list[0].ID != reviewed {
+		t.Fatalf("left: %+v %v", list, err)
+	}
+}

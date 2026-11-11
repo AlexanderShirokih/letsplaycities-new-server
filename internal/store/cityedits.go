@@ -1,6 +1,10 @@
 package store
 
-import "context"
+import (
+	"context"
+	"database/sql"
+	"errors"
+)
 
 // CityEdit is a user's request to add, change or remove a city.
 type CityEdit struct {
@@ -54,4 +58,43 @@ func (s *Store) AddCityEdit(ctx context.Context, userID int64, e CityEdit) (int6
 	}
 
 	return res.LastInsertId()
+}
+
+// CityEditRemoval is the outcome of RemoveCityEdit.
+type CityEditRemoval int
+
+const (
+	// CityEditRemoved: the edit was the user's, not reviewed yet, and is gone.
+	CityEditRemoved CityEditRemoval = iota
+	// CityEditMissing: the user has no edit with that id.
+	CityEditMissing
+	// CityEditReviewed: the edit already has a verdict and stays.
+	CityEditReviewed
+)
+
+// RemoveCityEdit deletes the user's own edit while it still has status NEW.
+func (s *Store) RemoveCityEdit(ctx context.Context, userID, id int64) (CityEditRemoval, error) {
+	res, err := s.db.ExecContext(ctx,
+		`DELETE FROM city_edits WHERE id = ? AND user_id = ? AND status = 'NEW'`, id, userID)
+	if err != nil {
+		return CityEditMissing, err
+	}
+
+	if n, err := res.RowsAffected(); err != nil || n > 0 {
+		return CityEditRemoved, err
+	}
+
+	var status string
+
+	err = s.db.QueryRowContext(ctx,
+		`SELECT status FROM city_edits WHERE id = ? AND user_id = ?`, id, userID).Scan(&status)
+	if errors.Is(err, sql.ErrNoRows) {
+		return CityEditMissing, nil
+	}
+
+	if err != nil {
+		return CityEditMissing, err
+	}
+
+	return CityEditReviewed, nil
 }

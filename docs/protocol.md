@@ -71,8 +71,11 @@
 |---|---|
 | `GET /v1/city-edits` | 200 `[{id, oldCountryCode, newCountryCode, oldName, newName, reason, verdict, status}]`, последние 50 своих |
 | `POST /v1/city-edits {oldCountryCode, newCountryCode, oldName, newName, reason}` | 201 созданная заявка со `status: "NEW"` |
+| `DELETE /v1/city-edits/{id}` | 204. Отзывает свою заявку со статусом `NEW`: она удаляется |
 
-Ошибки `POST`: 400 `bad_request` (`oldName` или `newName` длиннее 100 символов), 400 `bad_reason` (`reason` длиннее 64 символов), 429 `too_many_requests` (50 и больше заявок `NEW`).
+Ошибки `POST`: 400 `bad_request` (`oldName` или `newName` длиннее 100 символов), 400 `bad_reason` (`reason` длиннее 120 символов), 429 `too_many_requests` (50 и больше заявок `NEW`).
+
+Ошибки `DELETE`: 404 `not_found` (заявки нет или она чужая), 409 `already_reviewed` (заявка уже рассмотрена).
 
 ### Словарь и статика
 
@@ -84,7 +87,7 @@
 
 ### Общие коды ошибок
 
-`bad_request`, `bad_name`, `forbidden_name`, `provider_disabled`, `invalid_provider_token`, `provider_unavailable`, `unauthorized`, `banned`, `blocked`, `self`, `bad_image`, `too_large`, `bad_reason`, `too_many_requests`, `not_found`, `internal` (500).
+`bad_request`, `bad_name`, `forbidden_name`, `provider_disabled`, `invalid_provider_token`, `provider_unavailable`, `unauthorized`, `banned`, `blocked`, `self`, `bad_image`, `too_large`, `bad_reason`, `too_many_requests`, `already_reviewed`, `not_found`, `internal` (500).
 
 ## Игровой протокол (WebSocket)
 

@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	maxReasonRunes   = 64
+	maxReasonRunes   = 120
 	maxCityNameRunes = 100
 	maxNewCityEdits  = 50
 	cityEditsPerPage = 50
@@ -70,7 +70,7 @@ func checkCityEdit(w http.ResponseWriter, req cityEditRequest) bool {
 	}
 
 	if longer(req.Reason, maxReasonRunes) {
-		writeError(w, http.StatusBadRequest, "bad_reason", "Причина длиннее 64 символов")
+		writeError(w, http.StatusBadRequest, "bad_reason", "Причина длиннее 120 символов")
 
 		return false
 	}
@@ -115,4 +115,30 @@ func (s *Server) handlePostCityEdit(w http.ResponseWriter, r *http.Request) {
 
 	e.ID = id
 	writeJSON(w, http.StatusCreated, toCityEditJSON(e))
+}
+
+const cityEditNotFound = "Заявка не найдена"
+
+// handleDeleteCityEdit withdraws the user's own edit that is not reviewed yet.
+func (s *Server) handleDeleteCityEdit(w http.ResponseWriter, r *http.Request) {
+	id, ok := pathID(w, r, cityEditNotFound)
+	if !ok {
+		return
+	}
+
+	res, err := s.d.Store.RemoveCityEdit(r.Context(), userFrom(r).ID, id)
+	if err != nil {
+		writeInternal(w, err)
+
+		return
+	}
+
+	switch res {
+	case store.CityEditMissing:
+		writeNotFound(w, cityEditNotFound)
+	case store.CityEditReviewed:
+		writeError(w, http.StatusConflict, "already_reviewed", "Заявка уже рассмотрена")
+	case store.CityEditRemoved:
+		w.WriteHeader(http.StatusNoContent)
+	}
 }
