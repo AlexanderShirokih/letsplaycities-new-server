@@ -90,10 +90,13 @@ func (s *Server) routes() {
 	m.HandleFunc("GET /v1/history", s.requireUser(s.handleHistory))
 	m.HandleFunc("GET /v1/city-edits", s.requireUser(s.handleListCityEdits))
 	m.HandleFunc("POST /v1/city-edits", s.requireUser(s.handlePostCityEdit))
+	m.HandleFunc("DELETE /v1/city-edits/{id}", s.requireUser(s.handleDeleteCityEdit))
 	m.HandleFunc("GET /v1/dictionary", s.handleDictionary)
 	m.HandleFunc("GET /v1/dictionary/{file}", s.handleDictionaryFile)
 
 	m.HandleFunc("GET /privacy-mobile.html", staticPage("static/privacy-mobile.html", "text/html; charset=utf-8"))
+	m.HandleFunc("GET /terms-mobile.html", staticPage("static/terms-mobile.html", "text/html; charset=utf-8"))
+	m.HandleFunc("GET /delete-data-mobile.html", staticPage("static/delete-data-mobile.html", "text/html; charset=utf-8"))
 	m.HandleFunc("GET /legal-mobile.txt", staticPage("static/legal-mobile.txt", "text/plain; charset=utf-8"))
 
 	m.HandleFunc("/v1/", func(w http.ResponseWriter, r *http.Request) {
